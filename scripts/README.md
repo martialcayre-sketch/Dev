@@ -2,6 +2,8 @@
 
 Ce dossier contient les scripts pour démarrer l'environnement de développement complet.
 
+**Localisation du projet** : `c:\Dev\` (racine directe, plus de sous-dossier `neuronutrition-app`)
+
 ## 🚀 Démarrage rapide
 
 ### Windows

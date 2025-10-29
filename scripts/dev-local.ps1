@@ -9,7 +9,8 @@ param(
   [switch]$NoEmu
 )
 
-Set-Location -Path (Join-Path $PSScriptRoot "..")
+# Chemin direct vers c:\Dev
+Set-Location -Path "c:\Dev"
 
 function Start-Window($title, $command) {
   Start-Process powershell -ArgumentList @(

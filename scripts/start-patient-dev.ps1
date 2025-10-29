@@ -4,7 +4,7 @@
 Write-Host "👤 Démarrage de l'app Patient (dev + émulateurs)..." -ForegroundColor Cyan
 Write-Host ""
 
-$projectRoot = "c:\Dev\neuronutrition-app"
+$projectRoot = "c:\Dev"
 
 # Se placer dans le dossier du projet
 Set-Location $projectRoot

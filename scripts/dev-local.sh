@@ -8,7 +8,14 @@ set -e
 echo "🚀 Lancement de l'environnement de développement NeuroNutrition..."
 echo ""
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# Chemin direct vers /c/Dev (ou /mnt/c/Dev selon l'OS)
+if [ -d "/c/Dev" ]; then
+    PROJECT_ROOT="/c/Dev"
+elif [ -d "/mnt/c/Dev" ]; then
+    PROJECT_ROOT="/mnt/c/Dev"
+else
+    PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+fi
 
 # Vérifier qu'on est dans le bon dossier
 if [ ! -f "$PROJECT_ROOT/firebase.json" ]; then

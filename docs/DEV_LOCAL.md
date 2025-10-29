@@ -1,6 +1,10 @@
 Dev local (Option A)
 
-1) Prérequis
+## Structure du projet
+
+Le projet est maintenant directement dans `c:\Dev\` (plus de sous-dossier `neuronutrition-app`).
+
+## 1) Prérequis
 - Node 20.17.0 (`.nvmrc`), `corepack enable`
 - Firebase CLI (`npm i -g firebase-tools`), `firebase login`, `firebase use neuronutrition-app`
 - Dans `apps/*/.env.local`: `NEXT_PUBLIC_USE_EMULATORS=1` (et `NEXT_PUBLIC_USE_FUNCTIONS_EMULATOR=1` côté praticien)

@@ -4,7 +4,7 @@
 Write-Host "🚀 Démarrage des émulateurs Firebase..." -ForegroundColor Cyan
 Write-Host ""
 
-$projectRoot = "c:\Dev\neuronutrition-app"
+$projectRoot = "c:\Dev"
 
 # Se placer dans le dossier du projet
 Set-Location $projectRoot
