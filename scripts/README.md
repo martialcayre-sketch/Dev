@@ -13,6 +13,7 @@ pnpm dev:stack:win
 ```
 
 Ou directement :
+
 ```powershell
 .\scripts\dev-local.ps1
 ```
@@ -26,6 +27,7 @@ pnpm dev:stack:linux
 ```
 
 Ou directement :
+
 ```bash
 chmod +x scripts/dev-local.sh
 ./scripts/dev-local.sh
@@ -36,14 +38,17 @@ chmod +x scripts/dev-local.sh
 ### `dev-local.ps1` (Windows PowerShell)
 
 Lance 3 fenêtres PowerShell :
+
 1. **Émulateurs Firebase** (Auth, Firestore, Functions)
 2. **App Patient** (port 3020)
 3. **App Practitioner** (port 3010)
 
 **Options** :
+
 - `-NoEmu` : Ne lance pas les émulateurs (si déjà démarrés)
 
 **Exemple** :
+
 ```powershell
 .\scripts\dev-local.ps1 -NoEmu
 ```
@@ -53,11 +58,13 @@ Lance 3 fenêtres PowerShell :
 Équivalent du script Windows pour Mac et Linux.
 
 Lance 3 terminaux :
+
 1. **Émulateurs Firebase**
 2. **App Patient** (port 3020)
 3. **App Practitioner** (port 3010)
 
 **Compatibilité** :
+
 - macOS : Utilise Terminal.app
 - Linux GNOME : Utilise gnome-terminal
 - Linux autres : Utilise xterm
@@ -72,28 +79,31 @@ Lance 3 terminaux :
 
 ## 📋 URLs après démarrage
 
-| Service | URL |
-|---------|-----|
-| **Émulateurs UI** | http://localhost:5000 |
-| **Patient** | http://localhost:3020 |
-| **Practitioner** | http://localhost:3010 |
-| **API Health** | http://localhost:5002/neuronutrition-app/europe-west1/api/health |
+| Service           | URL                                                              |
+| ----------------- | ---------------------------------------------------------------- |
+| **Émulateurs UI** | http://localhost:5000                                            |
+| **Patient**       | http://localhost:3020                                            |
+| **Practitioner**  | http://localhost:3010                                            |
+| **API Health**    | http://localhost:5002/neuronutrition-app/europe-west1/api/health |
 
 ## 🛠️ Commandes individuelles
 
 Si vous préférez lancer manuellement :
 
 ### Émulateurs
+
 ```bash
 pnpm dev:emu
 ```
 
 ### Patient
+
 ```bash
 pnpm dev:patient
 ```
 
 ### Practitioner
+
 ```bash
 pnpm dev:practitioner
 ```
@@ -101,6 +111,7 @@ pnpm dev:practitioner
 ## 📚 Documentation complète
 
 Voir [`docs/DEV_LOCAL.md`](../docs/DEV_LOCAL.md) pour :
+
 - Prérequis détaillés
 - Configuration
 - Dépannage
@@ -157,6 +168,7 @@ pkill -f "next dev"
 ### Logs en temps réel
 
 Les logs apparaissent dans chaque fenêtre/terminal respectif :
+
 - **Émulateurs** : Logs Firebase, requêtes Functions
 - **Patient/Practitioner** : Logs Next.js, HMR, requêtes HTTP
 

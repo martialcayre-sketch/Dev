@@ -20,17 +20,11 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const ensurePractitionerAccess = async (uid: string) => {
+  const ensurePractitionerAccess = async (uid: string, createIfMissing: boolean = false) => {
     try {
       console.log("🔐 Vérification des accès pour UID:", uid);
       console.log("🌍 NODE_ENV:", process.env.NODE_ENV);
-      
-      // MODE DEV : Autoriser temporairement tous les utilisateurs authentifiés
-      // TODO: Retirer cette ligne en production
-      if (process.env.NODE_ENV === "development") {
-        console.log("⚠️ MODE DEV: Accès autorisé par défaut (bypass Firestore)");
-        return true;
-      }
+      console.log("🆕 Création auto:", createIfMissing);
       
       const [tokenResult, practitionerDoc] = await Promise.all([
         auth.currentUser?.getIdTokenResult(true),
@@ -47,15 +41,62 @@ export default function LoginPage() {
       console.log("✓ Claims autorisés:", isAllowed);
       console.log("✓ Document existe:", practitionerDoc.exists());
 
+      // Si le document n'existe pas et qu'on autorise la création
+      if (!practitionerDoc.exists() && createIfMissing && auth.currentUser) {
+        console.log("🆕 Création automatique du compte praticien...");
+        const { setDoc, serverTimestamp } = await import("firebase/firestore");
+        
+        try {
+          await setDoc(doc(firestore, "practitioners", uid), {
+            uid: uid,
+            email: auth.currentUser.email,
+            displayName: auth.currentUser.displayName || "",
+            photoURL: auth.currentUser.photoURL || "",
+            role: "practitioner",
+            status: "pending_approval", // Nécessite approbation admin
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            settings: {
+              notifications: true,
+              emailNotifications: true,
+            }
+          });
+          console.log("✅ Compte praticien créé avec succès");
+          setError("Votre compte a été créé et est en attente d'approbation par un administrateur.");
+          return false; // Ne pas autoriser l'accès immédiatement
+        } catch (createError) {
+          console.error("❌ Erreur création compte:", createError);
+          setError("Erreur lors de la création du compte. Veuillez réessayer.");
+          return false;
+        }
+      }
+
       if (isAllowed || practitionerDoc.exists()) {
+        // Vérifier le statut si le document existe
+        if (practitionerDoc.exists()) {
+          const practitionerData = practitionerDoc.data();
+          if (practitionerData.status === "pending_approval") {
+            console.log("⏳ Compte en attente d'approbation");
+            await auth.signOut();
+            setError("Votre compte est en attente d'approbation par un administrateur.");
+            return false;
+          }
+          if (practitionerData.status === "rejected") {
+            console.log("❌ Compte rejeté");
+            await auth.signOut();
+            setError("Votre compte a été refusé. Contactez l'administrateur pour plus d'informations.");
+            return false;
+          }
+        }
+        
         console.log("✅ Accès praticien validé");
         return true;
       }
 
-      console.log("⚠️ Accès non autorisé, déconnexion...");
+      console.log("⚠️ Accès non autorisé");
       await auth.signOut();
       setError(
-        "Votre compte n'est pas encore autorisé. Contactez un administrateur pour l'activer."
+        "Votre compte n'existe pas. Utilisez 'Se connecter avec Google' pour créer un compte."
       );
       return false;
     } catch (validationError) {
@@ -88,20 +129,23 @@ export default function LoginPage() {
           hasHandledRedirect = true;
           console.log("👤 Utilisateur détecté:", credential.user.email);
           setLoading(true);
-          const allowed = await ensurePractitionerAccess(credential.user.uid);
+          
+          // Vérifier si c'est un nouvel utilisateur Firebase
           const isNewFirebaseUser =
             credential.user.metadata.creationTime === credential.user.metadata.lastSignInTime;
+          
+          console.log("🆕 Nouvel utilisateur:", isNewFirebaseUser);
+          
+          // Permettre la création automatique pour les nouveaux utilisateurs
+          const allowed = await ensurePractitionerAccess(credential.user.uid, isNewFirebaseUser);
 
           console.log("✅ Accès autorisé:", allowed);
-          console.log("🆕 Nouvel utilisateur:", isNewFirebaseUser);
 
           if (!allowed && isNewFirebaseUser) {
-            console.log("❌ Suppression du compte non autorisé");
-            try {
-              await credential.user.delete();
-            } catch (deletionError) {
-              console.warn("Suppression du compte Google non autorisé impossible", deletionError);
-            }
+            console.log("❌ Compte créé mais en attente d'approbation");
+            // Ne pas supprimer le compte, juste afficher le message d'attente
+          } else if (!allowed) {
+            console.log("❌ Accès refusé");
           }
 
           if (allowed) {
@@ -187,16 +231,20 @@ export default function LoginPage() {
         const tokenResult = await credential.user.getIdTokenResult();
         console.log("🎫 Custom claims:", tokenResult.claims);
         
-        const allowed = await ensurePractitionerAccess(credential.user.uid);
+        // Vérifier si c'est un nouvel utilisateur
         const isNewFirebaseUser =
           credential.user.metadata.creationTime === credential.user.metadata.lastSignInTime;
+        
+        console.log("🆕 Nouvel utilisateur:", isNewFirebaseUser);
+        
+        // Permettre la création automatique pour les nouveaux utilisateurs
+        const allowed = await ensurePractitionerAccess(credential.user.uid, isNewFirebaseUser);
 
         if (!allowed && isNewFirebaseUser) {
-          try {
-            await credential.user.delete();
-          } catch (deletionError) {
-            console.warn("Suppression du compte Google non autorisé impossible", deletionError);
-          }
+          console.log("❌ Compte créé mais en attente d'approbation");
+          // Ne pas supprimer le compte
+        } else if (!allowed) {
+          console.log("❌ Accès refusé");
         }
 
         if (allowed) {
@@ -256,7 +304,7 @@ export default function LoginPage() {
           <p className="text-sm font-semibold uppercase tracking-widest text-white/60">Connexion</p>
           <h2 className="mt-2 text-2xl font-semibold text-white">Bienvenue cher praticien</h2>
           <p className="mt-3 text-sm text-white/60">
-            Connectez-vous avec vos identifiants ou votre compte Google professionnel déjà autorisé.
+            Connectez-vous avec vos identifiants ou créez un compte avec Google.
           </p>
 
           <div className="mt-6 space-y-4">
@@ -316,14 +364,18 @@ export default function LoginPage() {
               <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05" />
               <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9.002 0 5.485 0 2.44 2.017.96 4.958L3.967 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335" />
             </svg>
-            {loading ? "Connexion..." : "Se connecter avec Google"}
+            {loading ? "Connexion..." : "Se connecter / S'inscrire avec Google"}
           </button>
 
-          <p className="mt-6 text-center text-[11px] uppercase tracking-widest text-white/40">
-            Besoin d'accès ? Contactez support@neuronutrition.app ou votre administrateur cabinet.
-          </p>
-          <p className="mt-2 text-center text-[11px] uppercase tracking-widest text-white/30">
-            Réinitialisation à demander via les outils admin de la plateforme.
+          <div className="mt-6 rounded-lg border border-nn-accent-500/20 bg-nn-accent-500/5 px-4 py-3">
+            <p className="text-xs text-nn-accent-200">
+              <strong>Nouveau praticien ?</strong> Utilisez "Se connecter avec Google" pour créer automatiquement votre compte. 
+              Votre accès sera activé après validation par un administrateur.
+            </p>
+          </div>
+
+          <p className="mt-4 text-center text-[11px] uppercase tracking-widest text-white/40">
+            Besoin d'aide ? Contactez support@neuronutrition.app
           </p>
         </form>
       </div>
