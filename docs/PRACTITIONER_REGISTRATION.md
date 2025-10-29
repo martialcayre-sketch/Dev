@@ -37,7 +37,6 @@
    - **En attente** : Praticiens avec `status: "pending_approval"`
      - Bouton "Approuver" → Change le statut en `approved`
      - Bouton "Rejeter" → Change le statut en `rejected`
-   
 3. **Gestion des statuts**
    - **Approuvé** (`approved`) : Peut accéder au dashboard
    - **En attente** (`pending_approval`) : Ne peut pas accéder
@@ -72,29 +71,35 @@
 
 ```typescript
 async function ensurePractitionerAccess(
-  uid: string, 
+  uid: string,
   createIfMissing: boolean = false
-): Promise<boolean>
+): Promise<boolean>;
 ```
 
 **Paramètres :**
+
 - `uid` : ID de l'utilisateur Firebase
 - `createIfMissing` : `true` pour créer le compte si inexistant (nouveau user)
 
 **Logique :**
 
 1. **Vérification du document practitioner**
+
    ```typescript
-   const practitionerDoc = await getDoc(doc(firestore, "practitioners", uid));
+   const practitionerDoc = await getDoc(doc(firestore, 'practitioners', uid));
    ```
 
 2. **Création automatique (si nouveau utilisateur)**
+
    ```typescript
    if (!practitionerDoc.exists() && createIfMissing) {
-     await setDoc(doc(firestore, "practitioners", uid), {
-       uid, email, displayName, photoURL,
-       role: "practitioner",
-       status: "pending_approval",
+     await setDoc(doc(firestore, 'practitioners', uid), {
+       uid,
+       email,
+       displayName,
+       photoURL,
+       role: 'practitioner',
+       status: 'pending_approval',
        // ...
      });
      return false; // Refuser l'accès immédiat
@@ -105,18 +110,18 @@ async function ensurePractitionerAccess(
    ```typescript
    if (practitionerDoc.exists()) {
      const status = practitionerDoc.data().status;
-     
-     if (status === "pending_approval") {
+
+     if (status === 'pending_approval') {
        // Afficher message d'attente
        return false;
      }
-     
-     if (status === "rejected") {
+
+     if (status === 'rejected') {
        // Afficher message de rejet
        return false;
      }
-     
-     if (status === "approved") {
+
+     if (status === 'approved') {
        // Autoriser l'accès
        return true;
      }
@@ -210,11 +215,13 @@ async function ensurePractitionerAccess(
 ### Étape 3 : Approuver le compte
 
 **Option A : Via l'interface admin**
+
 1. Se connecter avec un compte admin existant
 2. Aller sur http://localhost:3010/admin/practitioners
 3. Cliquer "Approuver" sur le compte
 
 **Option B : Manuellement dans Firestore**
+
 1. Dans l'Emulator UI, aller dans Firestore
 2. Sélectionner le document du praticien
 3. Modifier `status` de `"pending_approval"` à `"approved"`
@@ -243,18 +250,18 @@ Il faudra ajouter des règles Firestore pour sécuriser la collection `practitio
 // firestore.rules
 match /practitioners/{userId} {
   // Lecture : uniquement par l'utilisateur lui-même ou un admin
-  allow read: if request.auth != null && 
-    (request.auth.uid == userId || 
+  allow read: if request.auth != null &&
+    (request.auth.uid == userId ||
      request.auth.token.admin == true);
-  
+
   // Écriture : uniquement lors de la création par l'utilisateur lui-même
   // Les mises à jour de statut doivent passer par Cloud Functions ou admin
-  allow create: if request.auth != null && 
+  allow create: if request.auth != null &&
     request.auth.uid == userId &&
     request.resource.data.status == "pending_approval";
-  
+
   // Update : uniquement par les admins
-  allow update: if request.auth != null && 
+  allow update: if request.auth != null &&
     request.auth.token.admin == true;
 }
 ```

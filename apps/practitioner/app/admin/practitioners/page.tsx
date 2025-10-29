@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { collection, query, getDocs, doc, updateDoc, orderBy } from "firebase/firestore";
-import { firestore } from "@/lib/firebase";
-import { useFirebaseUser } from "@/hooks/useFirebaseUser";
-import { useRouter } from "next/navigation";
+import { useFirebaseUser } from '@/hooks/useFirebaseUser';
+import { firestore } from '@/lib/firebase';
+import { collection, doc, getDocs, orderBy, query, updateDoc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 interface PractitionerData {
   uid: string;
   email: string;
   displayName: string;
   photoURL?: string;
-  status: "pending_approval" | "approved" | "rejected";
+  status: 'pending_approval' | 'approved' | 'rejected';
   createdAt: any;
   role: string;
 }
@@ -25,7 +25,7 @@ export default function AdminPractitionersPage() {
 
   useEffect(() => {
     if (!userLoading && !user) {
-      router.push("/login");
+      router.push('/login');
     }
   }, [user, userLoading, router]);
 
@@ -34,10 +34,7 @@ export default function AdminPractitionersPage() {
 
     const loadPractitioners = async () => {
       try {
-        const q = query(
-          collection(firestore, "practitioners"),
-          orderBy("createdAt", "desc")
-        );
+        const q = query(collection(firestore, 'practitioners'), orderBy('createdAt', 'desc'));
         const snapshot = await getDocs(q);
         const data = snapshot.docs.map((doc) => ({
           uid: doc.id,
@@ -45,7 +42,7 @@ export default function AdminPractitionersPage() {
         })) as PractitionerData[];
         setPractitioners(data);
       } catch (error) {
-        console.error("Erreur chargement praticiens:", error);
+        console.error('Erreur chargement praticiens:', error);
       } finally {
         setLoading(false);
       }
@@ -57,16 +54,16 @@ export default function AdminPractitionersPage() {
   const handleApprove = async (uid: string) => {
     setActionLoading(uid);
     try {
-      await updateDoc(doc(firestore, "practitioners", uid), {
-        status: "approved",
+      await updateDoc(doc(firestore, 'practitioners', uid), {
+        status: 'approved',
         approvedAt: new Date(),
       });
       setPractitioners((prev) =>
-        prev.map((p) => (p.uid === uid ? { ...p, status: "approved" } : p))
+        prev.map((p) => (p.uid === uid ? { ...p, status: 'approved' } : p))
       );
-      alert("Praticien approuvé avec succès !");
+      alert('Praticien approuvé avec succès !');
     } catch (error) {
-      console.error("Erreur approbation:", error);
+      console.error('Erreur approbation:', error);
       alert("Erreur lors de l'approbation");
     } finally {
       setActionLoading(null);
@@ -74,21 +71,21 @@ export default function AdminPractitionersPage() {
   };
 
   const handleReject = async (uid: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir rejeter ce praticien ?")) return;
-    
+    if (!confirm('Êtes-vous sûr de vouloir rejeter ce praticien ?')) return;
+
     setActionLoading(uid);
     try {
-      await updateDoc(doc(firestore, "practitioners", uid), {
-        status: "rejected",
+      await updateDoc(doc(firestore, 'practitioners', uid), {
+        status: 'rejected',
         rejectedAt: new Date(),
       });
       setPractitioners((prev) =>
-        prev.map((p) => (p.uid === uid ? { ...p, status: "rejected" } : p))
+        prev.map((p) => (p.uid === uid ? { ...p, status: 'rejected' } : p))
       );
-      alert("Praticien rejeté");
+      alert('Praticien rejeté');
     } catch (error) {
-      console.error("Erreur rejet:", error);
-      alert("Erreur lors du rejet");
+      console.error('Erreur rejet:', error);
+      alert('Erreur lors du rejet');
     } finally {
       setActionLoading(null);
     }
@@ -105,9 +102,9 @@ export default function AdminPractitionersPage() {
     );
   }
 
-  const pending = practitioners.filter((p) => p.status === "pending_approval");
-  const approved = practitioners.filter((p) => p.status === "approved");
-  const rejected = practitioners.filter((p) => p.status === "rejected");
+  const pending = practitioners.filter((p) => p.status === 'pending_approval');
+  const approved = practitioners.filter((p) => p.status === 'approved');
+  const rejected = practitioners.filter((p) => p.status === 'rejected');
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -145,14 +142,14 @@ export default function AdminPractitionersPage() {
                     )}
                     <div>
                       <h3 className="font-semibold text-gray-900">
-                        {practitioner.displayName || "Sans nom"}
+                        {practitioner.displayName || 'Sans nom'}
                       </h3>
                       <p className="text-sm text-gray-600">{practitioner.email}</p>
                       <p className="text-xs text-gray-400">
-                        Inscrit le{" "}
+                        Inscrit le{' '}
                         {practitioner.createdAt?.toDate
-                          ? practitioner.createdAt.toDate().toLocaleDateString("fr-FR")
-                          : "N/A"}
+                          ? practitioner.createdAt.toDate().toLocaleDateString('fr-FR')
+                          : 'N/A'}
                       </p>
                     </div>
                   </div>
@@ -162,14 +159,14 @@ export default function AdminPractitionersPage() {
                       disabled={actionLoading === practitioner.uid}
                       className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
                     >
-                      {actionLoading === practitioner.uid ? "..." : "Approuver"}
+                      {actionLoading === practitioner.uid ? '...' : 'Approuver'}
                     </button>
                     <button
                       onClick={() => handleReject(practitioner.uid)}
                       disabled={actionLoading === practitioner.uid}
                       className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
                     >
-                      {actionLoading === practitioner.uid ? "..." : "Rejeter"}
+                      {actionLoading === practitioner.uid ? '...' : 'Rejeter'}
                     </button>
                   </div>
                 </div>
@@ -204,7 +201,7 @@ export default function AdminPractitionersPage() {
                     )}
                     <div>
                       <h3 className="font-semibold text-gray-900">
-                        {practitioner.displayName || "Sans nom"}
+                        {practitioner.displayName || 'Sans nom'}
                       </h3>
                       <p className="text-sm text-gray-600">{practitioner.email}</p>
                     </div>
@@ -240,7 +237,7 @@ export default function AdminPractitionersPage() {
                     )}
                     <div>
                       <h3 className="font-semibold text-gray-900">
-                        {practitioner.displayName || "Sans nom"}
+                        {practitioner.displayName || 'Sans nom'}
                       </h3>
                       <p className="text-sm text-gray-600">{practitioner.email}</p>
                     </div>

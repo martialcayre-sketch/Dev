@@ -11,11 +11,13 @@
 ## Changements effectués
 
 ### 1. Migration du code
+
 - Tous les fichiers déplacés de `c:\Dev\neuronutrition-app\` vers `c:\Dev\`
 - Suppression du dossier imbriqué `neuronutrition-app`
 - Préservation de l'historique Git
 
 ### 2. Mise à jour des scripts
+
 - ✅ `scripts/dev-local.ps1` - Chemin mis à jour vers `c:\Dev`
 - ✅ `scripts/dev-local.sh` - Chemins Mac/Linux adaptés
 - ✅ `scripts/start-emulators.ps1` - Chemin corrigé
@@ -23,10 +25,12 @@
 - ✅ `scripts/start-practitioner-dev.ps1` - Chemin corrigé
 
 ### 3. Mise à jour documentation
+
 - ✅ `docs/DEV_LOCAL.md` - Nouvelle structure documentée
 - ✅ `scripts/README.md` - Référence à `c:\Dev`
 
 ### 4. Git
+
 - ✅ Commit initial : `f229dac` - 735 fichiers, 32 246 insertions
 - ✅ Commit refactor : `cbb2ea6` - Mise à jour des chemins
 - ✅ Push vers GitHub : `main` branch
@@ -34,12 +38,14 @@
 ## Vérification
 
 ### ✅ Services fonctionnels
-- Émulateurs Firebase : `http://localhost:5000` 
+
+- Émulateurs Firebase : `http://localhost:5000`
 - App Patient : `http://localhost:3020`
 - App Practitioner : `http://localhost:3010`
 - API Functions : `http://localhost:5006/neuronutrition-app/europe-west1/api/health`
 
 ### ✅ Commandes validées
+
 ```powershell
 # Lancement complet
 .\scripts\dev-local.ps1
