@@ -1,0 +1,52 @@
+export type QField = { type: 'likert'; id: string; label: string; min: number; max: number }
+export type QSchema = { id: string; title: string; fields: QField[] }
+
+const L = (id: string, label: string): QField => ({ type: 'likert', id, label, min: 0, max: 4 })
+
+export const schema: QSchema = {
+  id: 'questionnaire-dopamine-noradrenaline-serotonine-melatonine-def-my-et-pro',
+  title: 'DNSM — Dopamine / Noradrénaline / Sérotonine / Mélatonine',
+  fields: [
+    L('d1','Difficultés à me lever le matin'),
+    L('d2','Mal à commencer une action'),
+    L('d3','Moins créatif / imaginatif qu’avant'),
+    L('d4','Fatigue avant même d’agir'),
+    L('d5','Moins d’intérêt pour loisirs / activités'),
+    L('d6','Moins de désir sexuel et amoureux'),
+    L('d7','Sommeil agité physiquement (je remue)'),
+    L('d8','Moins de nouveaux projets'),
+    L('d9','Difficultés de concentration / fil de pensée'),
+    L('d10','Je cherche souvent mes mots'),
+    L('n1','Mauvaise opinion de moi-même'),
+    L('n2','Manque de confiance'),
+    L('n3','Sentiment de ne pas être à la hauteur'),
+    L('n4','Besoin d’approbation des autres'),
+    L('n5','Besoin d’être aimé, rassuré'),
+    L('n6','Peu persévérant, vite découragé'),
+    L('n7','Fatigue morale'),
+    L('n8','Plaisir rare à ce que je fais'),
+    L('n9','Je ne me sens pas digne d’être aimé'),
+    L('n10','Tristesse, sans joie, sans plaisir'),
+    L('s1','Irritable, impulsif, vite en colère'),
+    L('s2','Impatient, supporte mal d’attendre'),
+    L('s3','Supporte mal les contraintes'),
+    L('s4','Attiré vers le sucre/chocolat en fin de journée'),
+    L('s5','Dépendances (tabac, alcool, drogues, sports…)'),
+    L('s6','Difficulté à prendre du recul, à rester zen'),
+    L('s7','Difficulté d’endormissement / rendormissement'),
+    L('s8','Vulnérable au stress, au bruit'),
+    L('s9','Susceptible, un rien m’agace'),
+    L('s10','Changements d’humeur rapides'),
+    L('m1','Sensation d’être marginal/exclu'),
+    L('m2','Discret/retrait en société'),
+    L('m3','Sommeil « fragile »'),
+    L('m4','Difficulté à aller me coucher'),
+    L('m5','Discret, réservé pour confidences'),
+    L('m6','Peu conciliant / peu adaptable'),
+    L('m7','Rythmes de vie irréguliers ou décalés'),
+    L('m8','Difficulté à se mettre à la place des autres'),
+    L('m9','Difficultés à m’exprimer / partager'),
+    L('m10','Supporte mal les décalages horaires'),
+  ],
+}
+

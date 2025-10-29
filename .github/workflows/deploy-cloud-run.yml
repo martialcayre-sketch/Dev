@@ -1,0 +1,48 @@
+name: deploy-cloud-run
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'apps/patient/**'
+      - 'apps/practitioner/**'
+      - '.github/workflows/deploy-cloud-run.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      matrix:
+        include:
+          - service: patient-app
+            source: apps/patient
+            region: europe-west1
+          - service: practitioner-app
+            source: apps/practitioner
+            region: europe-west1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.17.0
+      - name: Auth to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOYER_SA }}
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+      - name: Deploy ${{ matrix.service }} to Cloud Run
+        run: |
+          gcloud run deploy "${{ matrix.service }}" \
+            --source="${{ matrix.source }}" \
+            --region="${{ matrix.region }}" \
+            --allow-unauthenticated \
+            --project="${{ secrets.GCP_PROJECT_ID }}"
+

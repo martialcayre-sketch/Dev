@@ -1,0 +1,120 @@
+name: Firebase Hosting Preview
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'apps/patient/**'
+      - 'apps/practitioner/**'
+      - 'firebase.json'
+      - '.firebaserc'
+
+jobs:
+  preview:
+    name: Deploy Preview
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.11.1'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build patient placeholder
+        run: |
+          mkdir -p apps/patient/out
+          cp apps/patient/index.html apps/patient/out/index.html
+
+      - name: Build practitioner placeholder
+        run: |
+          mkdir -p apps/practitioner/out
+          cp apps/practitioner/index.html apps/practitioner/out/index.html
+
+      - name: Deploy to Firebase Hosting Preview (Patient)
+        id: preview-patient
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_NEURONUTRITION_APP }}'
+          projectId: neuronutrition-app
+          channelId: pr-${{ github.event.pull_request.number }}-patient
+          target: patient
+          expires: 7d
+
+      - name: Deploy to Firebase Hosting Preview (Practitioner)
+        id: preview-practitioner
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_NEURONUTRITION_APP }}'
+          projectId: neuronutrition-app
+          channelId: pr-${{ github.event.pull_request.number }}-practitioner
+          target: practitioner
+          expires: 7d
+
+      - name: Comment PR with preview URLs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const patientUrl = '${{ steps.preview-patient.outputs.details_url }}';
+            const practitionerUrl = '${{ steps.preview-practitioner.outputs.details_url }}';
+            
+            const comment = `## 🚀 Firebase Hosting Preview
+
+            Vos previews sont prêts !
+
+            ### 👤 Patient
+            - **URL**: ${patientUrl}
+            - **Channel**: \`pr-${prNumber}-patient\`
+            - **Expire**: dans 7 jours
+
+            ### 👨‍⚕️ Practitioner
+            - **URL**: ${practitionerUrl}
+            - **Channel**: \`pr-${prNumber}-practitioner\`
+            - **Expire**: dans 7 jours
+
+            ### 🧪 Tests à effectuer
+            - [ ] Page placeholder affichée correctement
+            - [ ] API Functions accessible : \`/api/health\`
+            - [ ] Pas d'erreurs dans la console
+
+            ---
+            *Preview créé automatiquement par GitHub Actions*`;
+
+            github.rest.issues.createComment({
+              issue_number: prNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

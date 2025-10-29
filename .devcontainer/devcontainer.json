@@ -1,0 +1,23 @@
+{
+  "name": "NeuroNutrition Monorepo (Docker-Only)",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "postCreateCommand": "corepack enable && pnpm --version || true",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "chat.agent.enabled": true,
+        "chat.tools.global.autoApprove": false
+      },
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-vscode-remote.remote-containers"
+      ]
+    }
+  },
+  "remoteUser": "node"
+}
+

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NeuroNutrition — Espace praticien (Mode développement)</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 0; padding: 2rem; background:#0b1220; color:#e5e7eb }
+      .card { background:#0f172a; border:1px solid #1f2937; border-radius:12px; padding:24px; max-width:720px; margin:0 auto }
+      code { background:#111827; padding:2px 6px; border-radius:6px }
+      .ok { color:#22c55e; font-weight:600 }
+      .err { color:#f87171; font-weight:600 }
+      a { color:#93c5fd }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>NeuroNutrition — Espace praticien</h1>
+      <p>Hébergement en <strong>Option A</strong> (API Functions). L’app Next praticien tourne en local pendant le développement.</p>
+      <h3>Démarrer en local</h3>
+      <ul>
+        <li>Praticien (dev): <code>pnpm -C apps/practitioner dev</code> → http://localhost:3010</li>
+        <li>API (emulateur): <code>pnpm -C functions serve</code></li>
+      </ul>
+      <h3>API — Santé</h3>
+      <p id="api">Vérification en cours…</p>
+    </div>
+    <script>
+      fetch('/api/health').then(r=>r.json()).then(j=>{
+        document.getElementById('api').innerHTML = '<span class="ok">OK</span> ' + JSON.stringify(j)
+      }).catch(()=>{
+        document.getElementById('api').innerHTML = '<span class="err">KO</span> — impossible d’atteindre /api/health'
+      })
+    </script>
+  </body>
+  </html>
+

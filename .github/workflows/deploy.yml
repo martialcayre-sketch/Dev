@@ -1,0 +1,104 @@
+name: CI / Build / Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  PROJECT_ID: neuronutrition-app
+
+jobs:
+  test:
+    name: Unit tests and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Vitest
+        run: pnpm -C apps/web test
+
+      - name: Build web app
+        run: pnpm -C apps/web build
+
+  deploy:
+    name: Deploy to Firebase Hosting + Rules
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Build web app
+        run: pnpm -C apps/web build
+
+      - name: Deploy to Firebase
+        run: firebase deploy --token "$FIREBASE_TOKEN" --only hosting,firestore:rules,storage:rules
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+  e2e-prod:
+    name: Playwright e2e against prod
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm -C apps/web exec playwright install --with-deps chromium
+
+      - name: Run Playwright tests against prod
+        run: pnpm -C apps/web e2e:prod
+        env:
+          PLAYWRIGHT_URL: https://neuronutrition-app.web.app
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report
+# GUI instructions: create FIREBASE_TOKEN secret
+# Visit: https://github.com/<org>/<repo>/settings/secrets/actions
+# Set secret name: FIREBASE_TOKEN (value from 'firebase login:ci')

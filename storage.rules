@@ -1,0 +1,121 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Fonctions utilitaires - Authentification & Rôles
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function hasRole(role) {
+      return isAuthenticated() && request.auth.token.role == role;
+    }
+
+    function isPraticien() {
+      return hasRole('praticien');
+    }
+
+    function isAssistant() {
+      return hasRole('assistant');
+    }
+
+    function isPatient() {
+      return hasRole('patient');
+    }
+
+    // Fonctions utilitaires - Vérification fichiers
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function canAccessPatient(patientId) {
+      return isOwner(patientId) || 
+             isPraticien() && exists(/databases/$(database)/documents/praticiens/$(request.auth.uid)/patients/$(patientId)) ||
+             isAssistant() && exists(/databases/$(database)/documents/assistants/$(request.auth.uid)/patients/$(patientId));
+    }
+    
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    function isDocument() {
+      return request.resource.contentType.matches('application/pdf')
+          || request.resource.contentType.matches('application/msword')
+          || request.resource.contentType.matches('application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    }
+
+    function isValidFileSize(maxSize) {
+      return request.resource.size <= maxSize;
+    }
+    
+    // Ressources publiques
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;  // Via Cloud Functions uniquement
+    }
+    
+    // Fichiers utilisateurs
+    match /users/{userId} {
+      // Photos de profil
+      match /avatar/{imageFile} {
+        allow read: if isAuthenticated();
+        allow write: if isOwner(userId) && 
+                      isImage() && 
+                      isValidFileSize(2 * 1024 * 1024);  // 2MB max
+      }
+    }
+
+    // Fichiers praticiens
+    match /praticiens/{praticienId} {
+      // Documents professionnels
+      match /documents/{docFile} {
+        allow read: if isPraticien() && isOwner(praticienId);
+        allow write: if isPraticien() && 
+                      isOwner(praticienId) && 
+                      isDocument() && 
+                      isValidFileSize(10 * 1024 * 1024);  // 10MB max
+      }
+
+      // Ressources partagées avec les patients
+      match /resources/{fileId} {
+        allow read: if isAuthenticated();
+        allow write: if isPraticien() && 
+                      isOwner(praticienId) && 
+                      isValidFileSize(20 * 1024 * 1024);  // 20MB max
+      }
+    }
+
+    // Fichiers patients
+    match /patients/{patientId} {
+      // Documents médicaux
+      match /medical/{docFile} {
+        allow read: if canAccessPatient(patientId);
+        allow write: if isPraticien() && 
+                      exists(/databases/$(database)/documents/praticiens/$(request.auth.uid)/patients/$(patientId)) &&
+                      isDocument() && 
+                      isValidFileSize(15 * 1024 * 1024);  // 15MB max
+      }
+
+      // Journal photos
+      match /journal/{imageFile} {
+        allow read: if canAccessPatient(patientId);
+        allow write: if isOwner(patientId) && 
+                      isImage() && 
+                      isValidFileSize(5 * 1024 * 1024);  // 5MB max
+      }
+
+      // Bilans nutritionnels
+      match /nutrition/{docFile} {
+        allow read: if canAccessPatient(patientId);
+        allow write: if (isPraticien() || isAssistant()) && 
+                      canAccessPatient(patientId) &&
+                      isDocument() && 
+                      isValidFileSize(10 * 1024 * 1024);  // 10MB max
+      }
+    }
+    
+    // Règle par défaut : tout refuser
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

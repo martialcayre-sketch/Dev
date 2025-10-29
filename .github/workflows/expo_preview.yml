@@ -1,0 +1,24 @@
+name: Expo Android Preview
+on:
+  workflow_dispatch:
+  push:
+    branches: ["preview/*"]
+jobs:
+  build-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 'lts/*' }
+      - run: npm i -g pnpm expo-cli
+      - run: pnpm i
+      - name: Build Android preview with EAS
+        if: ${{ secrets.EXPO_TOKEN != '' }}
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          cd apps/mobile
+          npx expo login --token "$EXPO_TOKEN"
+          npx expo prebuild -p android || true
+          npx expo build:android -t apk || true
+

@@ -1,0 +1,34 @@
+name: deploy-hosting
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["deploy-cloud-run"]
+    types: [completed]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.17.0
+
+      # Authenticate to Google Cloud using a Service Account JSON stored in
+      # the repo secret FIREBASE_SERVICE_ACCOUNT
+      - name: Auth to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Install Firebase CLI
+        run: npm i -g firebase-tools
+
+      - name: Deploy Firebase Hosting (patient + practitioner)
+        run: |
+          firebase deploy --only hosting:patient,hosting:practitioner --project neuronutrition-app
+
+

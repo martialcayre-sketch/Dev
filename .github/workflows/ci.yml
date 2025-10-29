@@ -1,0 +1,19 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: ["main"]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+      - run: npm i -g pnpm
+      - run: pnpm i --frozen-lockfile=false
+      - run: pnpm -F web lint || true
+      - run: pnpm -F web test || true
+      - run: pnpm -F web build
+

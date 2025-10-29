@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run prettier/eslint on staged files
+pnpm lint-staged || exit 1
+# Run full lint and any package tests
+pnpm -w lint || exit 1
+pnpm -w -r --if-present test || exit 1

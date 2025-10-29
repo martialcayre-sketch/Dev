@@ -1,0 +1,17 @@
+node_modules
+pnpm-lock.yaml
+**/node_modules
+**/.next
+**/dist
+**/out
+**/.expo
+**/.expo-shared
+.git
+.github
+.devcontainer
+Dockerfile
+docker-compose.yml
+**/.env*
+**/sa.json
+firebase-debug.log
+
