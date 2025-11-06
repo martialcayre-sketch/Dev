@@ -28,7 +28,7 @@ const DEFAULT_QUESTIONNAIRES: QuestionnaireTemplate[] = [
     title: 'Mode de vie – 7 Sphères Vitales',
     category: 'Mode de vie SIIN',
     description:
-      'Évaluez votre mode de vie selon 7 dimensions clés : sommeil, rythme, stress, activité physique, toxiques, relations sociales et alimentation',
+      'Évaluez votre mode de vie selon 6 dimensions clés : physique, émotionnelle, mentale, sociale, spirituelle et environnementale',
   },
   {
     id: 'alimentaire',

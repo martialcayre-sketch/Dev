@@ -14,6 +14,7 @@ export { questionnaire_troubles_fonctionnels_digestifs_et_intestinaux_def_my_et_
 export { tinetti } from './questionnaires/gerontologie/tinetti';
 
 // mode-de-vie
+export { life_journey } from './questionnaires/mode-de-vie/life-journey';
 export { mode_de_vie } from './questionnaires/mode-de-vie/mode-de-vie';
 // alimentation
 export { alimentaire } from './questionnaires/alimentaire/alimentaire';
@@ -65,6 +66,7 @@ import { questionnaire_cancero_qlq_br23_def_pro } from './questionnaires/cancero
 import { questionnaire_cancero_qlq_c30_def_pro } from './questionnaires/cancerologie/questionnaire-cancero-qlq-c30-def-pro';
 import { questionnaire_troubles_fonctionnels_digestifs_et_intestinaux_def_my_et_pro } from './questionnaires/gastro-enterologie/questionnaire-troubles-fonctionnels-digestifs-et-intestinaux-def-my-et-pro';
 import { tinetti } from './questionnaires/gerontologie/tinetti';
+import { life_journey } from './questionnaires/mode-de-vie/life-journey';
 import { mode_de_vie } from './questionnaires/mode-de-vie/mode-de-vie';
 import { auto_anxiete_def_pro } from './questionnaires/neuro-psychologie/auto-anxiete-def-pro';
 import { dependance_a_internet_def_pro } from './questionnaires/neuro-psychologie/dependance-a-internet-def-pro';
@@ -103,6 +105,7 @@ export function getAllQuestionnaires(): Questionnaire[] {
     questionnaire_troubles_fonctionnels_digestifs_et_intestinaux_def_my_et_pro,
     tinetti,
     mode_de_vie,
+    life_journey,
     alimentaire,
     auto_anxiete_def_pro,
     dependance_a_internet_def_pro,

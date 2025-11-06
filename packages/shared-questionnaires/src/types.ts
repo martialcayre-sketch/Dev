@@ -1,7 +1,13 @@
 /**
  * Type de question dans un questionnaire
  */
-export type QuestionType = 'select' | 'number' | 'textarea' | 'scale' | 'multiple-choice';
+export type QuestionType =
+  | 'select'
+  | 'number'
+  | 'textarea'
+  | 'scale'
+  | 'slider'
+  | 'multiple-choice';
 
 /**
  * Schéma de couleur pour les questions d'échelle
@@ -45,6 +51,13 @@ export interface Question {
   minLabel?: string;
   maxLabel?: string;
 
+  // Pour les questions slider
+  min?: number;
+  max?: number;
+  step?: number;
+  defaultValue?: number;
+  labels?: Record<number, string>;
+
   // Pour les questions à choix
   options?: string[] | QuestionOption[];
 
@@ -74,6 +87,7 @@ export type MedicalCategory =
   | 'gastro-enterologie'
   | 'gerontologie'
   | 'mode-de-vie'
+  | 'mode-de-vie-siin'
   | 'neuro-psychologie'
   | 'pediatrie'
   | 'pneumologie'
