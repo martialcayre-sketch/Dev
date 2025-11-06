@@ -1,5 +1,7 @@
 # NeuroNutrition App - Context & Structure
 
+> **Dernière mise à jour:** 6 novembre 2025 - Intégration Life Journey + Scripts de migration
+
 ## 📋 Project Overview
 
 **Name:** NeuroNutrition App  
@@ -10,6 +12,29 @@
 **Database:** Firestore  
 **Authentication:** Firebase Auth (Email, Google, Facebook, LinkedIn)  
 **Functions:** Node.js 20 (2nd Gen Cloud Functions)
+
+## 🔄 Recent Changes (Nov 6, 2025)
+
+### Life Journey Questionnaire Integration
+
+- ✅ **Nouveau questionnaire** : Life Journey (6 sphères) remplace mode-de-vie
+- ✅ **Assignation automatique** : Inclus dans les 4 questionnaires par défaut
+- ✅ **Type system étendu** : Support des questions `slider` (0-100)
+- ✅ **Déploiement complet** : Cloud Functions + apps patient/praticien
+- ⚠️ **Migration requise** : Les patients existants nécessitent une mise à jour
+
+### Scripts de Migration Disponibles
+
+Pour mettre à jour les patients existants avec le nouveau questionnaire :
+
+```powershell
+cd C:\Dev
+.\scripts\migrate-mode-de-vie-to-life-journey.ps1
+```
+
+📚 **Documentation détaillée** :
+- [LIFE_JOURNEY_INTEGRATION.md](./LIFE_JOURNEY_INTEGRATION.md) - Vue d'ensemble technique
+- [MIGRATION_PATIENTS_LIFE_JOURNEY.md](./MIGRATION_PATIENTS_LIFE_JOURNEY.md) - Guide de migration complet
 
 ## 🏗️ Architecture
 
