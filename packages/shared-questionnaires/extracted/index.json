@@ -1,0 +1,255 @@
+{
+  "total_questionnaires": 32,
+  "categories": {
+    "alimentaire": {
+      "total": 4,
+      "processed": 0
+    },
+    "cancerologie": {
+      "total": 2,
+      "processed": 2
+    },
+    "cardiologie": {
+      "total": 1,
+      "processed": 0
+    },
+    "gastro-enterologie": {
+      "total": 3,
+      "processed": 1
+    },
+    "gerontologie": {
+      "total": 2,
+      "processed": 1
+    },
+    "mode de vie": {
+      "total": 3,
+      "processed": 0
+    },
+    "neuro-psychologie": {
+      "total": 22,
+      "processed": 13
+    },
+    "pneumologie": {
+      "total": 1,
+      "processed": 1
+    },
+    "pédiatrie": {
+      "total": 3,
+      "processed": 3
+    },
+    "rhumatologie": {
+      "total": 2,
+      "processed": 2
+    },
+    "sommeil": {
+      "total": 8,
+      "processed": 4
+    },
+    "stress": {
+      "total": 6,
+      "processed": 3
+    },
+    "tabacologie": {
+      "total": 5,
+      "processed": 2
+    },
+    "urologie": {
+      "total": 2,
+      "processed": 0
+    }
+  },
+  "questionnaires": [
+    {
+      "id": "questionnaire-cancero-qlq-br23-def-pro",
+      "title": "Questionnaire QLQ-BR23",
+      "category": "cancerologie",
+      "question_count": 23
+    },
+    {
+      "id": "questionnaire-cancero-qlq-c30-def-pro",
+      "title": "Questionnaire QLQ-C30",
+      "category": "cancerologie",
+      "question_count": 30
+    },
+    {
+      "id": "questionnaire-troubles-fonctionnels-digestifs-et-intestinaux-def-my-et-pro",
+      "title": "Questionnaire :",
+      "category": "gastro-enterologie",
+      "question_count": 5
+    },
+    {
+      "id": "Tinetti",
+      "title": "NOM : Date :",
+      "category": "gerontologie",
+      "question_count": 9
+    },
+    {
+      "id": "auto-anxiete-def-pro",
+      "title": "Questionnaire d’auto-évaluation de l’anxiété",
+      "category": "neuro-psychologie",
+      "question_count": 11
+    },
+    {
+      "id": "dependance-a-internet-def-pro",
+      "title": "Questionnaire :",
+      "category": "neuro-psychologie",
+      "question_count": 20
+    },
+    {
+      "id": "echelle-ecab-def-pro",
+      "title": "Questionnaire",
+      "category": "neuro-psychologie",
+      "question_count": 10
+    },
+    {
+      "id": "grille-de-zarit-mesure-de-la-charge-des-proches-aidants-def-pro",
+      "title": "Questionnaire :",
+      "category": "neuro-psychologie",
+      "question_count": 22
+    },
+    {
+      "id": "hamilton-def-pro",
+      "title": "Questionnaire :",
+      "category": "neuro-psychologie",
+      "question_count": 72
+    },
+    {
+      "id": "hit-de-patients-migraineux-def-pro",
+      "title": "Questionnaire HIT de patients migraineux",
+      "category": "neuro-psychologie",
+      "question_count": 6
+    },
+    {
+      "id": "hypersensibilite-au-deficit-en-magnesium-def-pro",
+      "title": "Questionnaire",
+      "category": "neuro-psychologie",
+      "question_count": 13
+    },
+    {
+      "id": "maladie-dalzheimer-def-pro",
+      "title": "Questionnaire :",
+      "category": "neuro-psychologie",
+      "question_count": 21
+    },
+    {
+      "id": "mini-mental-state-examination-mmse-def-pro",
+      "title": "Mini Mental State Examination (MMSE)",
+      "category": "neuro-psychologie",
+      "question_count": 30
+    },
+    {
+      "id": "questionnaire-audit-alcool-def-pro",
+      "title": "Questionnaire AUDIT :",
+      "category": "neuro-psychologie",
+      "question_count": 10
+    },
+    {
+      "id": "questionnaire-de-scoff-def-pro",
+      "title": "Questionnaire :",
+      "category": "neuro-psychologie",
+      "question_count": 5
+    },
+    {
+      "id": "questionnaire-reperage-des-troubles-dementiels-def-pro",
+      "title": "Questionnaire :",
+      "category": "neuro-psychologie",
+      "question_count": 10
+    },
+    {
+      "id": "upps-impulsivite-def-pro",
+      "title": "Questionnaire :",
+      "category": "neuro-psychologie",
+      "question_count": 45
+    },
+    {
+      "id": "questionnaire-bpco-def-pro",
+      "title": "Questionnaire BPCO",
+      "category": "pneumologie",
+      "question_count": 11
+    },
+    {
+      "id": "conners-enseignant-version2-courte",
+      "title": "Questionnaire de Conners pour les enseignants CTRS-R:S",
+      "category": "pédiatrie",
+      "question_count": 28
+    },
+    {
+      "id": "echelle-de-conners-tdah-interpretation",
+      "title": "Conners 3 Update",
+      "category": "pédiatrie",
+      "question_count": 3
+    },
+    {
+      "id": "echelle-de-matinalite-vesperalite-pour-l-enfant-def-pro",
+      "title": "Questionnaire :",
+      "category": "pédiatrie",
+      "question_count": 10
+    },
+    {
+      "id": "first-def-pro",
+      "title": "Questionnaire FiRST",
+      "category": "rhumatologie",
+      "question_count": 6
+    },
+    {
+      "id": "mesure-de-limpact-de-la-fibromyalgie-def-pro",
+      "title": "Questionnaire de mesure de l’impact de la",
+      "category": "rhumatologie",
+      "question_count": 10
+    },
+    {
+      "id": "echelle-de-somnolence-depsworth-my-et-pro-ok",
+      "title": "Questionnaire",
+      "category": "sommeil",
+      "question_count": 8
+    },
+    {
+      "id": "echelle-syndrome-des-jambes-sans-repos-irls-def-pro",
+      "title": "Questionnaire",
+      "category": "sommeil",
+      "question_count": 10
+    },
+    {
+      "id": "questionnaire-chronotype-de-horn-def-my-et-pro",
+      "title": "Questionnaire :",
+      "category": "sommeil",
+      "question_count": 19
+    },
+    {
+      "id": "questionnaire-de-berlin-apnee-du-sommeil-def-pro",
+      "title": "Questionnaire :",
+      "category": "sommeil",
+      "question_count": 13
+    },
+    {
+      "id": "questionnaire-de-stress-de-cungi-def-pro",
+      "title": "Questionnaire :",
+      "category": "stress",
+      "question_count": 2
+    },
+    {
+      "id": "questionnaire-echelle-devaluation-bms-burn-out-def-pro",
+      "title": "Questionnaire :",
+      "category": "stress",
+      "question_count": 3
+    },
+    {
+      "id": "questionnaire-echelle-devaluation-dass-21-pp-pro",
+      "title": "Questionnaire :",
+      "category": "stress",
+      "question_count": 21
+    },
+    {
+      "id": "questionnaire-dependance-au-cannabis-def-pro",
+      "title": "Questionnaire :",
+      "category": "tabacologie",
+      "question_count": 16
+    },
+    {
+      "id": "questionnaire-di-franza-nicotine-def-pro",
+      "title": "Questionnaire : Test de Di Franza",
+      "category": "tabacologie",
+      "question_count": 10
+    }
+  ]
+}

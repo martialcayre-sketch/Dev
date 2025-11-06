@@ -1,3 +1,0 @@
-Note: This route resolves a username to an email from Firestore users collection.
-It returns 404 if not found. The real implementation lives beside this file.
-

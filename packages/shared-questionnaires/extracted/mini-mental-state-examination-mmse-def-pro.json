@@ -1,0 +1,220 @@
+{
+  "id": "mini-mental-state-examination-mmse-def-pro",
+  "title": "Mini Mental State Examination (MMSE)",
+  "category": "neuro-psychologie",
+  "filename": "mini-mental-state-examination-mmse-def-pro.pdf",
+  "questions": [
+    {
+      "id": "q1",
+      "label": "Quelle année sommes-nous ?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q2",
+      "label": "En quelle saison ?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q3",
+      "label": "En quel mois ?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q4",
+      "label": "Quel jour du mois ?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q5",
+      "label": "Quel jour de la semaine ?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q6",
+      "label": "Quel est le nom de l’hôpital où nous",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q7",
+      "label": "Dans quelle ville se trouve-t-il ?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q8",
+      "label": "Quel est le nom du département dans",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q9",
+      "label": "Dans quelle province ou région est situé",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q10",
+      "label": "A quel étage sommes-nous ?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q11",
+      "label": "Cigare Citron Fauteuil",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q12",
+      "label": "Fleur ou Clé ou Tulipe",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q13",
+      "label": "Porte Ballon Canard",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q14",
+      "label": "93",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q15",
+      "label": "86",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q16",
+      "label": "79",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q17",
+      "label": "72",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q18",
+      "label": "65",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q19",
+      "label": "Cigare Citron Fauteuil",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q20",
+      "label": "Fleur ou Clé ou Tulipe",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q21",
+      "label": "Porte Ballon Canard",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q22",
+      "label": "Quel est le nom de cet objet ?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q23",
+      "label": "Quel est le nom de cet objet ?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q24",
+      "label": "PAS DE MAIS, DE SI, NI DE ET",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q25",
+      "label": "Prenez cette feuille de papier avec votre",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q26",
+      "label": "Pliez-la en deux",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q27",
+      "label": "Et jetez-la par terre",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q28",
+      "label": "« Faites ce qui est écrit. »",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q29",
+      "label": "« Voulez-vous m’écrire une phrase, ce",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q30",
+      "label": "« Voulez-vous recopier ce dessin. »",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    }
+  ],
+  "extracted_text_length": 2839,
+  "source": "ocr"
+}

@@ -1,7 +1,7 @@
-import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
-import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
+import { getApps, initializeApp } from 'firebase/app';
+import { connectAuthEmulator, getAuth } from 'firebase/auth';
+import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
+import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -18,9 +18,9 @@ export const functions = getFunctions(app, 'europe-west1');
 
 // Connect to Firebase Emulators in development
 if (import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true') {
-  connectAuthEmulator(auth, 'http://127.0.0.1:9098', { disableWarnings: true });
-  connectFirestoreEmulator(db, '127.0.0.1', 8081);
-  connectFunctionsEmulator(functions, '127.0.0.1', 5002);
+  connectAuthEmulator(auth, 'http://127.0.0.1:5004', { disableWarnings: true });
+  connectFirestoreEmulator(db, '127.0.0.1', 5003);
+  connectFunctionsEmulator(functions, '127.0.0.1', 5006);
   console.log('🔥 Firebase Emulators connected');
 }
 

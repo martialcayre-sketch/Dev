@@ -1,0 +1,143 @@
+{
+  "id": "questionnaire-chronotype-de-horn-def-my-et-pro",
+  "title": "Questionnaire :",
+  "category": "sommeil",
+  "filename": "questionnaire-chronotype-de-horn-def-my-et-pro.pdf",
+  "questions": [
+    {
+      "id": "q1",
+      "label": "Si vous étiez entièrement libre de planifier votre journée, à quelle heure environ vous",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q2",
+      "label": "Si vous étiez entièrement libre de planifier votre soirée, à quelle heure environ",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q3",
+      "label": "Lorsque vous devez vous lever à une heure spécifique le matin, à quel point",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q4",
+      "label": "Comment trouvez-vous le fait de vous lever le matin (quand vous n’êtes pas réveillé(e)",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q5",
+      "label": "Comment vous sentez-vous durant la première demi-heure suivant votre réveil le matin?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q6",
+      "label": "Comment est votre appétit durant la première demi-heure suivant votre réveil ?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q7",
+      "label": "Durant la première demi-heure suivant votre réveil le matin, comment vous sentez-vous ?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q8",
+      "label": "Lorsque vous n'avez aucun engagement le lendemain, à quelle heure vous couchez-vous par",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q9",
+      "label": "Vous avez décidé de faire du sport 2 fois par semaine avec un(e) ami(e) qui est disponible",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q10",
+      "label": "Dans la soirée, à quelle heure environ vous sentez-vous fatigué et éprouvez-vous le besoin",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q11",
+      "label": "Vous voulez atteindre votre meilleure performance dans un test qui, vous le savez, sera",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q12",
+      "label": "Si vous allez vous coucher à 23h00, à quel point vous sentirez-vous fatigué(e)?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q13",
+      "label": "Si vous vous couchez quelques heures plus tard que d'habitude et que vous n'avez aucune",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q14",
+      "label": "Vous devez rester réveillé(e) entre 4h00 et 6h00 du matin pour une garde de nuit et vous",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q15",
+      "label": "Vous devez faire 2 heures de travail physique intense et vous êtes entièrement libre de",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q16",
+      "label": "Vous avez décidé de faire du sport 2 fois par semaine avec un(e) ami(e) qui est disponible",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q17",
+      "label": "Supposons que vous puissiez choisir vos propres heures de travail, que vous travailliez",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q18",
+      "label": "À quelle heure environ vous sentez-vous dans votre meilleure forme ?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q19",
+      "label": "On parle de gens \"du matin\" (ou \"lève-tôt\") et de gens \"du soir\" (ou \"couche-tard\").",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    }
+  ],
+  "extracted_text_length": 8265,
+  "source": "ocr"
+}

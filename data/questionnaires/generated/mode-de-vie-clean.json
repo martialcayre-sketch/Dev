@@ -1,0 +1,651 @@
+{
+  "id": "mode-de-vie",
+  "title": "Questionnaire contextuel de mode de vie",
+  "category": "Mode de vie",
+  "description": "Évaluez votre mode de vie sur 7 axes principaux",
+  "sections": [
+    {
+      "id": "sommeil",
+      "title": "Votre sommeil",
+      "questions": [
+        {
+          "id": "sommeil_qualit_du_sommeil",
+          "label": "Qualité du sommeil",
+          "type": "select",
+          "options": [
+            "Je dors très bien (10 pts)",
+            "Je dors bien (8 pts)",
+            "Je dors moyennement (5 pts)",
+            "Je dors mal (2 pts)",
+            "Je dors très mal (0 pts)"
+          ],
+          "points": [
+            10,
+            8,
+            5,
+            2,
+            0
+          ]
+        },
+        {
+          "id": "sommeil_dur_e_du_sommeil",
+          "label": "Durée du sommeil",
+          "type": "select",
+          "options": [
+            "Plus de 8h par nuit (10 pts)",
+            "7-8h par nuit (8 pts)",
+            "6-7h par nuit (5 pts)",
+            "5-6h par nuit (2 pts)",
+            "Moins de 5h par nuit (0 pts)"
+          ],
+          "points": [
+            10,
+            8,
+            5,
+            2,
+            0
+          ]
+        },
+        {
+          "id": "sommeil_endormissement",
+          "label": "Endormissement",
+          "type": "select",
+          "options": [
+            "Je m'endors facilement (< 15 min) (10 pts)",
+            "Je m'endors assez facilement (15-30 min) (7 pts)",
+            "J'ai des difficultés d'endormissement (30-60 min) (3 pts)",
+            "J'ai beaucoup de difficultés (> 60 min) (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "sommeil_r_veils_nocturnes",
+          "label": "Réveils nocturnes",
+          "type": "select",
+          "options": [
+            "Jamais ou rarement (10 pts)",
+            "Parfois (1-2 fois par semaine) (7 pts)",
+            "Souvent (3-5 fois par semaine) (3 pts)",
+            "Toutes les nuits (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "sommeil_r_veil_matinal",
+          "label": "Réveil matinal",
+          "type": "select",
+          "options": [
+            "Je me réveille frais et reposé (10 pts)",
+            "Je me réveille assez reposé (7 pts)",
+            "Je me réveille fatigué (3 pts)",
+            "Je me réveille très fatigué (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rythme-biologique",
+      "title": "Votre rythme biologique",
+      "questions": [
+        {
+          "id": "rythme-biologique_horaires_de_coucher",
+          "label": "Horaires de coucher",
+          "type": "select",
+          "options": [
+            "Réguliers (tous les jours à la même heure ±30min) (10 pts)",
+            "Assez réguliers (±1h) (7 pts)",
+            "Irréguliers (±2h) (3 pts)",
+            "Très irréguliers (> 2h de variation) (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "rythme-biologique_horaires_de_lever",
+          "label": "Horaires de lever",
+          "type": "select",
+          "options": [
+            "Réguliers (tous les jours ±30min) (10 pts)",
+            "Assez réguliers (±1h) (7 pts)",
+            "Irréguliers (±2h) (3 pts)",
+            "Très irréguliers (> 2h) (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "rythme-biologique_exposition_la_lumi_re_naturelle",
+          "label": "Exposition à la lumière naturelle",
+          "type": "select",
+          "options": [
+            "Plus de 2h par jour en extérieur (10 pts)",
+            "1-2h par jour (7 pts)",
+            "30min-1h par jour (3 pts)",
+            "Moins de 30min par jour (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "rythme-biologique_exposition_aux_crans_le_soir",
+          "label": "Exposition aux écrans le soir",
+          "type": "select",
+          "options": [
+            "Jamais après 20h (10 pts)",
+            "Rarement (jusqu'à 21h) (7 pts)",
+            "Souvent (jusqu'à 22h) (3 pts)",
+            "Très souvent (après 22h) (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "rythme-biologique_repas_du_soir",
+          "label": "Repas du soir",
+          "type": "select",
+          "options": [
+            "Avant 19h30 (10 pts)",
+            "Entre 19h30 et 20h30 (7 pts)",
+            "Entre 20h30 et 21h30 (3 pts)",
+            "Après 21h30 (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "id": "adaptation-stress",
+      "title": "Votre adaptation et le stress",
+      "questions": [
+        {
+          "id": "adaptation-stress_niveau_de_stress_ressenti",
+          "label": "Niveau de stress ressenti",
+          "type": "select",
+          "options": [
+            "Très faible ou absent (10 pts)",
+            "Faible (7 pts)",
+            "Modéré (5 pts)",
+            "Élevé (2 pts)",
+            "Très élevé (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            5,
+            2,
+            0
+          ]
+        },
+        {
+          "id": "adaptation-stress_gestion_du_stress",
+          "label": "Gestion du stress",
+          "type": "select",
+          "options": [
+            "Très bonne (techniques de relaxation régulières) (10 pts)",
+            "Bonne (je gère bien) (7 pts)",
+            "Moyenne (difficultés occasionnelles) (3 pts)",
+            "Mauvaise (je suis souvent dépassé) (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "adaptation-stress_anxi_t",
+          "label": "Anxiété",
+          "type": "select",
+          "options": [
+            "Jamais ou rarement anxieux (10 pts)",
+            "Parfois anxieux (7 pts)",
+            "Souvent anxieux (3 pts)",
+            "Toujours ou presque toujours anxieux (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "adaptation-stress_situations_stressantes",
+          "label": "Situations stressantes",
+          "type": "select",
+          "options": [
+            "Rares (< 1 fois par semaine) (10 pts)",
+            "Occasionnelles (1-2 fois par semaine) (7 pts)",
+            "Fréquentes (3-5 fois par semaine) (3 pts)",
+            "Quotidiennes ou plus (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "adaptation-stress_r_cup_ration_apr_s_stress",
+          "label": "Récupération après stress",
+          "type": "select",
+          "options": [
+            "Rapide (< 1h) (10 pts)",
+            "Moyenne (1-3h) (7 pts)",
+            "Lente (plusieurs heures) (3 pts)",
+            "Très lente (plusieurs jours) (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "id": "activite-physique",
+      "title": "Votre activité physique",
+      "questions": [
+        {
+          "id": "activite-physique_fr_quence_d_activit_physique",
+          "label": "Fréquence d'activité physique",
+          "type": "select",
+          "options": [
+            "5 fois ou plus par semaine (10 pts)",
+            "3-4 fois par semaine (7 pts)",
+            "1-2 fois par semaine (3 pts)",
+            "Jamais ou presque jamais (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "activite-physique_dur_e_des_s_ances",
+          "label": "Durée des séances",
+          "type": "select",
+          "options": [
+            "Plus de 60 minutes (10 pts)",
+            "30-60 minutes (7 pts)",
+            "15-30 minutes (3 pts)",
+            "Moins de 15 minutes (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "activite-physique_intensit_de_l_effort",
+          "label": "Intensité de l'effort",
+          "type": "select",
+          "options": [
+            "Intensive (essoufflement, transpiration) (10 pts)",
+            "Modérée (effort soutenu) (7 pts)",
+            "Légère (marche tranquille) (3 pts)",
+            "Très légère (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "activite-physique_activit_quotidienne",
+          "label": "Activité quotidienne",
+          "type": "select",
+          "options": [
+            "Très actif (> 10000 pas/jour) (10 pts)",
+            "Actif (7000-10000 pas/jour) (7 pts)",
+            "Peu actif (5000-7000 pas/jour) (3 pts)",
+            "Sédentaire (< 5000 pas/jour) (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "activite-physique_position_assise",
+          "label": "Position assise",
+          "type": "select",
+          "options": [
+            "Moins de 4h par jour (10 pts)",
+            "4-6h par jour (7 pts)",
+            "6-8h par jour (3 pts)",
+            "Plus de 8h par jour (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "id": "exposition-toxiques",
+      "title": "Votre exposition aux toxiques",
+      "questions": [
+        {
+          "id": "exposition-toxiques_tabac",
+          "label": "Tabac",
+          "type": "select",
+          "options": [
+            "Non-fumeur (10 pts)",
+            "Ex-fumeur (> 1 an) (7 pts)",
+            "Fumeur occasionnel (< 5 cig/jour) (2 pts)",
+            "Fumeur régulier (≥ 5 cig/jour) (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            2,
+            0
+          ]
+        },
+        {
+          "id": "exposition-toxiques_alcool",
+          "label": "Alcool",
+          "type": "select",
+          "options": [
+            "Jamais ou très occasionnel (10 pts)",
+            "Modéré (1-2 verres/semaine) (7 pts)",
+            "Régulier (3-7 verres/semaine) (3 pts)",
+            "Important (> 7 verres/semaine) (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "exposition-toxiques_exposition_professionnelle",
+          "label": "Exposition professionnelle",
+          "type": "select",
+          "options": [
+            "Aucune exposition (10 pts)",
+            "Exposition faible (7 pts)",
+            "Exposition modérée (3 pts)",
+            "Exposition importante (produits chimiques, pesticides...) (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "exposition-toxiques_produits_m_nagers",
+          "label": "Produits ménagers",
+          "type": "select",
+          "options": [
+            "Produits naturels/bio uniquement (10 pts)",
+            "Mélange naturel et conventionnel (7 pts)",
+            "Produits conventionnels (3 pts)",
+            "Produits chimiques puissants (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "exposition-toxiques_pollution_de_l_air",
+          "label": "Pollution de l'air",
+          "type": "select",
+          "options": [
+            "Campagne/air pur (10 pts)",
+            "Petite ville (7 pts)",
+            "Grande ville (3 pts)",
+            "Zone très polluée/industrielle (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "id": "relation-autres",
+      "title": "Votre relation aux autres",
+      "questions": [
+        {
+          "id": "relation-autres_vie_sociale",
+          "label": "Vie sociale",
+          "type": "select",
+          "options": [
+            "Très riche (sorties/activités régulières) (10 pts)",
+            "Riche (plusieurs fois par semaine) (7 pts)",
+            "Modérée (1 fois par semaine) (3 pts)",
+            "Pauvre ou isolement (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "relation-autres_qualit_des_relations",
+          "label": "Qualité des relations",
+          "type": "select",
+          "options": [
+            "Excellentes relations (soutien, écoute) (10 pts)",
+            "Bonnes relations (7 pts)",
+            "Relations moyennes (quelques conflits) (3 pts)",
+            "Relations difficiles (conflits fréquents) (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "relation-autres_vie_de_couple_famille",
+          "label": "Vie de couple/famille",
+          "type": "select",
+          "options": [
+            "Très épanouissante (10 pts)",
+            "Épanouissante (7 pts)",
+            "Correcte (3 pts)",
+            "Difficile ou seul(e) (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "relation-autres_activit_s_sociales",
+          "label": "Activités sociales",
+          "type": "select",
+          "options": [
+            "Associations, clubs, bénévolat régulier (10 pts)",
+            "Activités occasionnelles (7 pts)",
+            "Rares activités sociales (3 pts)",
+            "Aucune activité sociale (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "relation-autres_communication",
+          "label": "Communication",
+          "type": "select",
+          "options": [
+            "Je communique facilement et ouvertement (10 pts)",
+            "Je communique assez bien (7 pts)",
+            "J'ai des difficultés à communiquer (3 pts)",
+            "Je ne communique pas ou très peu (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mode-alimentaire",
+      "title": "Votre mode alimentaire",
+      "questions": [
+        {
+          "id": "mode-alimentaire_r_gularit_des_repas",
+          "label": "Régularité des repas",
+          "type": "select",
+          "options": [
+            "3 repas réguliers par jour (10 pts)",
+            "3 repas avec horaires variables (7 pts)",
+            "2 repas par jour (3 pts)",
+            "Repas irréguliers ou grignotage (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "mode-alimentaire_petit_d_jeuner",
+          "label": "Petit-déjeuner",
+          "type": "select",
+          "options": [
+            "Complet et équilibré tous les jours (10 pts)",
+            "Complet la plupart du temps (7 pts)",
+            "Léger ou occasionnel (3 pts)",
+            "Pas de petit-déjeuner (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "mode-alimentaire_cuisine_maison",
+          "label": "Cuisine maison",
+          "type": "select",
+          "options": [
+            "Tous les jours (10 pts)",
+            "5-6 fois par semaine (7 pts)",
+            "2-4 fois par semaine (3 pts)",
+            "Rarement ou jamais (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "mode-alimentaire_produits_frais_et_de_saison",
+          "label": "Produits frais et de saison",
+          "type": "select",
+          "options": [
+            "Toujours ou presque (10 pts)",
+            "Souvent (7 pts)",
+            "Parfois (3 pts)",
+            "Rarement (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        },
+        {
+          "id": "mode-alimentaire_grignotage",
+          "label": "Grignotage",
+          "type": "select",
+          "options": [
+            "Jamais (10 pts)",
+            "Rarement (< 1 fois/semaine) (7 pts)",
+            "Occasionnel (2-3 fois/semaine) (3 pts)",
+            "Fréquent (quotidien) (0 pts)"
+          ],
+          "points": [
+            10,
+            7,
+            3,
+            0
+          ]
+        }
+      ]
+    }
+  ]
+}

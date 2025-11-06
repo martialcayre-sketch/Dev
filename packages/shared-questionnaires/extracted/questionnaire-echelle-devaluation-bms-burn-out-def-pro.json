@@ -1,0 +1,31 @@
+{
+  "id": "questionnaire-echelle-devaluation-bms-burn-out-def-pro",
+  "title": "Questionnaire :",
+  "category": "stress",
+  "filename": "questionnaire-echelle-devaluation-bms-burn-out-def-pro.pdf",
+  "questions": [
+    {
+      "id": "q2",
+      "label": "5 – 3.4 Faible",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q3",
+      "label": "5 – 4.4 Modéré",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q4",
+      "label": "5 – 5.4 Elevé",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    }
+  ],
+  "extracted_text_length": 1802,
+  "source": "ocr"
+}

@@ -1,0 +1,96 @@
+{
+  "id": "Tinetti",
+  "title": "NOM : Date :",
+  "category": "gerontologie",
+  "filename": "Tinetti.pdf",
+  "questions": [
+    {
+      "id": "q1",
+      "label": "équilibre en - penche ou s’affale 0 10. se mettre en - hésitation ou diverses 0",
+      "type": "select",
+      "options": [
+        "position assise stable et sûre 1 11. longueur et",
+        "dépasse le pied G au repos"
+      ],
+      "points": null
+    },
+    {
+      "id": "q2",
+      "label": "se mettre - impossible sans aide 0 - ne se détache pas du sol 0",
+      "type": "select",
+      "options": [
+        "possible à l’aide d’un appui des 1 - ne dépasse pas le pied D au 0",
+        "possible sans l’aide d’un appui 2 - ne se détache pas du sol 0"
+      ],
+      "points": null
+    },
+    {
+      "id": "q3",
+      "label": "tentatives pour - impossible sans aide 0 12. symétrie du - inégalité des pas G et D 0",
+      "type": "select",
+      "options": [
+        "possible après 1 tentative 2"
+      ],
+      "points": null
+    },
+    {
+      "id": "q4",
+      "label": "équilibre debout - instable (vacille, bouge les 0 13. continuité du - arrêts ou discontinuité des pas 0",
+      "type": "select",
+      "options": [
+        "stable avec appui 1 1",
+        "stable sans le moindre appui 2"
+      ],
+      "points": null
+    },
+    {
+      "id": "q5",
+      "label": "équilibre debout - instable 0 14. marche - nette déviance 0",
+      "type": "select",
+      "options": [
+        "stable, écart entre les pieds > déviante - déviance moyenne ou 1"
+      ],
+      "points": null
+    },
+    {
+      "id": "q6",
+      "label": "poussée sur le - commence à vaciller 0 15. tronc - mouvement prononcé du tronc 0",
+      "type": "select",
+      "options": [
+        "pas de mouvement du tronc",
+        "droit sans aide à la marche"
+      ],
+      "points": null
+    },
+    {
+      "id": "q7",
+      "label": "yeux fermés - instable 0 16. écartement - talons séparés 0",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q8",
+      "label": "rotation de 360° - petits pas irréguliers 0",
+      "type": "select",
+      "options": [
+        "petits pas réguliers 1",
+        "instable (vacille) 0",
+        "stable 1"
+      ],
+      "points": null
+    },
+    {
+      "id": "q9",
+      "label": "s’asseoir - peu sûr (tombe, calcule mal la 0",
+      "type": "select",
+      "options": [
+        "utilise les bras 2",
+        "mouvements sûrs et aisés"
+      ],
+      "points": null
+    }
+  ],
+  "extracted_text_length": 2886,
+  "source": "ocr"
+}

@@ -1,0 +1,164 @@
+{
+  "id": "grille-de-zarit-mesure-de-la-charge-des-proches-aidants-def-pro",
+  "title": "Questionnaire :",
+  "category": "neuro-psychologie",
+  "filename": "grille-de-zarit-mesure-de-la-charge-des-proches-aidants-def-pro.pdf",
+  "questions": [
+    {
+      "id": "q1",
+      "label": "Sentir que votre parent vous demande plus d’aide qu’il n’en a",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q2",
+      "label": "Sentir que le temps consacré à votre parent ne vous en laisse",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q3",
+      "label": "Vous sentir tiraillé entre les besoins à votre parent et vos",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q4",
+      "label": "Vous sentir embarrassé par le(s) comportement(s) de votre",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q5",
+      "label": "Vous sentir en colère quand vous êtes en présence de votre",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q6",
+      "label": "Sentir que votre parent nuit à vos relations avec d’autres",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q7",
+      "label": "Avoir peur de ce que l’avenir réserve à votre parent ?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q8",
+      "label": "Sentir que votre parent est dépendant de vous ?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q9",
+      "label": "Vous sentir tendu en présence de votre parent ?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q10",
+      "label": "Sentir que votre santé s’est détériorée à cause de votre",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q11",
+      "label": "Sentir que vous n’avez pas autant d’intimité que vous",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q12",
+      "label": "Sentir que votre vie sociale s’est détériorée du fait que vous",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q13",
+      "label": "Vous sentir mal à l’aise de recevoir des amis à cause de votre",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q14",
+      "label": "Sentir que votre parent semble s’attendre à ce que vous",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q15",
+      "label": "Sentir que vous n’avez pas assez d’argent pour prendre",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q16",
+      "label": "Sentir que vous ne serez plus capable de prendre soin de votre",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q17",
+      "label": "Sentir que vous avez perdu le contrôle de votre vie depuis la",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q18",
+      "label": "Souhaiter pouvoir laisser le soin de votre parent à quelqu’un",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q19",
+      "label": "Sentir que vous ne savez pas trop quoi faire pour votre parent ?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q20",
+      "label": "Sentir que vous devriez en faire plus pour votre parent ?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q21",
+      "label": "Sentir que vous pourriez donner de meilleurs soins à votre",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q22",
+      "label": "En fin de compte, vous arrive-t-il de sentir que les soins à",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    }
+  ],
+  "extracted_text_length": 2666,
+  "source": "ocr"
+}

@@ -1,0 +1,32 @@
+{"users": [
+{
+  "localId": "0qqlf0EMA0WMRiwgVr5nFUAb6Rf2",
+  "email": "martialcayre@live.fr",
+  "emailVerified": false,
+  "passwordHash": "TtWzAcKvpvM+G8HRl91qWlGIc87XAC9rm1GbUgeOLFZeCFC/xyI32DBe9u2YWS9+4k6uwjLVzcQ25jPnq4aAXA==",
+  "salt": "65M0f3bodhNAtw==",
+  "displayName": "martialcayre@live.fr",
+  "lastSignedInAt": "1761826909780",
+  "createdAt": "1761826896429",
+  "disabled": false,
+  "customAttributes": "{\"role\":\"patient\"}",
+  "providerUserInfo": []
+},
+{
+  "localId": "RJlOj8vuW6cNFZovcrHvF9yJcSG3",
+  "email": "martialcayre@gmail.com",
+  "emailVerified": true,
+  "displayName": "Martial CAYRE",
+  "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocKOmcNftZKXq-SwjgWX7Om2BYu62g6W-0UEIuP51S59kklpuxp-=s96-c",
+  "lastSignedInAt": "1761826880154",
+  "createdAt": "1761740681047",
+  "providerUserInfo": [
+    {
+      "providerId": "google.com",
+      "rawId": "104294274354184952487",
+      "email": "martialcayre@gmail.com",
+      "displayName": "Martial CAYRE",
+      "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocKOmcNftZKXq-SwjgWX7Om2BYu62g6W-0UEIuP51S59kklpuxp-=s96-c"
+    }
+  ]
+}]}

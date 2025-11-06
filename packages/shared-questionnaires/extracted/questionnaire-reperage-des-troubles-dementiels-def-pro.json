@@ -1,0 +1,80 @@
+{
+  "id": "questionnaire-reperage-des-troubles-dementiels-def-pro",
+  "title": "Questionnaire :",
+  "category": "neuro-psychologie",
+  "filename": "questionnaire-reperage-des-troubles-dementiels-def-pro.pdf",
+  "questions": [
+    {
+      "id": "q1",
+      "label": "Mémoire et rappel",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q2",
+      "label": "Orientation",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q3",
+      "label": "Capacités de prises de décision et de résolution de problèmes",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q4",
+      "label": "Activités à l'extérieur de la maison",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q5",
+      "label": "Fonctionnement à la maison et activités de loisirs",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q6",
+      "label": "Toilette et hygiène personnelle",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q7",
+      "label": "Changements de comportement et de personnalité",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q8",
+      "label": "Langage et capacités de communication",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q9",
+      "label": "Humeur",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q10",
+      "label": "Attention et concentration",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    }
+  ],
+  "extracted_text_length": 8709,
+  "source": "ocr"
+}

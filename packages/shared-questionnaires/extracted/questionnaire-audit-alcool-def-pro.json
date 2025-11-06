@@ -1,0 +1,80 @@
+{
+  "id": "questionnaire-audit-alcool-def-pro",
+  "title": "Questionnaire AUDIT :",
+  "category": "neuro-psychologie",
+  "filename": "questionnaire-audit-alcool-def-pro.pdf",
+  "questions": [
+    {
+      "id": "q1",
+      "label": "A quelle fréquence vous arrive-t‐il de Au moins 2 à 4x 2 à 3x 4 x ou plus",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q2",
+      "label": "Combien de verres standards buvez-",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q3",
+      "label": "Au cours d'une même occasion, Tous les",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q4",
+      "label": "Dans les 12 derniers mois, combien de Tous les",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q5",
+      "label": "Dans les 12 derniers mois, combien de Tous les",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q6",
+      "label": "Dans les 12 derniers mois, combien de Tous les",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q7",
+      "label": "Dans les 12 derniers mois, combien de Tous les",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q8",
+      "label": "Dans les 12 derniers mois, combien de Tous les",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q9",
+      "label": "Vous êtes-vous blessé ou avez-vous Oui mais Oui au",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q10",
+      "label": "Est-ce qu’un parent, un ami, un",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    }
+  ],
+  "extracted_text_length": 2516,
+  "source": "ocr"
+}

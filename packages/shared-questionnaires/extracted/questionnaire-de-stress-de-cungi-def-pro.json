@@ -1,0 +1,34 @@
+{
+  "id": "questionnaire-de-stress-de-cungi-def-pro",
+  "title": "Questionnaire :",
+  "category": "stress",
+  "filename": "questionnaire-de-stress-de-cungi-def-pro.pdf",
+  "questions": [
+    {
+      "id": "q1",
+      "label": "Comment le remplir ?",
+      "type": "select",
+      "options": [
+        "Chacun des items est un stresseur majeur",
+        "Cotation sur une échelle de 0 à 5"
+      ],
+      "points": null
+    },
+    {
+      "id": "q2",
+      "label": "Comment l’interpréter ?",
+      "type": "select",
+      "options": [
+        "Selon la somme des points obtenus :",
+        "Entre 0 et 9 : Niveau de stress très bas",
+        "Entre 10 et 15 : Niveau de stress bas",
+        "Entre 16 et 21 : Niveau de stress moyen",
+        "Entre 22 et 30 : Niveau de stress élevé",
+        "Au-dessus de 30 : Niveau de stress très élevé"
+      ],
+      "points": null
+    }
+  ],
+  "extracted_text_length": 2138,
+  "source": "ocr"
+}

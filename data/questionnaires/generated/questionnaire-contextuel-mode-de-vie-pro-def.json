@@ -1,0 +1,526 @@
+{
+  "title": "Questionnaire contextuel de mode de vie",
+  "sections": [
+    {
+      "title": "Votre mode D « Vos horloges",
+      "questions": []
+    },
+    {
+      "title": "Votre \\ AN Votre",
+      "questions": []
+    },
+    {
+      "title": "Votre Votre",
+      "questions": []
+    },
+    {
+      "title": "Votre sommeil",
+      "questions": [
+        {
+          "id": "estimez-vous-avoir-un-sommeil-satisfaisant-sommeil-satisfaisant-",
+          "label": "Estimez-vous avoir un sommeil satisfaisant ? sommeil satisfaisant | satisfaisant satisfaisant",
+          "type": "select",
+          "options": [],
+          "rawOptions": []
+        },
+        {
+          "id": "avez-vous-des-difficult-s-pour-vous-endormir-ou-pour-rester-aucu",
+          "label": "Avez-vous des difficultés pour vous endormir ou pour rester Aucune Légère Moyenne Importante Extrême",
+          "type": "select",
+          "options": [
+            "endormi ?                                                                              s.             :            2             À              ®",
+            "set",
+            "Variable",
+            "Vot",
+            "Ra                                    SPORE EL plutôt reposé",
+            "parfois encore",
+            "Encore fatigué",
+            "Tout à fait fatigué     QITE SCOTE"
+          ],
+          "rawOptions": [
+            "set",
+            "Variable",
+            "Vot",
+            "Ra                                    SPORE EL plutôt reposé",
+            "parfois encore",
+            "Encore fatigué",
+            "Tout à fait fatigué     QITE SCOTE"
+          ]
+        },
+        {
+          "id": "comment-vous-sentez-vous-le-matin-au-r-veil-pleine-forme-2-fatig",
+          "label": "Comment vous sentez-vous le matin au réveil? pleine forme 2 fatigué à ï",
+          "type": "select",
+          "options": [],
+          "rawOptions": []
+        }
+      ]
+    },
+    {
+      "title": "Votre score",
+      "questions": [
+        {
+          "id": "combien-d-heures-de-sommeil-avez-vous-en-moyenne-0-1-3-4",
+          "label": "Combien d'heures de sommeil avez-vous en moyenne? 0 1 > 3 4",
+          "type": "select",
+          "options": [
+            "< 5h30         5h30 à 6h30",
+            "6h30 à 7h30",
+            "7h30 à 8h30          > 8h30",
+            "Pas dutout",
+            "L         t [M           t Important      Ext         t",
+            "FERA                              bee et"
+          ],
+          "rawOptions": [
+            "< 5h30         5h30 à 6h30",
+            "6h30 à 7h30",
+            "7h30 à 8h30          > 8h30",
+            "Pas dutout",
+            "L         t [M           t Important      Ext         t"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Votre score sommeil =",
+      "questions": []
+    },
+    {
+      "title": "Votre rythme biologique",
+      "questions": [
+        {
+          "id": "le-soir-lorsque-je-ressens-l-envie-de-dormir-je-m-coute-et-je-qu",
+          "label": "Le soir lorsque je ressens l'envie de dormir je m'écoute et je Quitoujours |le plus souvent Fréquemment| très Variable ei Votre score",
+          "type": "select",
+          "options": [
+            "respecte mon rythme                                                                      d",
+            "2              È              r"
+          ],
+          "rawOptions": [
+            "respecte mon rythme                                                                      d",
+            "2              È              r"
+          ]
+        },
+        {
+          "id": "avez-vous-des-horaires-de-sommeil-r-guliers-heures-de-lever-et-o",
+          "label": "Avez-vous des horaires de sommeil réguliers ? (heures de lever et | Oui toujours nn vanne AN MG",
+          "type": "select",
+          "options": [
+            "FES FRSeREnt",
+            "régulier",
+            "sulier",
+            "irrégulier",
+            "de coucher régulières )"
+          ],
+          "rawOptions": [
+            "FES FRSeREnt",
+            "régulier",
+            "sulier",
+            "irrégulier",
+            "de coucher régulières )"
+          ]
+        },
+        {
+          "id": "dans-votre-m-tier-avez-vous-un-travail-post-un-travail-de-nuit-l",
+          "label": "Dans votre métier, avez-vous un travail posté, un travail de nuit, les | hén jamais |Très rarement Ne) Fréquemment | Régulièrement | Votre score",
+          "type": "select",
+          "options": [
+            "décalages horaires ?                                                                     8      6      |      Lu           2"
+          ],
+          "rawOptions": []
+        },
+        {
+          "id": "regardez-vous-des-crans-lumineux-le-soir-apr-s-20-heures-chaque-",
+          "label": "Regardez-vous des écrans lumineux le soir après 20 heures Chaque soir | PASieurs lois/ |Occasionnelle | Rarement Jarals Votre score",
+          "type": "select",
+          "options": [
+            "(téléphone, ordinateur, tablette)",
+            "——————  il) ES ES ns",
+            "Qulleplus (Oulaumains3) no       enr        Fi Tue"
+          ],
+          "rawOptions": [
+            "(téléphone, ordinateur, tablette)",
+            "——————  il) ES ES ns",
+            "Qulleplus (Oulaumains3) no       enr        Fi Tue"
+          ]
+        },
+        {
+          "id": "avez-vous-des-heures-de-sommeil-avant-minuit-da-souvent-sem-ar-r",
+          "label": "Avez-vous des heures de sommeil avant minuit? Da souvent */sem ar ru WT FOR OS",
+          "type": "select",
+          "options": [
+            "e           e"
+          ],
+          "rawOptions": []
+        }
+      ]
+    },
+    {
+      "title": "Votre score rythme biologique =",
+      "questions": []
+    },
+    {
+      "title": "Votre adaptation et le stress",
+      "questions": [
+        {
+          "id": "comment-r-agissez-vous-en-situation-de-stress-habituellement-tou",
+          "label": "Comment réagissez-vous en situation de stress habituellement ? toujours | plus souvent _— vulnérable dépassé",
+          "type": "select",
+          "options": [
+            "Je gère très bien",
+            "Je gère bien, le      RCE         Je me sens         le me sens"
+          ],
+          "rawOptions": [
+            "Je gère très bien",
+            "Je gère bien, le      RCE         Je me sens         le me sens"
+          ]
+        },
+        {
+          "id": "lors-de-situations-stressantes-impr-vues-ressentez-vous-des-trou",
+          "label": "Lors de situations stressantes imprévues, ressentez-vous des troubles) Toujours fréaugmment Qecesionnele Rarement Jamais Votre score",
+          "type": "select",
+          "options": [
+            "(palpitations, angoisse, insomnie, troubles digestifs.) ?                         ©              1             2             :              Ÿ",
+            "Rarement"
+          ],
+          "rawOptions": [
+            "Rarement"
+          ]
+        },
+        {
+          "id": "estimez-vous-que-votre-vie-personnelle-familiale-ou-professionne",
+          "label": "Estimez-vous que votre vie personnelle, familiale ou professionnelle ann et Ds nine Stress modéré| stressé, par à- | Peudestress | Votre score",
+          "type": "select",
+          "options": [
+            "est une source de stress ?                                                         È   0             ;            2           coups"
+          ],
+          "rawOptions": []
+        },
+        {
+          "id": "est-ce-que-vos-proches-ou-votre-entourage-disent-de-vous-que-vou",
+          "label": "Est-ce que vos proches ou votre entourage disent de vous que vous Toujours |. 4 Très . Qecestonnele Rarement Jamais Votre score",
+          "type": "select",
+          "options": [
+            "êtes une personne très stressée ?                                                  0         nt .      \"2            3"
+          ],
+          "rawOptions": []
+        },
+        {
+          "id": "pratiquez-vous-une-m-thode-de-gestion-du-stress-relaxation-oui-a",
+          "label": "Pratiquez-vous une méthode de gestion du stress (relaxation, Oui, avec Oui mais | | _",
+          "type": "select",
+          "options": [
+            "sophrologie, yoga, méditation, jardinage, promenade dans la",
+            "efficacité",
+            "insuffisant",
+            "nature...) ?"
+          ],
+          "rawOptions": [
+            "sophrologie, yoga, méditation, jardinage, promenade dans la",
+            "efficacité",
+            "insuffisant"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Votre score adaptation et le stress =",
+      "questions": []
+    },
+    {
+      "title": "Votre activité physique",
+      "questions": [
+        {
+          "id": "quelle-fr-quence-pratiquez-vous-une-activit-physique-ou-sportive",
+          "label": "À quelle fréquence pratiquez-vous une activité physique ou sportive É 3à6h/sem | 133h/sem | <1h/sem D °° | Votre score",
+          "type": "select",
+          "options": [
+            "intense? (dans votre métier ou vos loisirs }                         4.        À         1        “0."
+          ],
+          "rawOptions": []
+        },
+        {
+          "id": "quelle-fr-quence-avez-vous-une-activit-physique-mod-r-e-re-en-3-",
+          "label": "À quelle fréquence avez-vous une activité physique modérée ? Re en 3à6h/sem| \"13 3h/cem|n 1h /sem Te Mnnersre",
+          "type": "select",
+          "options": [
+            "(type marche sans essoufflement)",
+            "ee"
+          ],
+          "rawOptions": [
+            "(type marche sans essoufflement)",
+            "ee"
+          ]
+        },
+        {
+          "id": "quelle-fr-quence-avez-vous-une-activit-corporelle-douce-type-tou",
+          "label": "À quelle fréquence avez-vous une activité corporelle \"douce\" ? (type! touslesjours | Phsieurs ils | Une fob par |Oceesmnellemt Las Votre score",
+          "type": "select",
+          "options": [
+            "séance de gymnastique, yoga, stretching...)",
+            "Actif(ve), je .      Activité et     Je suis plutôt"
+          ],
+          "rawOptions": [
+            "séance de gymnastique, yoga, stretching...)",
+            "Actif(ve), je .      Activité et     Je suis plutôt"
+          ]
+        },
+        {
+          "id": "quel-est-votre-niveau-d-activit-dans-votre-vie-quotidienne-en-es",
+          "label": "Quel est votre niveau d'activité dans votre vie quotidienne ? en ES LEE EE inactive) FONE se9re",
+          "type": "select",
+          "options": [
+            "nu ne  Jamais plus de",
+            "lamais plus d'1",
+            "lamais plus de! Entre 3et5h / Plus de5h/jour",
+            "Votre =core"
+          ],
+          "rawOptions": [
+            "nu ne  Jamais plus de",
+            "lamais plus d'1",
+            "lamais plus de! Entre 3et5h / Plus de5h/jour",
+            "Votre =core"
+          ]
+        },
+        {
+          "id": "quel-est-votre-temps-pass-assis-immobile-sans-bouger-d-affil-e-3",
+          "label": "Quel est votre temps passé assis, immobile sans bouger (d'affilée)? | 30 minutes heure 2h jour Fo 7 ire scor",
+          "type": "select",
+          "options": [
+            "Lé"
+          ],
+          "rawOptions": [
+            "Lé"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Votre score activité physique =",
+      "questions": []
+    },
+    {
+      "title": "Votre exposition aux toxiques",
+      "questions": [
+        {
+          "id": "etes-vous-expos-un-environnement-pollu-ou-potentiellement-tr-s-q",
+          "label": "Etes-vous exposé à un environnement pollué ou potentiellement Très équemmene| Occasionnelle Rarement lamois Votre score",
+          "type": "select",
+          "options": [
+            "toxique ? (lieu de travail, Pollution industrielle, fumée, bruit            fréquemment [FT         ment            :             ñ",
+            "excessif...)",
+            "le suis f         Je souhaite",
+            "Je fume très                  Je n'ai!"
+          ],
+          "rawOptions": [
+            "excessif...)",
+            "le suis f         Je souhaite",
+            "Je fume très                  Je n'ai!"
+          ]
+        },
+        {
+          "id": "consommez-vous-du-tabac-cette-fumer-fum",
+          "label": "Consommez-vous du tabac ? cette fumer _— - fumé",
+          "type": "select",
+          "options": [],
+          "rawOptions": []
+        },
+        {
+          "id": "consommez-vous-du-cannabis-ou-autre-drogue-5-par-semaine-ment-r",
+          "label": "Consommez-vous du cannabis ou autre drogue... 5 par semaine ment . r",
+          "type": "select",
+          "options": [],
+          "rawOptions": []
+        },
+        {
+          "id": "consommez-vous-de-l-alcool-vin-bi-re-ap-ritif-autres-boissons-re",
+          "label": "Consommez-vous de l'alcool (vin, bière, apéritif, autres boissons ‘ re ou mue Verres] out Occasionnellement | Jamais Votre score",
+          "type": "select",
+          "options": [
+            "alcoolisées...)"
+          ],
+          "rawOptions": [
+            "alcoolisées...)"
+          ]
+        },
+        {
+          "id": "consommez-vous-des-produits-tr-s-cuits-ou-grill-s-barbecue-pain-",
+          "label": "Consommez-vous des produits très cuits ou grillés (barbecue, pain | PluSde3fois/ | 2à3 fois/ Gariamatemen | TT Votre score",
+          "type": "select",
+          "options": [
+            "semaine",
+            "Rarement",
+            "grillé, friture...)"
+          ],
+          "rawOptions": [
+            "semaine",
+            "Rarement",
+            "grillé, friture...)"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Votre score exposition aux toxiques =",
+      "questions": []
+    },
+    {
+      "title": "Votre relation aux autres",
+      "questions": [
+        {
+          "id": "j-ai-de-nombreuses-activit-s-sociales-des-r-seaux-sociaux-tout-f",
+          "label": "J'ai de nombreuses activités sociales, des réseaux sociaux Toutäfait |Plutétactifve)| Variable | Pasvraiment | Pas du tout Votre score",
+          "type": "select",
+          "options": [
+            "J'ai peu de contacts, je me sens isolé, je souffre de solitude",
+            "1     ment         4         4           de",
+            "importants"
+          ],
+          "rawOptions": [
+            "J'ai peu de contacts, je me sens isolé, je souffre de solitude",
+            "1     ment         4         4           de",
+            "importants"
+          ]
+        },
+        {
+          "id": "dans-mon-quotidien-je-souffre-de-relations-familiales-ou-ge-gers",
+          "label": "Dans mon quotidien je souffre de relations familiales ou ge GERS Len CT Parfois | Très rarement Jamais Votre score",
+          "type": "select",
+          "options": [
+            "5      :                             équemment",
+            "régulièrement      n          _            x",
+            "professionnelles toxiques, de harcèlement"
+          ],
+          "rawOptions": [
+            "5      :                             équemment",
+            "régulièrement      n          _            x",
+            "professionnelles toxiques, de harcèlement"
+          ]
+        },
+        {
+          "id": "au-sein-de-ma-famille-parents-enfants-conjoints-je-ressens-de-ea",
+          "label": "Au sein de ma famille, parents, enfants, conjoints, je ressens de ea, DS LC | Ses care Jamais Votre score",
+          "type": "select",
+          "options": [
+            "équemment",
+            "régulièrement",
+            "nombreux conflits"
+          ],
+          "rawOptions": [
+            "équemment",
+            "régulièrement",
+            "nombreux conflits"
+          ]
+        },
+        {
+          "id": "je-suis-tout-fait-je-suis-plut-t-ee-j-ai-plut-t-des-j-ai-beaucou",
+          "label": "Je suis tout à fait|Je suis plutôt à EE j'ai plutôt des | j'ai beaucoup de Votre score",
+          "type": "select",
+          "options": [],
+          "rawOptions": []
+        },
+        {
+          "id": "j-ai-des-facilit-s-de-communication-et-d-expression-de-mon-resse",
+          "label": "J'ai des facilités de communication et d'expression de mon ressenti à l'aise l'aise | jéonctances| difficultés difficultés SITE SEOTE",
+          "type": "select",
+          "options": [
+            "En"
+          ],
+          "rawOptions": [
+            "En"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Votre score relation aux autres =",
+      "questions": []
+    },
+    {
+      "title": "Votre mode alimentaire",
+      "questions": [
+        {
+          "id": "je-connais-et-j-adopte-les-recommandations-d-alimentation-sant-j",
+          "label": "Je connais et j'adopte les recommandations d'alimentation-santé Jamais Rarement _|Occasionnellement fréauemiment Toujours | Votre score",
+          "type": "select",
+          "options": [
+            "(telles que celles du PNNS 4)"
+          ],
+          "rawOptions": [
+            "(telles que celles du PNNS 4)"
+          ]
+        },
+        {
+          "id": "je-favorise-l-achat-et-la-consommation-des-aliments-sains-de-sai",
+          "label": "Je favorise l'achat et la consommation des aliments sains, de saison,| jamais Reremer le aurrellemene re CE",
+          "type": "select",
+          "options": [
+            "peu transformés, complets et bio",
+            "—    EL",
+            "dB ee               Jamais     Rarement",
+            "Occasionnellement   - Très",
+            "Toujours"
+          ],
+          "rawOptions": [
+            "peu transformés, complets et bio",
+            "—    EL",
+            "dB ee               Jamais     Rarement",
+            "Occasionnellement   - Très",
+            "Toujours"
+          ]
+        },
+        {
+          "id": "je-limite-la-consommation-de-charcuterie-viande-rouge-fr-quemmen",
+          "label": "Je limite la consommation de charcuterie, viande rouge ï ï : fréquemment ñ Votre score",
+          "type": "select",
+          "options": [],
+          "rawOptions": []
+        },
+        {
+          "id": "je-limite-la-consommation-de-produits-sal-s-de-sucreries-et-de-j",
+          "label": "Je limite la consommation de produits salés, de sucreries et de Jamais Rarement |Occasionnellement| |. Très . | Toujours \\.",
+          "type": "select",
+          "options": [
+            "boissons sucrées"
+          ],
+          "rawOptions": []
+        },
+        {
+          "id": "je-favorise-la-consommation-de-produits-v-g-taux-fruits-l-gumes-",
+          "label": "Je favorise la consommation de produits végétaux, fruits, légumes, Jamais Rarement |Occasionnellement| , . T'ÈS Toujours",
+          "type": "select",
+          "options": [
+            "légumes secs, noix"
+          ],
+          "rawOptions": [
+            "légumes secs, noix"
+          ]
+        },
+        {
+          "id": "je-favorise-la-consommation-de-poissons-gras-d-huile-de-colza-ou",
+          "label": "Je favorise la consommation de poissons gras, d'huile de colza ou Jamais rene ler LE Gare |",
+          "type": "select",
+          "options": [
+            "d'olive"
+          ],
+          "rawOptions": []
+        },
+        {
+          "id": "je-favorise-une-cuisine-saine-fait-maison-limitant-les-cuissons-",
+          "label": "Je favorise une cuisine saine, fait maison, limitant les cuissons Jamais ave loembreteres Le Toujours",
+          "type": "select",
+          "options": [
+            "excessives (BBQ, fritures..)"
+          ],
+          "rawOptions": [
+            "excessives (BBQ, fritures..)"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Votre score mode alimentaire =",
+      "questions": []
+    }
+  ]
+}

@@ -19,7 +19,7 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "practitionerId", "order": "ASCENDING" },
-        { "fieldPath": "scheduledAt", "order": "ASCENDING" }
+        { "fieldPath": "scheduledAt", "order": "DESCENDING" }
       ]
     },
     {

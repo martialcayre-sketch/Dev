@@ -1,0 +1,35 @@
+Source: mes-plaintes-actuelles-et-troubles-ressentis.pdf
+Chemin: mes-plaintes-actuelles-et-troubles-ressentis.pdf
+================================================================================
+
+===== PAGE 1 =====
+
+Questionnaire
+Page 1/1Mes plaintes actuelles et troubles ressentis
+Des valeurs élevées représentent l’intensité des troubles actuellement ressentis. 
+1 = correspond à l'absence de problème et 10 = correspond à un degré maximum de problèmes et troubles.
+Fatigue
+10 = je suis très fatigué(e), épuisé(e) / 1 = j'ai une bonne vitalité
+1 2 3 4 5 6 7 8 9 10
+Douleurs
+10 = je ressens des douleurs intenses ou chroniques / 1 = je ne ressens aucune douleur
+1 2 3 4 5 6 7 8 9 10
+Digestion
+10 = Je souffre de beaucoup de troubles digestifs et intestinaux / 1 = Je n'ai aucun
+problème de digestion, ni troubles intestinaux
+1 2 3 4 5 6 7 8 9 10
+Surpoids
+10 = J'ai des problèmes de surpoids importants / 1 = Je n'ai aucun problème de poids
+1 2 3 4 5 6 7 8 9 10
+Insomnie
+10 = Je souffre d'insomnie ou de troubles du sommeil / 1 = Je n'ai aucun problème de
+sommeil
+1 2 3 4 5 6 7 8 9 10
+Moral
+10 = Je souffre de beaucoup de troubles dépressifs ou d'anxiété ou d'angoisse / 1 = J'ai un
+bon moral, je suis serein(e)
+1 2 3 4 5 6 7 8 9 10
+Mobilité
+10 = Je souffre de beaucoup de troubles de mobilité / 1 = Je n'ai aucun problème de
+mobilité
+1 2 3 4 5 6 7 8 9 10

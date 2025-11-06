@@ -1,0 +1,45 @@
+{
+  "id": "questionnaire-de-scoff-def-pro",
+  "title": "Questionnaire :",
+  "category": "neuro-psychologie",
+  "filename": "questionnaire-de-scoff-def-pro.pdf",
+  "questions": [
+    {
+      "id": "q1",
+      "label": "Vous êtes-vous déjà fait vomir parce que vous ne vous sentiez pas bien Cochez",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q2",
+      "label": "Craignez-vous d’avoir perdu le contrôle des quantités que vous mangez ?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q3",
+      "label": "Avez-vous perdu plus de 6 kilos en moins de trois mois ?",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q4",
+      "label": "Pensez-vous que vous êtes trop gros(se) alors que les autres vous considèrent",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q5",
+      "label": "Diriez-vous que la nourriture est quelque chose qui occupe une place",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    }
+  ],
+  "extracted_text_length": 1108,
+  "source": "ocr"
+}

@@ -1,0 +1,31 @@
+{
+  "id": "echelle-de-conners-tdah-interpretation",
+  "title": "Conners 3 Update",
+  "category": "pédiatrie",
+  "filename": "echelle-de-conners-tdah-interpretation.pdf",
+  "questions": [
+    {
+      "id": "q1",
+      "label": "Validity Scale It is recommended that clinical judgment be used in the",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q2",
+      "label": "T-Score Interpretation Note that these guidelines are approximations and should",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q3",
+      "label": "Defiance/Aggression",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    }
+  ],
+  "extracted_text_length": 14352,
+  "source": "ocr"
+}

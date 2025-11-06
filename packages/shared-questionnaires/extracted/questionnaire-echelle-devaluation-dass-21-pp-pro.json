@@ -1,0 +1,157 @@
+{
+  "id": "questionnaire-echelle-devaluation-dass-21-pp-pro",
+  "title": "Questionnaire :",
+  "category": "stress",
+  "filename": "questionnaire-echelle-devaluation-dass-21-pp-pro.pdf",
+  "questions": [
+    {
+      "id": "q1",
+      "label": "J’ai trouvé difficile de décompresser.",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q2",
+      "label": "J’ai été conscient(e) d’avoir la bouche sèche.",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q3",
+      "label": "J’ai eu l’impression de ne pas pouvoir ressentir d’émotion positive.",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q4",
+      "label": "J’ai eu de la difficulté à respirer (par exemple, respirations excessivement",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q5",
+      "label": "J’ai eu de la difficulté à initier de nouvelles activités.",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q6",
+      "label": "J’ai eu tendance à réagir de façon exagérée.",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q7",
+      "label": "J’ai eu des tremblements (par exemple, des mains).",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q8",
+      "label": "J’ai eu l’impression de dépenser beaucoup d’énergie nerveuse.",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q9",
+      "label": "Je me suis inquiété(e) en pensant à des situations où je pourrais paniquer et faire",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q10",
+      "label": "J’ai eu le sentiment de ne rien envisager avec plaisir.",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q11",
+      "label": "Je me suis aperçu(e) que je devenais agité(e).",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q12",
+      "label": "J’ai eu de la difficulté à me détendre.",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q13",
+      "label": "Je me suis senti(e) triste et déprimé(e).",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q14",
+      "label": "Je me suis aperçu(e) que je devenais impatient(e) lorsque j’étais retardé(e) de",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q15",
+      "label": "J’ai eu le sentiment d’être presque pris(e) de panique.",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q16",
+      "label": "J’ai été incapable de me sentir enthousiaste au sujet de quoi que ce soit.",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q17",
+      "label": "J'ai eu le sentiment de ne pas valoir grand-chose comme personne.",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q18",
+      "label": "Je me suis aperçu(e) que j’étais très irritable.",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q19",
+      "label": "J’ai été conscient(e) des palpitations de mon coeur en l’absence d’effort",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q20",
+      "label": "J’ai eu peur sans bonne raison.",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "q21",
+      "label": "J’ai eu l’impression que la vie n’avait pas de sens.",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    }
+  ],
+  "extracted_text_length": 2920,
+  "source": "ocr"
+}

@@ -13,6 +13,7 @@
 ```
 
 Ou avec npm :
+
 ```bash
 pnpm dev:stack:win  # Windows
 pnpm dev:stack:mac  # Mac
@@ -60,6 +61,7 @@ node scripts/approve-practitioner-dev.mjs your.email@example.com
 **Collection : `practitioners`**
 
 Document après création :
+
 ```json
 {
   "uid": "abc123...",
@@ -78,6 +80,7 @@ Document après création :
 ```
 
 Après approbation :
+
 ```json
 {
   // ... même contenu
@@ -93,6 +96,7 @@ Après approbation :
 ➡️ **Cause** : Le document n'a pas été créé dans Firestore
 
 **Solutions** :
+
 1. Vérifier que les émulateurs sont bien lancés
 2. Vérifier la collection `practitioners` dans l'Emulator UI
 3. Essayer de se reconnecter avec Google Sign-In
@@ -102,6 +106,7 @@ Après approbation :
 ➡️ **Cause** : Le compte existe mais n'est pas encore approuvé
 
 **Solutions** :
+
 1. Utiliser le script d'approbation
 2. Modifier manuellement le statut dans Firestore
 3. Attendre qu'un admin approuve le compte
@@ -111,6 +116,7 @@ Après approbation :
 ➡️ **Cause** : Le compte a été rejeté par un admin
 
 **Solutions** :
+
 1. Contacter l'administrateur
 2. En dev, changer le statut manuellement dans Firestore
 
@@ -119,16 +125,17 @@ Après approbation :
 ➡️ **Cause** : Le navigateur bloque les popups
 
 **Solutions** :
+
 1. Autoriser les popups pour localhost:3010
 2. Le système basculera automatiquement en mode redirection
 
 ## 📝 Statuts possibles
 
-| Statut | Description | Accès dashboard |
-|--------|-------------|-----------------|
-| `pending_approval` | Compte créé, en attente d'approbation | ❌ Non |
-| `approved` | Compte approuvé par un admin | ✅ Oui |
-| `rejected` | Compte rejeté par un admin | ❌ Non |
+| Statut             | Description                           | Accès dashboard |
+| ------------------ | ------------------------------------- | --------------- |
+| `pending_approval` | Compte créé, en attente d'approbation | ❌ Non          |
+| `approved`         | Compte approuvé par un admin          | ✅ Oui          |
+| `rejected`         | Compte rejeté par un admin            | ❌ Non          |
 
 ## 🎯 Workflow complet
 
@@ -177,6 +184,7 @@ Utilisateur                     Système                     Admin
 ## 📚 Documentation complète
 
 Pour plus de détails sur le système d'inscription, voir :
+
 - [`docs/PRACTITIONER_REGISTRATION.md`](./PRACTITIONER_REGISTRATION.md) - Workflow complet
 - [`docs/DEV_LOCAL.md`](./DEV_LOCAL.md) - Configuration locale
 - [`scripts/README.md`](../scripts/README.md) - Scripts disponibles
