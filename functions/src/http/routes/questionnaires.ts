@@ -1,6 +1,10 @@
+import type { Questionnaire } from '@neuronutrition/shared-questionnaires';
+import { getAllQuestionnaires, getQuestionnaireById } from '@neuronutrition/shared-questionnaires';
 import express, { Request, Response } from 'express';
 import * as admin from 'firebase-admin';
 import * as logger from 'firebase-functions/logger';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const router = express.Router();
 const db = admin.firestore();
@@ -329,3 +333,96 @@ function calculateProgress(responses: any, questions: any): number {
 }
 
 export default router;
+/**
+ * Catalog endpoints (read-only)
+ * - GET /catalog/questionnaires            -> list curated questionnaires from shared package
+ * - GET /catalog/questionnaires/:id        -> details of a curated questionnaire
+ * - GET /catalog/extracted                 -> list of extracted questionnaire files (from repo data)
+ * - GET /catalog/extracted/:category/:slug -> extracted meta and text
+ */
+
+// Curated catalog from shared package (fast, bundled)
+router.get('/catalog/questionnaires', (req: Request, res: Response) => {
+  try {
+    const all = getAllQuestionnaires().map((q: Questionnaire) => ({
+      id: q.metadata.id,
+      title: q.metadata.title,
+      category: q.metadata.category,
+      description: q.metadata.description ?? '',
+      version: q.metadata.version ?? 1,
+      questionsCount: Array.isArray(q.questions) ? q.questions.length : 0,
+    }));
+    return res.json({ questionnaires: all });
+  } catch (error: any) {
+    logger.error('GET /catalog/questionnaires error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.get('/catalog/questionnaires/:id', (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const q = getQuestionnaireById(id);
+    if (!q) return res.status(404).json({ error: 'Questionnaire not found' });
+    return res.json(q);
+  } catch (error: any) {
+    logger.error('GET /catalog/questionnaires/:id error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Extracted catalog from filesystem (developer productivity/local use)
+const extractedRoot = path.resolve(process.cwd(), '..', 'data', 'questionnaires', 'extracted');
+
+router.get('/catalog/extracted', (req: Request, res: Response) => {
+  try {
+    if (!fs.existsSync(extractedRoot)) {
+      return res.json({ categories: [], note: 'extracted root not found on runtime' });
+    }
+    const categories = fs
+      .readdirSync(extractedRoot, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => d.name);
+
+    const result = categories.map((category) => {
+      const dir = path.join(extractedRoot, category);
+      const entries = fs
+        .readdirSync(dir)
+        .filter((f) => f.endsWith('.meta.json'))
+        .map((f) => {
+          const slug = f.replace(/\.meta\.json$/, '');
+          // try to peek meta title if small
+          let title = slug;
+          try {
+            const meta = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf-8')) as any;
+            title = meta.title || meta.name || slug;
+          } catch {}
+          return { category, slug, title };
+        });
+      return { category, items: entries };
+    });
+
+    return res.json({ categories: result });
+  } catch (error: any) {
+    logger.error('GET /catalog/extracted error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.get('/catalog/extracted/:category/:slug', (req: Request, res: Response) => {
+  try {
+    const { category, slug } = req.params;
+    const dir = path.join(extractedRoot, category);
+    const metaPath = path.join(dir, `${slug}.meta.json`);
+    const txtPath = path.join(dir, `${slug}.txt`);
+    if (!fs.existsSync(metaPath)) {
+      return res.status(404).json({ error: 'Extracted file not found' });
+    }
+    const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
+    const text = fs.existsSync(txtPath) ? fs.readFileSync(txtPath, 'utf-8') : '';
+    return res.json({ category, slug, meta, text });
+  } catch (error: any) {
+    logger.error('GET /catalog/extracted/:category/:slug error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});

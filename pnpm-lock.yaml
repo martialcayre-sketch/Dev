@@ -225,6 +225,9 @@ importers:
 
   functions:
     dependencies:
+      '@neuronutrition/shared-questionnaires':
+        specifier: workspace:*
+        version: link:../packages/shared-questionnaires
       express:
         specifier: ^4.19.2
         version: 4.21.2
