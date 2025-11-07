@@ -42,47 +42,44 @@ export function usePractitionerMetrics(practitionerId?: string | null) {
 
     async function load() {
       try {
+        console.log('[usePractitionerMetrics] Loading metrics for practitioner:', practitionerId);
+
         const patientsQuery = query(
           collection(firestore, 'patients'),
-          where('practitionerId', '==', practitionerId),
-          where('hasQuestionnairesAssigned', '==', true)
+          where('practitionerId', '==', practitionerId)
         );
         const patientsSnapshot = await getDocs(patientsQuery);
 
-        const attentionQuery = query(
-          collection(firestore, 'alerts'),
-          where('practitionerId', '==', practitionerId),
-          where('status', '==', 'open')
-        );
-        const attentionSnapshot = await getDocs(attentionQuery);
+        console.log('[usePractitionerMetrics] Total patients found:', patientsSnapshot.size);
 
-        const consultationsQuery = query(
-          collection(firestore, 'consultations'),
-          where('practitionerId', '==', practitionerId),
-          where(
-            'scheduledAt',
-            '>=',
-            Timestamp.fromDate(new Date(Date.now() - 12 * 60 * 60 * 1000))
-          ),
-          orderBy('scheduledAt', 'asc'),
-          limit(5)
-        );
-        const consultationsSnapshot = await getDocs(consultationsQuery);
+        // Compter les patients nécessitant attention (ceux avec des questionnaires pending)
+        let patientsNeedingAttention = 0;
+        for (const patientDoc of patientsSnapshot.docs) {
+          const patientData = patientDoc.data();
+          if (
+            patientData.pendingQuestionnairesCount &&
+            patientData.pendingQuestionnairesCount > 0
+          ) {
+            patientsNeedingAttention++;
+          }
+        }
 
-        const assessmentsQuery = query(
-          collection(firestore, 'questionnaireSubmissions'),
-          where('practitionerId', '==', practitionerId),
-          orderBy('submittedAt', 'desc'),
-          limit(5)
-        );
-        const assessmentsSnapshot = await getDocs(assessmentsQuery);
-
-        if (cancelled) return;
-
-        setMetrics({
-          totalPatients: patientsSnapshot.size,
-          patientsNeedingAttention: attentionSnapshot.size,
-          upcomingConsultations: consultationsSnapshot.docs.map((doc) => {
+        // Pour les consultations, on essaie mais on ignore les erreurs de permission
+        let upcomingConsultations: any[] = [];
+        try {
+          const consultationsQuery = query(
+            collection(firestore, 'consultations'),
+            where('practitionerId', '==', practitionerId),
+            where(
+              'scheduledAt',
+              '>=',
+              Timestamp.fromDate(new Date(Date.now() - 12 * 60 * 60 * 1000))
+            ),
+            orderBy('scheduledAt', 'asc'),
+            limit(5)
+          );
+          const consultationsSnapshot = await getDocs(consultationsQuery);
+          upcomingConsultations = consultationsSnapshot.docs.map((doc) => {
             const data = doc.data() as any;
             return {
               id: doc.id,
@@ -90,8 +87,25 @@ export function usePractitionerMetrics(practitionerId?: string | null) {
               scheduledAt: (data.scheduledAt as Timestamp)?.toDate?.() ?? new Date(),
               status: data.status ?? 'planifiée',
             };
-          }),
-          latestAssessments: assessmentsSnapshot.docs.map((doc) => {
+          });
+        } catch (err) {
+          console.warn(
+            '[usePractitionerMetrics] Could not load consultations (permissions?):',
+            err
+          );
+        }
+
+        // Pour les évaluations, on essaie mais on ignore les erreurs de permission
+        let latestAssessments: any[] = [];
+        try {
+          const assessmentsQuery = query(
+            collection(firestore, 'questionnaireSubmissions'),
+            where('practitionerId', '==', practitionerId),
+            orderBy('submittedAt', 'desc'),
+            limit(5)
+          );
+          const assessmentsSnapshot = await getDocs(assessmentsQuery);
+          latestAssessments = assessmentsSnapshot.docs.map((doc) => {
             const data = doc.data() as any;
             return {
               id: doc.id,
@@ -100,10 +114,21 @@ export function usePractitionerMetrics(practitionerId?: string | null) {
               submittedAt: (data.submittedAt as Timestamp)?.toDate?.() ?? new Date(),
               score: data.score,
             };
-          }),
+          });
+        } catch (err) {
+          console.warn('[usePractitionerMetrics] Could not load assessments (permissions?):', err);
+        }
+
+        if (cancelled) return;
+
+        setMetrics({
+          totalPatients: patientsSnapshot.size,
+          patientsNeedingAttention: patientsNeedingAttention,
+          upcomingConsultations: upcomingConsultations,
+          latestAssessments: latestAssessments,
         });
       } catch (error) {
-        console.error('Erreur de chargement des métriques', error);
+        console.error('[usePractitionerMetrics] Erreur de chargement des métriques', error);
         if (!cancelled) setMetrics(DEFAULT_STATE);
       } finally {
         if (!cancelled) setLoading(false);

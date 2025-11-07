@@ -1,6 +1,7 @@
 import * as admin from 'firebase-admin';
 import * as logger from 'firebase-functions/logger';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
+import { DEFAULT_QUESTIONNAIRES } from './constants/questionnaires';
 
 // Ensure Admin SDK is initialized even if this module is imported before index initializes it
 if (!admin.apps.length) {
@@ -9,40 +10,7 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-interface QuestionnaireTemplate {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-}
-
-const DEFAULT_QUESTIONNAIRES: QuestionnaireTemplate[] = [
-  {
-    id: 'plaintes-et-douleurs',
-    title: 'Mes plaintes actuelles et troubles ressentis',
-    category: 'Mode de vie',
-    description: "Évaluez l'intensité de vos troubles actuels (fatigue, douleurs, digestion, etc.)",
-  },
-  {
-    id: 'life-journey',
-    title: 'Mode de vie – 7 Sphères Vitales',
-    category: 'Mode de vie SIIN',
-    description:
-      'Évaluez votre mode de vie selon 6 dimensions clés : physique, émotionnelle, mentale, sociale, spirituelle et environnementale',
-  },
-  {
-    id: 'alimentaire',
-    title: 'Questionnaire alimentaire',
-    category: 'Alimentaire',
-    description: 'Décrivez vos habitudes alimentaires et votre régime',
-  },
-  {
-    id: 'dnsm',
-    title: 'Questionnaire Dopamine-Noradrénaline-Sérotonine-Mélatonine',
-    category: 'Neuro-psychologie',
-    description: 'Évaluez vos neurotransmetteurs et votre équilibre hormonal',
-  },
-];
+// Using shared DEFAULT_QUESTIONNAIRES
 
 /**
  * Cloud Function pour assigner automatiquement les questionnaires à un patient
@@ -75,18 +43,12 @@ export const assignQuestionnaires = onCall(async (request) => {
       };
     }
 
-    // Créer les questionnaires dans Firestore
+    // Créer les questionnaires dans Firestore (DOUBLE WRITE: subcollection + root collection)
     const batch = db.batch();
     const now = admin.firestore.FieldValue.serverTimestamp();
 
     DEFAULT_QUESTIONNAIRES.forEach((template) => {
-      const questionnaireRef = db
-        .collection('patients')
-        .doc(patientUid)
-        .collection('questionnaires')
-        .doc(template.id);
-
-      batch.set(questionnaireRef, {
+      const questionnaireData = {
         ...template,
         patientUid,
         practitionerId: practitionerId || null,
@@ -94,7 +56,19 @@ export const assignQuestionnaires = onCall(async (request) => {
         assignedAt: now,
         completedAt: null,
         responses: {},
-      });
+      };
+
+      // Write to subcollection (legacy path)
+      const subCollectionRef = db
+        .collection('patients')
+        .doc(patientUid)
+        .collection('questionnaires')
+        .doc(template.id);
+      batch.set(subCollectionRef, questionnaireData);
+
+      // Write to root collection (new path)
+      const rootRef = db.collection('questionnaires').doc(template.id);
+      batch.set(rootRef, questionnaireData);
     });
 
     await batch.commit();

@@ -24,17 +24,34 @@ export default function LatestDayFlowAlimCard({ uid }: { uid: string }) {
 
   useEffect(() => {
     if (!uid) return;
-    const ref = collection(firestore, 'users', uid, 'surveys', 'dayflow-alim');
+
+    // Correct path: patients/{uid}/surveys (collection with 3 segments)
+    const ref = collection(firestore, 'patients', uid, 'surveys');
+    const dayflowQuery = query(ref, orderBy('createdAt', 'desc'), limit(1));
+
     // Chargement initial
-    getDocs(query(ref, orderBy('createdAt', 'desc'), limit(1))).then((snap) => {
-      const first = snap.docs[0];
-      setItem(first ? ({ id: first.id, ...(first.data() as any) } as Item) : null);
-    });
+    getDocs(dayflowQuery)
+      .then((snap) => {
+        const first = snap.docs[0];
+        setItem(first ? ({ id: first.id, ...(first.data() as any) } as Item) : null);
+      })
+      .catch((err) => {
+        console.error('[LatestDayFlowAlimCard] Error loading survey:', err);
+        setItem(null);
+      });
+
     // Écoute temps réel
-    const unsub = onSnapshot(query(ref, orderBy('createdAt', 'desc')), (snap) => {
-      const first = snap.docs[0];
-      setItem(first ? ({ id: first.id, ...(first.data() as any) } as Item) : null);
-    });
+    const unsub = onSnapshot(
+      dayflowQuery,
+      (snap) => {
+        const first = snap.docs[0];
+        setItem(first ? ({ id: first.id, ...(first.data() as any) } as Item) : null);
+      },
+      (err) => {
+        console.error('[LatestDayFlowAlimCard] Error in snapshot listener:', err);
+      }
+    );
+
     return () => unsub();
   }, [uid]);
 

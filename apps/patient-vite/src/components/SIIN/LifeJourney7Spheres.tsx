@@ -1,4 +1,6 @@
-import { useMemo, useState } from 'react';
+import { auth } from '@/lib/firebase';
+import api from '@/services/api';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -573,6 +575,8 @@ export default function LifeJourney7Spheres(props: {
     relations: {},
     alimentation: {},
   });
+  const [isSaving, setIsSaving] = useState(false);
+  const saveTimeoutRef = useRef<number | null>(null);
 
   const counts = useMemo(() => {
     const perSphere = Object.fromEntries(
@@ -607,6 +611,65 @@ export default function LifeJourney7Spheres(props: {
       })),
     [perSphereScores]
   );
+
+  // Auto-save avec debounce (1.5s)
+  const autoSave = useCallback(async () => {
+    const user = auth.currentUser;
+    if (!user || disabled) return;
+
+    try {
+      setIsSaving(true);
+      // Aplatir les réponses pour l'API
+      const responses: Record<string, number> = {};
+      for (const [sphere, qMap] of Object.entries(answers)) {
+        for (const [qid, val] of Object.entries(qMap as Record<string, number>)) {
+          responses[`${sphere}.${qid}`] = Number(val);
+        }
+      }
+      // Ajouter les scores
+      for (const [sphere, sc] of Object.entries(perSphereScores)) {
+        responses[`score.${sphere}`] = sc.percent;
+      }
+      responses['score.global'] = globalScore;
+
+      await api.saveQuestionnaireResponses(user.uid, 'life-journey', responses);
+      console.log('[LifeJourney] Auto-saved');
+    } catch (error) {
+      console.warn('[LifeJourney] Auto-save failed:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [answers, perSphereScores, globalScore, disabled]);
+
+  // Déclencher l'auto-save avec debounce quand answers change
+  useEffect(() => {
+    if (
+      Object.keys(answers.sommeil).length === 0 &&
+      Object.keys(answers.rythme).length === 0 &&
+      Object.keys(answers.stress).length === 0 &&
+      Object.keys(answers.activite).length === 0 &&
+      Object.keys(answers.toxiques).length === 0 &&
+      Object.keys(answers.relations).length === 0 &&
+      Object.keys(answers.alimentation).length === 0
+    ) {
+      // Pas encore de réponses, skip
+      return;
+    }
+
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    saveTimeoutRef.current = setTimeout(() => {
+      autoSave();
+    }, 1500);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [answers, autoSave]);
 
   const allAnswered = counts.total === counts.totalQuestions;
 
@@ -646,7 +709,7 @@ export default function LifeJourney7Spheres(props: {
   // Lightweight runtime tests (dev feedback only)
   if (import.meta && import.meta.env && import.meta.env.DEV) {
     const totalQs = SPHERES.reduce((acc, s) => acc + s.questions.length, 0);
-    console.assert(totalQs === 35, `[LifeJourney] Expected 35 questions, got ${totalQs}`);
+    console.assert(totalQs === 34, `[LifeJourney] Expected 34 questions, got ${totalQs}`);
   }
 
   return (
@@ -661,14 +724,22 @@ export default function LifeJourney7Spheres(props: {
 
       {/* Global progress */}
       <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="text-xs text-white/60">
+            {counts.total} / {counts.totalQuestions} répondues
+          </div>
+          {isSaving && (
+            <div className="flex items-center gap-2 text-xs text-white/60">
+              <div className="h-3 w-3 animate-spin rounded-full border-2 border-white/10 border-t-nn-primary-500" />
+              Sauvegarde...
+            </div>
+          )}
+        </div>
         <div className="h-2 w-full overflow-hidden rounded bg-white/10">
           <div
             className="h-2 bg-nn-primary-500 transition-all"
             style={{ width: `${(counts.total / counts.totalQuestions) * 100}%` }}
           />
-        </div>
-        <div className="text-xs text-white/60">
-          {counts.total} / {counts.totalQuestions} répondues
         </div>
       </div>
 

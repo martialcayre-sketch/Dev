@@ -33,6 +33,7 @@ cd C:\Dev
 ```
 
 📚 **Documentation détaillée** :
+
 - [LIFE_JOURNEY_INTEGRATION.md](./LIFE_JOURNEY_INTEGRATION.md) - Vue d'ensemble technique
 - [MIGRATION_PATIENTS_LIFE_JOURNEY.md](./MIGRATION_PATIENTS_LIFE_JOURNEY.md) - Guide de migration complet
 

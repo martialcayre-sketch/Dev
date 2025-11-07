@@ -1,5 +1,6 @@
 import { firestore } from '@/lib/firebase';
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import api from '@/services/api';
+import { doc, getDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
 export interface PatientProfile {
@@ -42,18 +43,21 @@ export function usePatientProfile(userId: string | undefined) {
         );
         const hasAnamnese = anamneseDoc.exists();
 
-        // Compter les questionnaires
-        const questionnairesRef = collection(firestore, 'patients', userId, 'questionnaires');
+        // Compter les questionnaires via API
+        const response = await api.getPatientQuestionnaires(userId);
+        const questionnaires = response.questionnaires || [];
 
-        const completedQuery = query(questionnairesRef, where('status', '==', 'completed'));
-        const completedSnap = await getDocs(completedQuery);
-        const completedCount = completedSnap.size;
+        const completedCount = questionnaires.filter((q: any) => q.status === 'completed').length;
+        const pendingCount = questionnaires.filter(
+          (q: any) => q.status === 'pending' || q.status === 'in_progress'
+        ).length;
+        const totalCount = questionnaires.length;
 
-        const pendingQuery = query(questionnairesRef, where('status', '==', 'pending'));
-        const pendingSnap = await getDocs(pendingQuery);
-        const pendingCount = pendingSnap.size;
-
-        const totalCount = completedCount + pendingCount;
+        console.log('[usePatientProfile] Questionnaires:', {
+          total: totalCount,
+          completed: completedCount,
+          pending: pendingCount,
+        });
 
         // Vérifier si le patient peut demander une consultation
         // Conditions: identification + anamnèse + 4 questionnaires complétés

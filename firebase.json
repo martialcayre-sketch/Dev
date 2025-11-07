@@ -5,6 +5,18 @@
   },
   "hosting": [
     {
+      "site": "neuronutrition-app",
+      "public": "public",
+      "ignore": ["**/.*", "**/node_modules/**"],
+      "headers": [
+        {
+          "source": "/index.html",
+          "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+        }
+      ],
+      "rewrites": [{ "source": "/api/**", "run": { "serviceId": "api", "region": "europe-west1" } }]
+    },
+    {
       "target": "patient",
       "public": "apps/patient-vite/dist",
       "ignore": ["**/.*", "**/node_modules/**"],
@@ -19,7 +31,7 @@
         }
       ],
       "rewrites": [
-        { "source": "/api/**", "function": "api", "region": "europe-west1" },
+        { "source": "/api/**", "run": { "serviceId": "api", "region": "europe-west1" } },
         { "source": "**", "destination": "/index.html" }
       ]
     },
@@ -38,7 +50,7 @@
         }
       ],
       "rewrites": [
-        { "source": "/api/**", "function": "api", "region": "europe-west1" },
+        { "source": "/api/**", "run": { "serviceId": "api", "region": "europe-west1" } },
         { "source": "**", "destination": "/index.html" }
       ]
     }

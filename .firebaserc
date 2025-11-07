@@ -5,14 +5,14 @@
   "targets": {
     "neuronutrition-app": {
       "hosting": {
-        "web": [
-          "neuronutrition-app"
-        ],
         "patient": [
           "neuronutrition-app-patient"
         ],
         "practitioner": [
           "neuronutrition-app-practitioner"
+        ],
+        "default": [
+          "neuronutrition-app"
         ]
       }
     }

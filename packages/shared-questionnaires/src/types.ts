@@ -173,3 +173,40 @@ export const NEUROTRANSMITTER_THEMES: readonly NeurotransmitterTheme[] = [
   { prefix: 's', label: 'Sérotonine', description: 'Humeur, bien-être, sommeil' },
   { prefix: 'm', label: 'Mélatonine', description: 'Sommeil, rythme circadien' },
 ] as const;
+
+/**
+ * Statut de questionnaire patient
+ */
+export type QuestionnaireStatus =
+  | 'pending' // Assigné, non démarré
+  | 'in_progress' // En cours de remplissage
+  | 'submitted' // Soumis au praticien (verrouillé)
+  | 'completed' // Validé par le praticien
+  | 'reopened'; // Rouvert par le praticien pour modification
+
+/**
+ * Document questionnaire patient (Firestore)
+ */
+export interface QuestionnaireDoc {
+  id: string;
+  title: string;
+  status: QuestionnaireStatus;
+  responses: Record<string, number | string>;
+  assignedAt?: Date;
+  updatedAt?: Date;
+  submittedAt?: Date | null;
+  completedAt?: Date | null;
+}
+
+/**
+ * Élément d'inbox praticien
+ */
+export interface PractitionerInboxItem {
+  id: string;
+  type: 'questionnaire_submission';
+  patientId: string;
+  questionnaireId: string;
+  questionnaireTitle: string;
+  status: 'new' | 'read' | 'archived';
+  submittedAt: Date;
+}

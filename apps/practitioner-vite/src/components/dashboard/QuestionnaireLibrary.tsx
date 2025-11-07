@@ -13,32 +13,11 @@ export function QuestionnaireLibrary() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function fetchData() {
-      try {
-        const res = await fetch('/api/questionnaires');
-        if (!res.ok) throw new Error('Réponse invalide');
-        const json = await res.json();
-        if (!cancelled) {
-          setCategories(json.categories ?? []);
-        }
-      } catch (error) {
-        console.error('Impossible de récupérer les questionnaires', error);
-        if (!cancelled) {
-          setCategories([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    fetchData();
-    return () => {
-      cancelled = true;
-    };
+    // TODO: Implémenter l'API /api/questionnaires ou charger depuis Firestore
+    // Pour l'instant, on retourne une liste vide pour éviter l'erreur 404
+    console.warn('[QuestionnaireLibrary] API /api/questionnaires not implemented yet');
+    setCategories([]);
+    setLoading(false);
   }, []);
 
   return (

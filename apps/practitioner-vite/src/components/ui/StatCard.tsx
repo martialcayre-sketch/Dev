@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import type { LucideIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface StatCardProps {
   icon: LucideIcon;
@@ -7,6 +8,7 @@ interface StatCardProps {
   value: string | number;
   helper?: string;
   variant?: 'primary' | 'accent' | 'neutral';
+  href?: string;
 }
 
 const variants = {
@@ -15,15 +17,16 @@ const variants = {
   neutral: 'from-white/10 via-white/5 to-transparent border-white/10',
 };
 
-export function StatCard({ icon: Icon, label, value, helper, variant = 'neutral' }: StatCardProps) {
-  return (
-    <div
-      className={clsx(
-        'relative overflow-hidden rounded-2xl border bg-gradient-to-br p-5 shadow-xl backdrop-blur transition',
-        variants[variant],
-        'hover:border-white/30 hover:shadow-2xl hover:shadow-nn-primary-500/10'
-      )}
-    >
+export function StatCard({
+  icon: Icon,
+  label,
+  value,
+  helper,
+  variant = 'neutral',
+  href,
+}: StatCardProps) {
+  const content = (
+    <>
       <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/5 blur-3xl" />
       <div className="absolute bottom-2 right-3 text-white/10">
         <Icon className="h-14 w-14" />
@@ -38,6 +41,24 @@ export function StatCard({ icon: Icon, label, value, helper, variant = 'neutral'
           {helper ? <p className="text-xs text-white/50">{helper}</p> : null}
         </div>
       </div>
-    </div>
+    </>
   );
+
+  const className = clsx(
+    'relative overflow-hidden rounded-2xl border bg-gradient-to-br p-5 shadow-xl backdrop-blur transition',
+    variants[variant],
+    href
+      ? 'hover:border-white/30 hover:shadow-2xl hover:shadow-nn-primary-500/10 cursor-pointer'
+      : 'hover:border-white/30 hover:shadow-2xl hover:shadow-nn-primary-500/10'
+  );
+
+  if (href) {
+    return (
+      <Link to={href} className={className}>
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className={className}>{content}</div>;
 }

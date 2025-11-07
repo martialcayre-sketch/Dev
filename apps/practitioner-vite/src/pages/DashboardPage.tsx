@@ -46,6 +46,7 @@ export default function DashboardPage() {
             value={loading ? '–' : metrics.totalPatients}
             helper="Dans votre accompagnement actuellement"
             variant="primary"
+            href="/patients"
           />
           <StatCard
             icon={Activity}

@@ -1,59 +1,93 @@
-import { auth, firestore } from '@/lib/firebase';
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
-import { useEffect, useMemo, useState } from 'react';
+import { useFirebaseUser } from '@/hooks/useFirebaseUser';
+import api from '@/services/api';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 export type PatientQuestionnaire = {
   id: string;
   title: string;
   category?: string;
   description?: string;
-  status: 'pending' | 'in_progress' | 'completed';
+  status: 'pending' | 'in_progress' | 'submitted' | 'completed' | 'reopened';
   assignedAt?: any;
   completedAt?: any;
+  submittedAt?: any;
 };
 
 export function usePatientQuestionnaires() {
+  const { user, loading: userLoading } = useFirebaseUser();
   const [items, setItems] = useState<PatientQuestionnaire[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Stable ref to avoid redefining functions in event listeners
+  const fetchRef = useRef<() => Promise<void>>();
+
   useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) {
-      setItems([]);
-      setLoading(false);
-      return;
-    }
-    try {
-      const ref = collection(firestore, 'patients', user.uid, 'questionnaires');
-      const q = query(ref, orderBy('assignedAt', 'desc'));
-      const unsub = onSnapshot(
-        q,
-        (snap) => {
-          const list: PatientQuestionnaire[] = snap.docs.map((d) => ({
-            id: d.id,
-            ...(d.data() as any),
-          }));
-          setItems(list);
-          setLoading(false);
-        },
-        (err) => {
-          setError(err.message || String(err));
+    let isMounted = true;
+
+    fetchRef.current = async () => {
+      if (!user) {
+        if (isMounted) {
+          setItems([]);
           setLoading(false);
         }
-      );
-      return () => unsub();
-    } catch (e: any) {
-      setError(e?.message || String(e));
-      setLoading(false);
+        return;
+      }
+      try {
+        setError(null);
+        console.log('[usePatientQuestionnaires] Fetching for user:', user.uid);
+        const response = await api.getPatientQuestionnaires(user.uid);
+        if (!isMounted) return;
+        const questionnaires = response.questionnaires || [];
+        setItems(questionnaires as PatientQuestionnaire[]);
+        setLoading(false);
+      } catch (e: any) {
+        if (!isMounted) return;
+        console.error('[usePatientQuestionnaires] Error:', e);
+        setError(e?.message || String(e));
+        setLoading(false);
+      }
+    };
+
+    if (!userLoading) {
+      // Initial fetch with loading state only the first time
+      setLoading(true);
+      fetchRef.current();
+
+      // Poll (background refresh) every 15s instead of 10s to reduce load
+      const pollInterval = setInterval(() => {
+        fetchRef.current && fetchRef.current();
+      }, 15000);
+
+      // Refetch on window focus & visibility change (for email link open)
+      const onFocus = () => {
+        fetchRef.current && fetchRef.current();
+      };
+      const onVisibility = () => {
+        if (document.visibilityState === 'visible') {
+          fetchRef.current && fetchRef.current();
+        }
+      };
+      window.addEventListener('focus', onFocus);
+      document.addEventListener('visibilitychange', onVisibility);
+
+      return () => {
+        isMounted = false;
+        clearInterval(pollInterval);
+        window.removeEventListener('focus', onFocus);
+        document.removeEventListener('visibilitychange', onVisibility);
+      };
     }
-  }, []);
+  }, [user, userLoading]);
 
   const counts = useMemo(() => {
-    const pending = items.filter((i) => i.status !== 'completed').length;
+    const pending = items.filter(
+      (i) => i.status === 'pending' || i.status === 'in_progress' || i.status === 'reopened'
+    ).length;
     const completed = items.filter((i) => i.status === 'completed').length;
-    return { pending, completed, total: items.length };
+    const submitted = items.filter((i) => i.status === 'submitted').length;
+    return { pending, completed, submitted, total: items.length };
   }, [items]);
 
-  return { items, loading, error, counts };
+  return { items, loading: loading || userLoading, error, counts };
 }

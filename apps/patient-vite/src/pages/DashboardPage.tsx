@@ -1,6 +1,7 @@
 import { DashboardShell } from '@/components/layout/DashboardShell';
 import { useFirebaseUser } from '@/hooks/useFirebaseUser';
 import { firestore } from '@/lib/firebase';
+import api from '@/services/api';
 import { collection, getDocs, limit, orderBy, query, Timestamp, where } from 'firebase/firestore';
 import {
   CalendarDays,
@@ -8,7 +9,6 @@ import {
   ChevronUp,
   FileText,
   HeartPulse,
-  Library,
   NotebookPen,
   Salad,
   User,
@@ -88,28 +88,22 @@ export default function DashboardPage() {
 
     const loadDashboardData = async () => {
       try {
-        // 1. Charger tous les questionnaires non complétés
-        const questionnairesRef = collection(firestore, 'patients', user.uid, 'questionnaires');
-        const questionnairesQuery = query(questionnairesRef, orderBy('assignedAt', 'desc'));
+        // 1. Charger tous les questionnaires non complétés via API
+        const result = await api.getPatientQuestionnaires(user.uid);
 
-        const questionnairesSnap = await getDocs(questionnairesQuery);
+        if (result && result.questionnaires) {
+          // Filtrer les questionnaires non complétés (pending ou in_progress)
+          const questionnaires = result.questionnaires
+            .filter((q: any) => q.status !== 'completed')
+            .map((q: any) => ({
+              id: q.id,
+              title: q.title || q.id,
+              status: q.status as 'pending' | 'in_progress' | 'completed',
+              assignedAt: q.assignedAt?.toDate ? q.assignedAt.toDate() : new Date(q.assignedAt),
+            }));
 
-        // Filtrer les questionnaires non complétés (pending ou in_progress)
-        const questionnaires = questionnairesSnap.docs
-          .map((doc) => {
-            const data = doc.data();
-            return {
-              id: doc.id,
-              title: data.title || doc.id,
-              status: data.status as 'pending' | 'in_progress' | 'completed',
-              assignedAt: data.assignedAt?.toDate() || new Date(),
-            };
-          })
-          .filter((q) => q.status !== 'completed');
-
-        setPendingQuestionnaires(questionnaires);
-
-        // 2. Vérifier si identification et anamnèse sont complétées
+          setPendingQuestionnaires(questionnaires);
+        } // 2. Vérifier si identification et anamnèse sont complétées
         const consultationRef = collection(firestore, 'patients', user.uid, 'consultation');
 
         const identificationDoc = await getDocs(
@@ -240,20 +234,6 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-        <button
-          onClick={() => navigate('/dashboard/library')}
-          className="rounded-2xl border border-white/10 bg-white/5 p-4 hover:bg-white/10 transition-all text-left"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/20 text-purple-300">
-              <Library className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-wide text-white/60">Bibliothèque</p>
-              <p className="text-lg font-semibold">33 questionnaires</p>
-            </div>
-          </div>
-        </button>
       </section>
 
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">

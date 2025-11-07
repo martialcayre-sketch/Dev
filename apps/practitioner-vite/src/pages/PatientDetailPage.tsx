@@ -1,7 +1,8 @@
 import LatestDayFlowAlimCard from '@/components/LatestDayFlowAlimCard';
+import LifeJourneyRadarCard from '@/components/LifeJourneyRadarCard';
 import { DashboardShell } from '@/components/layout/DashboardShell';
+import { useFirebaseUser } from '@/hooks/useFirebaseUser';
 import { firestore } from '@/lib/firebase';
-import { LifeJourneyRadar, usePatientLifeJourneyApi } from '@neuronutrition/shared-charts';
 import { collection, doc, getDoc, onSnapshot, orderBy, query } from 'firebase/firestore';
 import {
   Activity,
@@ -152,26 +153,77 @@ function VerticalBarChart({ responses }: { responses: Record<string, any> }) {
 
 export default function PatientDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { user, loading: authLoading } = useFirebaseUser();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!id) return;
+    console.log('[PatientDetailPage] Effect triggered', {
+      authLoading,
+      hasUser: !!user,
+      userUid: user?.uid,
+      patientId: id,
+    });
+
+    // Attendre que l'authentification soit chargée
+    if (authLoading) {
+      console.log('[PatientDetailPage] Waiting for auth...');
+      return;
+    }
+
+    // Vérifier que l'utilisateur est connecté
+    if (!user) {
+      console.error('[PatientDetailPage] No user logged in');
+      setError('Vous devez être connecté pour voir cette page');
+      setLoading(false);
+      return;
+    }
+
+    console.log('[PatientDetailPage] Practitioner logged in:', user.uid, user.email);
+
+    if (!id) {
+      console.error('[PatientDetailPage] No patient ID provided');
+      setError('Aucun identifiant patient fourni');
+      setLoading(false);
+      return;
+    }
+
+    console.log('[PatientDetailPage] Loading patient:', id);
 
     // Load patient data
     const loadPatient = async () => {
       try {
+        console.log('[PatientDetailPage] Fetching patient document...');
         const patientDoc = await getDoc(doc(firestore, 'patients', id));
+
+        console.log('[PatientDetailPage] Patient doc exists:', patientDoc.exists());
+
         if (patientDoc.exists()) {
-          setPatient({ uid: id, ...patientDoc.data() } as Patient);
+          const patientData = { uid: id, ...patientDoc.data() } as Patient;
+          console.log('[PatientDetailPage] Patient data loaded:', {
+            uid: patientData.uid,
+            email: patientData.email,
+            status: patientData.status,
+            practitionerId: patientDoc.data().practitionerId,
+          });
+          setPatient(patientData);
         } else {
+          console.error('[PatientDetailPage] Patient document does not exist');
           setError('Patient non trouvé');
         }
       } catch (err: any) {
-        console.error('Error loading patient:', err);
-        setError(err.message);
+        console.error('[PatientDetailPage] Error loading patient:', err);
+        console.error('[PatientDetailPage] Error code:', err.code);
+        console.error('[PatientDetailPage] Error message:', err.message);
+
+        // Fournir un message d'erreur plus détaillé
+        if (err.code === 'permission-denied') {
+          setError("Accès refusé : vous n'avez pas les permissions pour voir ce patient");
+        } else {
+          setError(`Erreur lors du chargement : ${err.message}`);
+        }
       } finally {
         setLoading(false);
       }
@@ -186,6 +238,7 @@ export default function PatientDetailPage() {
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
+        console.log('[PatientDetailPage] Questionnaires loaded:', snapshot.docs.length);
         const questionnairesData = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -193,14 +246,15 @@ export default function PatientDetailPage() {
         setQuestionnaires(questionnairesData);
       },
       (err) => {
-        console.error('Error listening to questionnaires:', err);
+        console.error('[PatientDetailPage] Error listening to questionnaires:', err);
+        console.error('[PatientDetailPage] Questionnaires error code:', err.code);
       }
     );
 
     return () => unsubscribe();
-  }, [id]);
+  }, [id, authLoading, user]);
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <DashboardShell>
         <div className="flex h-96 items-center justify-center">
@@ -213,8 +267,32 @@ export default function PatientDetailPage() {
   if (error || !patient) {
     return (
       <DashboardShell>
-        <div className="flex h-96 items-center justify-center">
-          <div className="text-red-400">{error || 'Patient non trouvé'}</div>
+        <div className="flex min-h-96 flex-col items-center justify-center gap-4 p-8">
+          <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 max-w-2xl">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-6 w-6 text-red-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-lg font-semibold text-red-400 mb-2">
+                  {error || 'Patient non trouvé'}
+                </h3>
+                <p className="text-sm text-white/70 mb-4">Vérifiez que :</p>
+                <ul className="list-disc list-inside space-y-1 text-sm text-white/60">
+                  <li>Le patient existe dans la base de données</li>
+                  <li>Ce patient est bien assigné à votre compte praticien</li>
+                  <li>Vous êtes connecté avec le bon compte praticien</li>
+                  <li>Vous avez les permissions nécessaires</li>
+                </ul>
+                {id && <p className="mt-4 text-xs text-white/40 font-mono">ID patient : {id}</p>}
+              </div>
+            </div>
+          </div>
+          <Link
+            to="/patients"
+            className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white hover:border-white/30 hover:bg-white/10"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Retour à la liste des patients
+          </Link>
         </div>
       </DashboardShell>
     );
@@ -229,9 +307,6 @@ export default function PatientDetailPage() {
   const completedQuestionnaires = questionnaires.filter((q) => q.status === 'completed');
 
   const plaintesDouleurs = questionnaires.find((q) => q.id === 'plaintes-et-douleurs');
-
-  // Load life journey data via REST API
-  const { data: lifejourneyData } = usePatientLifeJourneyApi(id || '');
 
   return (
     <DashboardShell>
@@ -346,7 +421,7 @@ export default function PatientDetailPage() {
           plaintesDouleurs.responses && <VerticalBarChart responses={plaintesDouleurs.responses} />}
 
         {/* Life Journey Radar Chart */}
-        {lifejourneyData && <LifeJourneyRadar data={lifejourneyData} />}
+        {id && <LifeJourneyRadarCard patientId={id} />}
 
         {/* Questionnaires List */}
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6">

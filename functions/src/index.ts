@@ -13,9 +13,15 @@ import * as logger from 'firebase-functions/logger';
 import { auth as authV1 } from 'firebase-functions/v1';
 import { setGlobalOptions } from 'firebase-functions/v2';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
+import { DEFAULT_QUESTIONNAIRES } from './constants/questionnaires';
 
 // Export Cloud Functions from separate modules
+export { assignQuestionnaires } from './assignQuestionnaires';
+export { api } from './http/app';
+export { migrateQuestionnairesToRoot } from './migrateQuestionnairesToRoot';
 export { onQuestionnaireCompleted } from './onQuestionnaireCompleted';
+export { setQuestionnaireStatus } from './setQuestionnaireStatus';
+export { submitQuestionnaire } from './submitQuestionnaire';
 
 setGlobalOptions({ region: 'europe-west1', maxInstances: 10 });
 
@@ -24,6 +30,185 @@ if (!admin.apps.length) {
 }
 
 const db = admin.firestore();
+
+/**
+ * Cloud Function pour créer une invitation patient
+ * Créé un compte Auth temporaire + token d'invitation + envoie l'email
+ */
+export const createPatientInvitation = onCall(async (request) => {
+  const ctx = request.auth;
+  if (!ctx) throw new HttpsError('unauthenticated', 'Authentication required');
+
+  const { email, firstname, lastname, phone } = request.data as {
+    email?: string;
+    firstname?: string;
+    lastname?: string;
+    phone?: string;
+  };
+
+  if (!email || !email.includes('@')) {
+    throw new HttpsError('invalid-argument', 'Valid email is required');
+  }
+
+  const practitionerId = ctx.uid;
+
+  try {
+    logger.info(`🔵 Creating invitation for: ${email}, practitioner: ${practitionerId}`);
+
+    // Vérifier que le praticien existe et est approuvé
+    const practitionerRef = db.collection('practitioners').doc(practitionerId);
+    const practitionerSnap = await practitionerRef.get();
+
+    if (!practitionerSnap.exists) {
+      throw new HttpsError('not-found', 'Practitioner not found');
+    }
+
+    const practitionerData = practitionerSnap.data() as any;
+    if (practitionerData.approvalStatus !== 'approved') {
+      throw new HttpsError(
+        'permission-denied',
+        'Your practitioner account must be approved before inviting patients'
+      );
+    }
+
+    // Vérifier si un patient avec cet email existe déjà
+    const existingPatients = await db.collection('patients').where('email', '==', email).get();
+
+    if (!existingPatients.empty) {
+      throw new HttpsError('already-exists', 'Un patient avec cet email existe déjà');
+    }
+
+    // Générer un token d'invitation unique
+    const token = admin.firestore().collection('invitationTokens').doc().id;
+
+    // Générer un mot de passe temporaire sécurisé
+    const tempPassword =
+      Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8).toUpperCase();
+
+    // Créer le compte Auth avec le mot de passe temporaire
+    let authUser;
+    try {
+      authUser = await admin.auth().createUser({
+        email,
+        password: tempPassword,
+        displayName: firstname && lastname ? `${firstname} ${lastname}` : firstname || undefined,
+      });
+      logger.info(`✅ Auth user created: ${authUser.uid}`);
+    } catch (authError: any) {
+      if (authError.code === 'auth/email-already-exists') {
+        throw new HttpsError('already-exists', 'Un compte avec cet email existe déjà');
+      }
+      throw authError;
+    }
+
+    // Créer le document patient
+    const patientData = {
+      email,
+      firstname: firstname || null,
+      lastname: lastname || null,
+      phone: phone || null,
+      displayName: firstname && lastname ? `${firstname} ${lastname}` : firstname || null,
+      practitionerId,
+      status: 'pending', // Sera mis à 'approved' à l'activation
+      approvalStatus: 'pending',
+      invitationToken: token,
+      createdAt: FieldValue.serverTimestamp(),
+      provider: 'password',
+    };
+
+    await db.collection('patients').doc(authUser.uid).set(patientData);
+    logger.info(`✅ Patient document created: ${authUser.uid}`);
+
+    // Stocker le token d'invitation avec expiration à 24h
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await db
+      .collection('invitationTokens')
+      .doc(token)
+      .set({
+        email,
+        tempPassword,
+        practitionerId,
+        patientId: authUser.uid,
+        patientData: {
+          firstname: firstname || null,
+          lastname: lastname || null,
+          phone: phone || null,
+        },
+        used: false,
+        expiresAt,
+        createdAt: FieldValue.serverTimestamp(),
+      });
+
+    logger.info(`✅ Invitation token created: ${token}`);
+
+    // Construire le lien d'invitation
+    const patientAppUrl =
+      process.env.PATIENT_APP_URL || 'https://neuronutrition-app-patient.web.app';
+    const invitationLink = `${patientAppUrl}/signup?token=${token}`;
+
+    // Envoyer l'email d'invitation
+    await db.collection('mail').add({
+      to: email,
+      message: {
+        subject: `Invitation à rejoindre NeuroNutrition - ${practitionerData.displayName || 'Votre praticien'}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #4F46E5;">Bienvenue sur NeuroNutrition ! 🧠</h2>
+            <p>Bonjour ${firstname || ''},</p>
+            <p>
+              ${practitionerData.displayName || 'Votre praticien'} vous invite à créer votre compte patient 
+              sur la plateforme NeuroNutrition.
+            </p>
+            <p>
+              Cette plateforme vous permettra de :
+            </p>
+            <ul>
+              <li>📋 Remplir vos questionnaires de santé en ligne</li>
+              <li>📊 Suivre vos recommandations personnalisées</li>
+              <li>📅 Gérer vos rendez-vous</li>
+              <li>💬 Communiquer avec votre praticien</li>
+            </ul>
+            <p style="margin: 30px 0;">
+              <a href="${invitationLink}" 
+                 style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">
+                Créer mon compte
+              </a>
+            </p>
+            <p style="color: #666; font-size: 14px;">
+              📌 <strong>Lien direct :</strong><br>
+              <a href="${invitationLink}" style="color: #4F46E5;">
+                ${invitationLink}
+              </a>
+            </p>
+            <p style="color: #999; font-size: 12px; margin-top: 30px;">
+              ⏰ Ce lien est valable 24 heures.<br>
+              Si vous avez des questions, contactez votre praticien directement.
+            </p>
+          </div>
+        `,
+      },
+    });
+
+    logger.info(`✅ Invitation email sent to ${email}`);
+
+    return {
+      success: true,
+      message: 'Invitation créée avec succès',
+      invitationLink,
+      token,
+    };
+  } catch (error: any) {
+    logger.error('❌ ERROR: Failed to create invitation:', error);
+
+    // Si l'erreur est une HttpsError, on la relance directement
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+
+    throw new HttpsError('internal', `Failed to create invitation: ${error.message}`);
+  }
+});
 
 export const onAuthCreate = authV1.user().onCreate(async (user) => {
   const ref = db.collection('users').doc(user.uid);
@@ -90,186 +275,6 @@ export const approvePatient = onCall(async (request) => {
 
   logger.info(`Patient ${patientUid} ${decision} by ${practitionerUid}`);
   return { ok: true };
-});
-
-/**
- * Questionnaire templates to assign to patients
- */
-interface QuestionnaireTemplate {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-}
-
-const DEFAULT_QUESTIONNAIRES: QuestionnaireTemplate[] = [
-  {
-    id: 'plaintes-et-douleurs',
-    title: 'Mes plaintes actuelles et troubles ressentis',
-    category: 'Mode de vie',
-    description: "Évaluez l'intensité de vos troubles actuels (fatigue, douleurs, digestion, etc.)",
-  },
-  {
-    id: 'life-journey',
-    title: 'Mode de vie – 7 Sphères Vitales',
-    category: 'Mode de vie SIIN',
-    description:
-      'Évaluez votre mode de vie selon 7 dimensions clés : sommeil, rythme, stress, activité physique, toxiques, relations sociales et alimentation',
-  },
-  {
-    id: 'alimentaire',
-    title: 'Questionnaire alimentaire',
-    category: 'Alimentaire',
-    description: 'Décrivez vos habitudes alimentaires et votre régime',
-  },
-  {
-    id: 'dnsm',
-    title: 'Questionnaire Dopamine-Noradrénaline-Sérotonine-Mélatonine',
-    category: 'Neuro-psychologie',
-    description: 'Évaluez vos neurotransmetteurs et votre équilibre hormonal',
-  },
-];
-
-/**
- * Cloud Function pour assigner automatiquement les questionnaires à un patient
- * lors de l'ouverture de son espace consultation
- */
-export const assignQuestionnaires = onCall(async (request) => {
-  const ctx = request.auth;
-  if (!ctx) throw new HttpsError('unauthenticated', 'Authentication required');
-
-  const patientUid = ctx.uid;
-  const { practitionerId } = request.data as { practitionerId?: string };
-
-  try {
-    logger.info(`🔵 START: Assigning questionnaires to patient ${patientUid}`);
-
-    // Vérifier si les questionnaires ont déjà été assignés (via un doc connu)
-    const firstQuestionnaireRef = db
-      .collection('patients')
-      .doc(patientUid)
-      .collection('questionnaires')
-      .doc(DEFAULT_QUESTIONNAIRES[0].id);
-    const firstQuestionnaireSnap = await firstQuestionnaireRef.get();
-
-    if (firstQuestionnaireSnap.exists) {
-      logger.info(`✅ Questionnaires already assigned to patient ${patientUid}`);
-      return {
-        success: true,
-        alreadyAssigned: true,
-        message: 'Les questionnaires ont déjà été assignés',
-      };
-    }
-
-    logger.info(`📝 Creating ${DEFAULT_QUESTIONNAIRES.length} questionnaires...`);
-
-    // Créer les questionnaires dans Firestore
-    const batch = db.batch();
-    const now = FieldValue.serverTimestamp();
-
-    DEFAULT_QUESTIONNAIRES.forEach((template) => {
-      const questionnaireRef = db
-        .collection('patients')
-        .doc(patientUid)
-        .collection('questionnaires')
-        .doc(template.id);
-
-      batch.set(questionnaireRef, {
-        ...template,
-        patientUid,
-        practitionerId: practitionerId || null,
-        status: 'pending',
-        assignedAt: now,
-        completedAt: null,
-        responses: {},
-      });
-    });
-
-    await batch.commit();
-    logger.info(`✅ Batch committed: ${DEFAULT_QUESTIONNAIRES.length} questionnaires created`);
-
-    // Mettre à jour (ou créer) le document patient pour notifier le praticien
-    logger.info(`📄 Updating patient document...`);
-    await db.collection('patients').doc(patientUid).set(
-      {
-        hasQuestionnairesAssigned: true,
-        questionnairesAssignedAt: now,
-        pendingQuestionnairesCount: DEFAULT_QUESTIONNAIRES.length,
-      },
-      { merge: true }
-    );
-
-    // Créer une notification pour le patient
-    logger.info(`🔔 Creating notification...`);
-    await db
-      .collection('patients')
-      .doc(patientUid)
-      .collection('notifications')
-      .add({
-        type: 'questionnaires_assigned',
-        title: 'Nouveaux questionnaires disponibles',
-        message: `${DEFAULT_QUESTIONNAIRES.length} questionnaires vous ont été assignés. Veuillez les compléter dès que possible.`,
-        read: false,
-        createdAt: now,
-        link: '/dashboard/questionnaires',
-      });
-
-    logger.info(
-      `🎉 SUCCESS: Assigned ${DEFAULT_QUESTIONNAIRES.length} questionnaires to patient ${patientUid}`
-    );
-
-    // Envoyer un email au patient
-    try {
-      const patientDoc = await db.collection('patients').doc(patientUid).get();
-      const patientData = patientDoc.data();
-      const patientEmail = patientData?.email || ctx.token.email;
-
-      if (patientEmail) {
-        await db.collection('mail').add({
-          to: patientEmail,
-          message: {
-            subject: '📋 Nouveaux questionnaires à remplir - NeuroNutrition',
-            html: `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #4F46E5;">Nouveaux questionnaires disponibles</h2>
-                <p>Bonjour,</p>
-                <p>Votre praticien vous a assigné <strong>${DEFAULT_QUESTIONNAIRES.length} questionnaires</strong> à compléter :</p>
-                <ul>
-                  ${DEFAULT_QUESTIONNAIRES.map((q) => `<li><strong>${q.title}</strong> - ${q.description}</li>`).join('\n')}
-                </ul>
-                <p>Ces questionnaires nous aideront à mieux comprendre votre situation et à personnaliser votre suivi.</p>
-                <p style="margin: 30px 0;">
-                  <a href="${process.env.PATIENT_APP_URL || 'https://neuronutrition-app.web.app'}/dashboard/questionnaires" 
-                     style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">
-                    Remplir les questionnaires
-                  </a>
-                </p>
-                <p style="color: #666; font-size: 12px;">
-                  Si vous n'avez pas demandé ces questionnaires, veuillez contacter votre praticien.
-                </p>
-              </div>
-            `,
-          },
-        });
-        logger.info(`📧 Email notification queued for patient ${patientUid}`);
-      }
-    } catch (emailError: any) {
-      logger.error('❌ Failed to send email notification:', emailError);
-      // Ne pas bloquer si l'email échoue
-    }
-
-    return {
-      success: true,
-      questionnaires: DEFAULT_QUESTIONNAIRES.map((q) => ({
-        id: q.id,
-        title: q.title,
-      })),
-      message: `${DEFAULT_QUESTIONNAIRES.length} questionnaires ont été assignés`,
-    };
-  } catch (error: any) {
-    logger.error('❌ ERROR: Failed to assign questionnaires:', error);
-    throw new HttpsError('internal', `Failed to assign questionnaires: ${error.message}`);
-  }
 });
 
 /**

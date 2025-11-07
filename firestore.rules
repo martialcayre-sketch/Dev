@@ -49,8 +49,13 @@ service cloud.firestore {
       
       // Questionnaires sub-collection
       match /questionnaires/{questionnaireId} {
-        // Patient can read/write their own questionnaires
-        allow read, write: if isSignedIn() && request.auth.uid == id;
+        // Patient can read their own questionnaires
+        allow read: if isSignedIn() && request.auth.uid == id;
+        // Patient can create/update ONLY if status is NOT 'submitted' or 'completed'
+        allow create: if isSignedIn() && request.auth.uid == id;
+        allow update: if isSignedIn() && request.auth.uid == id 
+                      && (!resource.data.keys().hasAny(['status']) 
+                          || (resource.data.status != 'submitted' && resource.data.status != 'completed'));
         // Practitioner can read their patient's questionnaires
         allow read: if isSignedIn() && get(/databases/$(database)/documents/patients/$(id)).data.practitionerId == request.auth.uid;
         // Admin can read all
@@ -81,6 +86,22 @@ service cloud.firestore {
       allow create: if isSignedIn() && request.auth.uid == id;
       // Updates and deletes restricted to admins only
       allow update, delete: if isAdmin();
+      
+      // Inbox sub-collection for practitioner notifications
+      match /inbox/{inboxId} {
+        // Practitioner can read/write their own inbox
+        allow read, write: if isSignedIn() && request.auth.uid == id;
+        // Admin can read all
+        allow read: if isAdmin();
+      }
+      
+      // Notifications sub-collection
+      match /notifications/{notificationId} {
+        // Practitioner can read/write their own notifications
+        allow read, write: if isSignedIn() && request.auth.uid == id;
+        // Admin can read all
+        allow read: if isAdmin();
+      }
     }
     match /plans/{id} {
       allow read, write: if isOwner(resource.data.ownerUid) || isAdmin();
@@ -153,6 +174,21 @@ service cloud.firestore {
       allow create: if isSignedIn() && request.resource.data.practitionerId == request.auth.uid;
       // Admin can read all
       allow read: if isAdmin();
+    }
+    
+    // Top-level questionnaires collection (root collection for all questionnaires)
+    match /questionnaires/{questionnaireId} {
+      // Patient can read their own questionnaires
+      allow read: if isSignedIn() && resource.data.patientUid == request.auth.uid;
+      // Patient can update ONLY if status is NOT 'submitted' or 'completed'
+      allow update: if isSignedIn() && request.auth.uid == resource.data.patientUid
+                    && (resource.data.status != 'submitted' && resource.data.status != 'completed');
+      // Practitioner can read their patient's questionnaires
+      allow read: if isSignedIn() && resource.data.practitionerId == request.auth.uid;
+      // Cloud Functions can create/update
+      allow create: if isSignedIn();
+      // Admin can do everything
+      allow read, write: if isAdmin();
     }
     
     // Subcollection consultations under patients (for backwards compatibility)

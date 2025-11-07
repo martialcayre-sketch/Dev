@@ -1,9 +1,12 @@
 import { DashboardShell } from '@/components/layout/DashboardShell';
+import QuestionnaireStatusBanner from '@/components/questionnaires/QuestionnaireStatusBanner';
+import SubmitToPractitionerButton from '@/components/questionnaires/SubmitToPractitionerButton';
 import { SliderInput } from '@/components/SliderInput';
 import DayFlowAlimForm from '@/features/dayflow-alim/DayFlowAlimForm';
 import { useFirebaseUser } from '@/hooks/useFirebaseUser';
 import { firestore } from '@/lib/firebase';
 import { THEMES, getQuestions } from '@/questionnaires/data';
+import api from '@/services/api';
 import {
   addDoc,
   collection,
@@ -140,19 +143,19 @@ export default function QuestionnaireDetailPage() {
     setSaveSuccess(false);
 
     try {
-      const ref = doc(firestore, 'patients', user.uid, 'questionnaires', id);
-      const updateData: any = {
-        responses,
-        lastModified: new Date().toISOString(),
-      };
-      if (markAsCompleted) {
-        updateData.status = 'completed';
-        updateData.completedAt = serverTimestamp();
-      }
-      await updateDoc(ref, updateData);
+      // Use HTTP API for auto-save instead of direct Firestore update
+      await api.saveQuestionnaireResponses(user.uid, id, responses);
 
-      // Marquer notification liée comme lue
+      // If marking as completed, still use Firestore for now
+      // TODO: Create HTTP endpoint for completion
       if (markAsCompleted) {
+        const ref = doc(firestore, 'patients', user.uid, 'questionnaires', id);
+        await updateDoc(ref, {
+          status: 'completed',
+          completedAt: serverTimestamp(),
+        });
+
+        // Marquer notification liée comme lue
         const notificationsRef = collection(firestore, 'patients', user.uid, 'notifications');
         const notifQuery = query(
           notificationsRef,
@@ -265,6 +268,7 @@ export default function QuestionnaireDetailPage() {
   // Mode de vie redirige vers la page dédiée life-journey
 
   const handleSaveClick = (complete = false) => handleSave(complete);
+  const canEdit = questionnaire.status !== 'submitted' && questionnaire.status !== 'completed';
 
   // DNSM specialized rendering
   if (isDNSM) {
@@ -307,12 +311,11 @@ export default function QuestionnaireDetailPage() {
                 <p className="text-white/70">{questionnaire.description}</p>
                 <p className="text-xs text-white/50 mt-2">Catégorie : {questionnaire.category}</p>
               </div>
-              {questionnaire.status === 'completed' && (
-                <div className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  <CheckCircle2 className="h-4 w-4" />
-                  Complété
-                </div>
-              )}
+              <QuestionnaireStatusBanner
+                status={questionnaire.status}
+                submittedAt={questionnaire.submittedAt}
+                completedAt={questionnaire.completedAt}
+              />
             </div>
           </div>
 
@@ -328,7 +331,7 @@ export default function QuestionnaireDetailPage() {
             </div>
             <button
               type="button"
-              disabled={saving}
+              disabled={saving || !canEdit}
               onClick={() => handleSaveClick(false)}
               className="inline-flex items-center gap-2 px-4 py-2 rounded border border-white/20 text-white/90 hover:bg-white/10 disabled:opacity-50"
             >
@@ -350,7 +353,9 @@ export default function QuestionnaireDetailPage() {
             </div>
           )}
 
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-8 space-y-8">
+          <div
+            className={`rounded-3xl border border-white/10 bg-white/5 p-8 space-y-8 ${!canEdit ? 'opacity-60 pointer-events-none select-none' : ''}`}
+          >
             {themeFields[page].map((q, idx) => (
               <div key={q.id} className="space-y-3">
                 <label className="block">
@@ -365,6 +370,7 @@ export default function QuestionnaireDetailPage() {
                   value={responses[q.id] ?? ''}
                   onChange={(e) => onChange(q.id, Number(e.target.value))}
                   className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white/90 focus:border-nn-primary-500/40 focus:outline-none focus:ring-2 focus:ring-nn-primary-500/40"
+                  disabled={!canEdit}
                 >
                   <option value="" disabled>
                     Choisir une réponse
@@ -390,18 +396,21 @@ export default function QuestionnaireDetailPage() {
                 type="button"
                 className="px-4 py-2 bg-black text-white rounded"
                 onClick={handleNext}
+                disabled={!canEdit}
               >
                 Suivant
               </button>
             )}
             {page === 3 && (
-              <button
-                type="button"
-                className="px-4 py-2 bg-nn-primary-500 text-white rounded"
-                onClick={() => handleSaveClick(true)}
-              >
-                Valider et terminer
-              </button>
+              <div className="flex items-center gap-3">
+                <SubmitToPractitionerButton
+                  patientId={user!.uid}
+                  questionnaireId={id}
+                  status={questionnaire.status}
+                  disabled={!canEdit}
+                  onSuccess={() => navigate('/dashboard/questionnaires')}
+                />
+              </div>
             )}
           </div>
         </div>
@@ -433,12 +442,11 @@ export default function QuestionnaireDetailPage() {
                 </p>
                 <p className="mt-2 text-xs text-white/50">Catégorie : {friendlyCategory}</p>
               </div>
-              {questionnaire.status === 'completed' && (
-                <div className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm font-semibold text-emerald-300">
-                  <CheckCircle2 className="h-4 w-4" />
-                  Complété
-                </div>
-              )}
+              <QuestionnaireStatusBanner
+                status={questionnaire.status}
+                submittedAt={questionnaire.submittedAt}
+                completedAt={questionnaire.completedAt}
+              />
             </div>
           </div>
 
@@ -455,16 +463,7 @@ export default function QuestionnaireDetailPage() {
   const answered = questions.filter(
     (q) => responses[q.id] !== undefined && responses[q.id] !== ''
   ).length;
-  const handleComplete = () => {
-    const unanswered = questions.filter(
-      (q) => responses[q.id] === undefined || responses[q.id] === ''
-    );
-    if (unanswered.length > 0) {
-      setError('Merci de répondre à toutes les questions avant de valider.');
-      return;
-    }
-    handleSaveClick(true);
-  };
+  // Ancien handleComplete (remplacé par SubmitToPractitionerButton)
 
   return (
     <DashboardShell>
@@ -483,12 +482,11 @@ export default function QuestionnaireDetailPage() {
               <p className="text-white/70">{questionnaire.description}</p>
               <p className="text-xs text-white/50 mt-2">Catégorie : {questionnaire.category}</p>
             </div>
-            {questionnaire.status === 'completed' && (
-              <div className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                <CheckCircle2 className="h-4 w-4" />
-                Complété
-              </div>
-            )}
+            <QuestionnaireStatusBanner
+              status={questionnaire.status}
+              submittedAt={questionnaire.submittedAt}
+              completedAt={questionnaire.completedAt}
+            />
           </div>
         </div>
 
@@ -507,20 +505,20 @@ export default function QuestionnaireDetailPage() {
           <div className="flex gap-2">
             <button
               type="button"
-              disabled={saving}
+              disabled={saving || !canEdit}
               onClick={() => handleSaveClick(false)}
               className="inline-flex items-center gap-2 px-4 py-2 rounded border border-white/20 text-white/90 hover:bg-white/10 disabled:opacity-50"
             >
               <Save className="h-4 w-4" />
               Sauvegarder
             </button>
-            <button
-              type="button"
-              onClick={handleComplete}
-              className="px-4 py-2 bg-nn-primary-500 text-white rounded"
-            >
-              Valider et terminer
-            </button>
+            <SubmitToPractitionerButton
+              patientId={user!.uid}
+              questionnaireId={id}
+              status={questionnaire.status}
+              disabled={!canEdit}
+              onSuccess={() => navigate('/dashboard/questionnaires')}
+            />
           </div>
         </div>
 
@@ -537,7 +535,9 @@ export default function QuestionnaireDetailPage() {
           </div>
         )}
 
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-8 space-y-8">
+        <div
+          className={`rounded-3xl border border-white/10 bg-white/5 p-8 space-y-8 ${!canEdit ? 'opacity-60 pointer-events-none select-none' : ''}`}
+        >
           {questions.map((q, idx) => {
             const isPlaintes = questionnaireId === 'plaintes-et-douleurs';
             return (
@@ -571,6 +571,7 @@ export default function QuestionnaireDetailPage() {
                         value={responses[q.id] ?? ''}
                         onChange={(e) => onChange(q.id, Number(e.target.value))}
                         className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white/90 focus:border-nn-primary-500/40 focus:outline-none focus:ring-2 focus:ring-nn-primary-500/40"
+                        disabled={!canEdit}
                       >
                         <option value="" disabled>
                           Choisir une réponse
@@ -586,6 +587,7 @@ export default function QuestionnaireDetailPage() {
                         value={responses[q.id] ?? ''}
                         onChange={(e) => onChange(q.id, e.target.value)}
                         className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white/90 focus:border-nn-primary-500/40 focus:outline-none focus:ring-2 focus:ring-nn-primary-500/40"
+                        disabled={!canEdit}
                       >
                         <option value="" disabled>
                           Choisir une réponse
@@ -604,6 +606,7 @@ export default function QuestionnaireDetailPage() {
                           onChange(q.id, e.target.value === '' ? '' : Number(e.target.value))
                         }
                         className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white/90 focus:border-nn-primary-500/40 focus:outline-none focus:ring-2 focus:ring-nn-primary-500/40"
+                        disabled={!canEdit}
                       />
                     ) : q.type === 'textarea' ? (
                       <textarea
@@ -611,6 +614,7 @@ export default function QuestionnaireDetailPage() {
                         onChange={(e) => onChange(q.id, e.target.value)}
                         className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white/90 focus:border-nn-primary-500/40 focus:outline-none focus:ring-2 focus:ring-nn-primary-500/40"
                         rows={4}
+                        disabled={!canEdit}
                       />
                     ) : (
                       <input
@@ -618,6 +622,7 @@ export default function QuestionnaireDetailPage() {
                         value={responses[q.id] ?? ''}
                         onChange={(e) => onChange(q.id, e.target.value)}
                         className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white/90 focus:border-nn-primary-500/40 focus:outline-none focus:ring-2 focus:ring-nn-primary-500/40"
+                        disabled={!canEdit}
                       />
                     )}
                   </>
