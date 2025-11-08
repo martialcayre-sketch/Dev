@@ -1,49 +1,49 @@
 {
-    "name": "neuronutrition-app",
-    "version": "0.1.0",
-    "private": true,
-    "packageManager": "pnpm@9.15.4",
-    "workspaces": [
-        "apps/*",
-        "packages/*",
-        "functions",
-        "api"
-    ],
-    "scripts": {
-        "dev": "pnpm --filter web dev",
-        "dev:patient-spa": "pnpm -C apps/patient-spa dev",
-        "dev:practitioner-spa": "pnpm -C apps/practitioner-spa dev",
-        "dev:functions": "pnpm -C functions serve",
-        "build:run": "pnpm -C api build",
-        "deploy:run": "gcloud run deploy api --source=api --region=europe-west1 --allow-unauthenticated",
-        "deploy:run:patient": "gcloud run deploy patient-app --source=apps/patient --region=europe-west1 --allow-unauthenticated",
-        "deploy:run:practitioner": "gcloud run deploy practitioner-app --source=apps/practitioner --region=europe-west1 --allow-unauthenticated",
-        "build": "pnpm --filter web build && pnpm --filter functions build || exit 0",
-        "build:web": "pnpm -C apps/patient-spa build && pnpm -C apps/practitioner-spa build",
-        "lint": "pnpm --filter web lint || true",
-        "test": "pnpm --filter web test || true",
-        "format": "pnpm --filter web format || true",
-        "extract": "node scripts/extract_pdf_text.mjs",
-        "extract:mode": "node scripts/extract_pdf_text.mjs 'Mode de vie'",
-        "deploy:hosting:patient": "firebase deploy --only hosting:patient",
-        "deploy:hosting:practitioner": "firebase deploy --only hosting:practitioner",
-        "dev:emu": "firebase emulators:start --only functions,firestore,auth",
-        "dev:patient": "pnpm -C apps/patient dev",
-        "dev:practitioner": "pnpm -C apps/practitioner dev",
-        "dev:stack:win": "powershell -ExecutionPolicy Bypass -File scripts/dev-local.ps1",
-        "dev:stack:mac": "bash scripts/dev-local.sh",
-        "dev:stack:linux": "bash scripts/dev-local.sh"
-    },
-    "devDependencies": {
-        "firebase-admin": "^12.7.0",
-        "firebase-tools": "^14.20.0",
-        "pdf-parse": "^2.4.5",
-        "pdfjs-dist": "^5.4.296"
-    },
-    "engines": {
-        "node": ">=20.17.0 <21"
-    },
-    "dependencies": {
-        "firebase": "^12.5.0"
-    }
+  "name": "neuronutrition-app",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "functions",
+    "api"
+  ],
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "dev:patient-spa": "pnpm -C apps/patient-vite dev",
+    "dev:practitioner-spa": "pnpm -C apps/practitioner-vite dev",
+    "dev:functions": "pnpm -C functions serve",
+    "build:run": "pnpm -C api build",
+    "deploy:run": "gcloud run deploy api --source=api --region=europe-west1 --allow-unauthenticated",
+    "deploy:run:patient": "gcloud run deploy patient-app --source=apps/patient-vite --region=europe-west1 --allow-unauthenticated",
+    "deploy:run:practitioner": "gcloud run deploy practitioner-app --source=apps/practitioner-vite --region=europe-west1 --allow-unauthenticated",
+    "build": "pnpm --filter web build && pnpm --filter functions build || exit 0",
+    "build:web": "pnpm -C apps/patient-vite build && pnpm -C apps/practitioner-vite build",
+    "lint": "pnpm --filter web lint || true",
+    "test": "pnpm --filter web test || true",
+    "format": "pnpm --filter web format || true",
+    "extract": "node scripts/extract_pdf_text.mjs",
+    "extract:mode": "node scripts/extract_pdf_text.mjs 'Mode de vie'",
+    "deploy:hosting:patient": "firebase deploy --only hosting:patient",
+    "deploy:hosting:practitioner": "firebase deploy --only hosting:practitioner",
+    "dev:emu": "firebase emulators:start --only functions,firestore,auth",
+    "dev:patient": "pnpm -C apps/patient-vite dev",
+    "dev:practitioner": "pnpm -C apps/practitioner-vite dev",
+    "dev:stack:win": "powershell -ExecutionPolicy Bypass -File scripts/dev-local.ps1",
+    "dev:stack:mac": "bash scripts/dev-local.sh",
+    "dev:stack:linux": "bash scripts/dev-local.sh"
+  },
+  "devDependencies": {
+    "firebase-admin": "^12.7.0",
+    "firebase-tools": "^14.20.0",
+    "pdf-parse": "^2.4.5",
+    "pdfjs-dist": "^5.4.296"
+  },
+  "engines": {
+    "node": ">=20.17.0 <21"
+  },
+  "dependencies": {
+    "firebase": "^12.5.0"
+  }
 }

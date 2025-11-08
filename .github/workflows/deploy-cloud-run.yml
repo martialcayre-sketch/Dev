@@ -3,14 +3,37 @@ name: deploy-cloud-run
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'apps/patient/**'
-      - 'apps/practitioner/**'
+      - 'api/**'
       - '.github/workflows/deploy-cloud-run.yml'
 
 jobs:
-  deploy:
+  deploy-api:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Auth to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOYER_SA }}
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+      - name: Deploy api-app to Cloud Run
+        run: |
+          gcloud run deploy api-app \
+            --source=api \
+            --region=europe-west1 \
+            --allow-unauthenticated \
+            --project="${{ secrets.GCP_PROJECT_ID }}"
+  
+  deploy-frontends:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -19,10 +42,10 @@ jobs:
       matrix:
         include:
           - service: patient-app
-            source: apps/patient
+            source: apps/patient-vite
             region: europe-west1
           - service: practitioner-app
-            source: apps/practitioner
+            source: apps/practitioner-vite
             region: europe-west1
     steps:
       - uses: actions/checkout@v4
@@ -45,4 +68,3 @@ jobs:
             --region="${{ matrix.region }}" \
             --allow-unauthenticated \
             --project="${{ secrets.GCP_PROJECT_ID }}"
-

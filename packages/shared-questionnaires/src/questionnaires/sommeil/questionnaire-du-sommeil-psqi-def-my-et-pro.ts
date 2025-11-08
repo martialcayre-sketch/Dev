@@ -1,0 +1,51 @@
+import type { Questionnaire } from '../../types';
+
+export const questionnaire_du_sommeil_psqi_def_my_et_pro: Questionnaire = {
+  metadata: {
+    id: 'questionnaire-du-sommeil-psqi-def-my-et-pro',
+    title: `questionnaire du sommeil psqi def my et pro`,
+    category: 'sommeil',
+  },
+  questions: [
+  {
+    id: 'block-01',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Questionnaire :  Index de Qualité du Sommeil de Pittsburgh (PSQI)  Les questions suivantes ont trait à vos habitudes de sommeil pendant le dernier mois seulement. Vos réponses doivent indiquer ce qui correspond aux expériences que vous avez eues pendant la majorité des jours et des nuits au cours du dernier mois. Répondez à toutes les questions.  1/ Au cours du mois dernier, quand êtes-vous habituellement allé vous coucher le soir ?  Heure habituelle du coucher : ...............  2/ Au cours du mois dernier, combien vous a-t-il habituellement fallu de temps (en minutes) pour vous endormir chaque soir ?  Nombre de minutes : ...............  3/ Au cours du mois dernier, quand vous êtes-vous habituellement levé le matin ?  Heure habituelle du lever : ...............  4/ Au cours du mois dernier, combien d’heures de sommeil effectif avez-vous eu chaque nuit ? (Ce nombre peut être différent du nombre d’heures que vous avez passé au lit)  Heures de sommeil par nuit : ...............  Pour chacune des questions suivantes, indiquez la meilleure réponse. Répondez à toutes les questions.  5/ Au cours du mois dernier, avec quelle fréquence avez-vous eu des troubles du sommeil car …  Pas au cours du dernier mois  Moins d’une fois par semaine  Une ou deux fois par semaine  Trois ou quatre fois par semaine  a) Vous n’avez pas pu vous endormir en moins de 30 mn  b) Vous vous êtes réveillé au milieu de la nuit ou précocement le matin  c) Vous avez dû vous lever pour aller aux toilettes.  d) Vous n’avez pas pu respirer correctement  e) Vous avez toussé ou ronflé bruyamment  f) Vous avez eu trop froid  g) Vous avez eu trop chaud  h) Vous avez eu de mauvais rêves`,
+    type: 'textarea',
+  },
+  {
+    id: 'block-02',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  i) Vous avez eu des douleurs  j) Pour d’autre(s) raison(s). Donnez une description :  Indiquez la fréquence des troubles du sommeil pour ces raisons :  Pas au cours du dernier mois  Moins d’une fois par semaine  Une ou deux fois par semaine  Trois ou quatre fois par semaine  6/ Au cours du mois dernier, comment évalueriez-vous globalement la qualité de votre sommeil ?  Très bonne   Assez bonne   Assez mauvaise   Très mauvaise  7/ Au cours du mois dernier, combien de fois avez-vous pris des médicaments  (prescrits par votre médecin ou achetés sans ordonnance) pour faciliter votre  sommeil ?  Pas au cours   Moins d’une fois   Une ou deux fois   Trois ou quatre fois  du dernier mois   par semaine   par semaine   par semaine  8/ Au cours du mois dernier, combien de fois avez-vous eu des difficultés à  demeurer éveillé(e) pendant que vous conduisiez, preniez vos repas, étiez  occupé(e) dans une activité sociale ?  Pas au cours   Moins d’une fois   Une ou deux fois   Trois ou quatre fois  du dernier mois   par semaine   par semaine   par semaine  9/ Au cours du mois dernier, à quel degré cela a-t-il représenté un problème pour  vous d’avoir assez d’enthousiasme pour faire ce que vous aviez à faire ?  Pas du tout   Seulement un   Un certain problème   Un très gros  un problème   tout petit problème   problème`,
+    type: 'textarea',
+  },
+  {
+    id: 'block-03',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  10/ Avez-vous un conjoint ou un camarade de chambre ?  Ni l’un, ni l’autre.  Oui, mais dans une chambre différente.  Oui, dans la même chambre mais pas dans le même lit.  Oui, dans le même lit.  11/ Si vous avez un camarade de chambre ou un conjoint, demandez-lui combien  de fois le mois dernier vous avez présenté :  Pas au cours du dernier mois  Moins d’une fois par semaine  Une ou deux fois par semaine  Trois ou quatre fois par semaine  a)   U n ronflement fort  b)   D e longues pauses respiratoires pendant  votre sommeil  c) Des saccades ou des secousses des jambes pendant que vous dormiez  d) Des épisodes de désorientation ou de confusion pendant le sommeil  e) D’autres motifs d’agitation pendant le sommeil  Score total PSQI :`,
+    type: 'textarea',
+  },
+  {
+    id: 'block-04',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Calcul du score global au PSQI  Le PSQI comprend 19 questions d’auto-évaluation et 5 questions posées au conjoint ou compagnon de chambre (s’il en est un). Seules les questions d’auto-évaluation sont incluses dans le score. Les 19 questions d’auto-évaluation se combinent pour donner 7 “composantes” du score global, chaque composante recevant un score de 0 à 3.  Dans tous les cas, un score de 0 indique qu’il n’y a aucune difficulté tandis qu’un score de 3 indique l’existence de difficultés sévères. Les 7 composantes du score s’additionnent pour donner un score global allant de 0 à 21 points, 0 voulant dire qu’il n’y a aucune difficulté, et 21 indiquant au contraire des difficultés majeures.  Composante 1 : Qualité subjective du sommeil  Examinez la question 6, et attribuez un score :  Très bonne = 0  Assez bonne = 1  Assez mauvaise = 2  Très mauvaise= 3  Score de la composante 1 = …..  Composante 2 : Latence du sommeil  Examinez la question 2, et attribuez un score :  ≤15 mn =0  16-30 mn = 1  31-60 mn = 2  >60 mn = 3  Score de la question 2 = ..…  Examinez la question 5a, et attribuez un score :  Pas au cours   Moins d’une fois   Une ou deux fois   Trois ou quatre fois  du dernier mois = 0   par semaine = 1   par semaine = 2   par semaine = 3  Score de la question 5a = …..`,
+    type: 'textarea',
+  },
+  {
+    id: 'block-05',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Additionnez les scores des questions 2 et 5a, et attribuez le score de la composante 2 :  Somme de 0 = 0  Somme de 1-2 = 1  Somme de 3-4 = 2  Somme de 5-6 = 3  Score de la composante 2 = …..  Composante 3 : Durée du sommeil  Examinez la question 4, et attribuez un score :  >7 h =0  6-7 h = 1  5-6 h = 2  <5 h = 3  Score de la composante 3 = ..…  Composante 4 : Efficacité habituelle du sommeil  Indiquez le nombre d’heures de sommeil (question 4) : …..  Calculez le nombre d’heures passées au lit :  Heure du lever (question 3) : …..  Heure du coucher (question 1) : …..  Nombre d’heures passées au lit : …..  Calculez l’efficacité du sommeil : (Nb heures sommeil/Nb heures au lit)×100 = Efficacité  habituelle (en %)  ⇒   (……..…/……....)×100 = …….... %`,
+    type: 'textarea',
+  },
+  {
+    id: 'block-06',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Attribuez le score de la composante 4 :  >85% = 0  75-84% = 1  65-74% = 2  <65% = 3  Score de la composante 4 = ..…  Composante 5 : Troubles du sommeil  Examinez les questions 5b à 5j, et attribuez des scores à chaque question :  Pas au cours   Moins d’une fois   Une ou deux fois   Trois ou quatre  du dernier mois = 0   par semaine = 1   par semaine = 2   fois par semaine = 3  Score de la question 5b = ….. 5c = ….. 5d = ….. 5e = ….. 5f = …..  5g = ….. 5h = ….. 5i = ….. 5j = …..  Additionnez les scores des questions 5b à 5j, et attribuez le score de la composante 5 :  Somme de 0 = 0  Somme de 1-9 = 1  Somme de 10-18 = 2  Somme de 19-27 = 3  Score de la composante 5 = …..`,
+    type: 'textarea',
+  },
+  {
+    id: 'block-07',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Composante 6 : Utilisation d’un médicament du sommeil  Examinez la question 7, et attribuez un score :  Pas au cours   Moins d’une fois   Une ou deux fois   Trois ou quatre fois  du dernier mois = 0   par semaine = 1   par semaine = 2   par semaine = 3  Score de la composante 6 = …..  Composante 7 : Mauvaise forme durant la journée  Examinez la question 8, et attribuez un score :  Pas au cours   Moins d’une fois   Une ou deux fois   Trois ou quatre fois  du dernier mois = 0   par semaine = 1   par semaine = 2   par semaine = 3  Score de la question 8 = …..  Examinez la question 9, et attribuez un score :  Pas du tout   Seulement un   Un certain   Un très gros  un problème = 0   tout petit problème = 1   problème = 2   problème = 3  Score de la question 9 = …..  Additionnez les scores des questions 8 et 9, et attribuez le score de la composante 7 :  Somme de 0 = 0  Somme de 1-2 = 1  Somme de 3-4 = 2  Somme de 5-6 = 3  Score de la composante 7 = …..  Score global au PSQI  Additionnez les scores des 7 composantes : …..`,
+    type: 'textarea',
+  },
+  {
+    id: 'block-08',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Commentaire pour vous aider à conseiller le patient : « My »  Le sommeil est une fonction fondamentale de la santé et du bien-être. Votre questionnaire explore différentes dimensions qui caractérisent un « bon sommeil » ou un « sommeil perturbé » : La durée et les horaires de sommeil/réveil, la qualité et l’efficacité du sommeil, l’impact de votre sommeil sur votre éveil et votre journée… chacune de ces dimensions complémentaires est importante pour votre équilibre. Des solutions personnalisées peuvent vous être proposées afin de corriger certains troubles du sommeil.  Commentaire pour les professionnels de santé et de soins :   « Pro »  Le questionnaire PSQI de votre patient explore plusieurs dimensions du sommeil : horaires, durée, qualité, efficacité… celles-ci sont indépendantes mais interagissent les unes sur les autres aboutissant à un score global de sommeil. Les suggestions thérapeutiques (médicamenteuses ou non médicamenteuses, nutritionnelles, micronutritionnelles, conseils de modes de vie …) doivent s’adapter à chaque dimension. Une réévaluation régulière du PSQI est vivement conseillée.`,
+    type: 'textarea',
+  }
+  ],
+};

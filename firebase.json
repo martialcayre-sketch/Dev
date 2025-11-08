@@ -14,7 +14,9 @@
           "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
         }
       ],
-      "rewrites": [{ "source": "/api/**", "run": { "serviceId": "api", "region": "europe-west1" } }]
+      "rewrites": [
+        { "source": "/api/**", "run": { "serviceId": "api-app", "region": "europe-west1" } }
+      ]
     },
     {
       "target": "patient",
@@ -31,7 +33,7 @@
         }
       ],
       "rewrites": [
-        { "source": "/api/**", "run": { "serviceId": "api", "region": "europe-west1" } },
+        { "source": "/api/**", "run": { "serviceId": "api-app", "region": "europe-west1" } },
         { "source": "**", "destination": "/index.html" }
       ]
     },
@@ -50,7 +52,7 @@
         }
       ],
       "rewrites": [
-        { "source": "/api/**", "run": { "serviceId": "api", "region": "europe-west1" } },
+        { "source": "/api/**", "run": { "serviceId": "api-app", "region": "europe-west1" } },
         { "source": "**", "destination": "/index.html" }
       ]
     }

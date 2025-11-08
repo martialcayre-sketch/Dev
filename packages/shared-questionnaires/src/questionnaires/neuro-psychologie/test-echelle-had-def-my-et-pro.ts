@@ -1,0 +1,26 @@
+import type { Questionnaire } from '../../types';
+
+export const test_echelle_had_def_my_et_pro: Questionnaire = {
+  metadata: {
+    id: 'test-echelle-had-def-my-et-pro',
+    title: `test echelle had def my et pro`,
+    category: 'neuro-psychologie',
+  },
+  questions: [
+  {
+    id: 'block-01',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Questionnaire :  Echelle du retentissement émotionnel HAD  SCORE A  Je me sens tendu(e) ou énervé(e)   Notez…  points  La plupart du temps   3  Souvent   2  De temps en temps   1  Jamais   0  J’ai une sensation de peur comme si quelque chose d’horrible allait m’arriver  Oui, très nettement   3  Oui, mais ce n’est pas très grave   2  Un peu, mais cela ne m’inquiète pas   1  Pas du tout   0  Je me fais du souci  Très souvent   3  Assez souvent   2  Occasionnellement   1  Très   Occasionnellement   0  Je peux rester tranquillement assis(e) à ne rien faire et me sentir décontracté(e)  Oui, quoi qu’il arrive   0  Oui, en général   1  Rarement   2  Jamais   3  J’éprouve des sensations de peur et j’ai l’estomac noué  Jamais   0  Parfois   1  Assez souvent   2  Très souvent   3  J’ai la bougeotte et n’arrive pas à tenir en place  Oui, c’est tout à fait le cas   3  Un peu   2  Pas tellement   1  Pas du tout   0  J’éprouve des sensations   soudaines   de panique  Vraiment très souvent   3  Assez souvent   2  Pas très souvent   1  Jamais   0  Total score A`,
+    type: 'textarea',
+  },
+  {
+    id: 'block-02',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  SCORE D  Je prends plaisir aux mêmes choses qu’autrefois   Notez…  points  Oui, tout autant   0  Pas autant   1  Un peu seulement   2  Presque plus   3  Je ris facilement et vois le bon côté des choses  Autant que   par le passé   0  Plus autant qu’avant   1  Vraiment moins qu’avant   2  Plus du tout   3  Je suis de bonne humeur  Jamais   3  Rarement   2  Assez souvent   1  La plupart du temps   0  J’ai l’impression de fonctionner au ralenti  Presque toujours   3  Très souvent   2  Parfois   1  Jamais   0  Je ne m’intéresse plus à mon apparence  Plus du tout   3  Je n’y accorde pas autant d’attention que je le devrais   2  Il se peut que je n’y fasse plus autant attention   1  J’y prête autant d’attention que par le passé   0  Je me réjouis d’avance à l’idée de faire certaines choses  Autant qu’auparavant   0  Un peu moins qu’avant   1  Bien moins qu’avant   2  Presque jamais   3  Je peux prendre plaisir à un bon livre ou à une bonne émission radio ou télévision  Souvent   0  Parfois   1  Rarement   2  Très rarement   3  Total score D`,
+    type: 'textarea',
+  },
+  {
+    id: 'block-03',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Introduction patient   :  Le questionnaire suivant s’intéresse à vos états d’humeur et permet de repérer des troubles tels que des troubles anxieux ou des troubles dépressifs. Pour y répondre, soyez spontanés en considérant vos états d’humeur au cours de ces dernières semaines. Répondez aux 14 questions suivantes en cochant la réponse qui vous correspond le plus.  Scores  Additionnez les points des réponses : 1, 3, 5, 7, 9, 11, 13 : Total A = _______  Additionnez les points des réponses : 2, 4, 6, 8, 10, 12, 14 : Total D = _______  Interprétation  Pour dépister des symptomatologies anxieuses et dépressives, l’interprétation suivante peut être proposée pour  Chacun des scores (A et D) :     7 ou moins : absence de symptomatologie     8 à 10 : symptomatologie douteuse     11 et plus : symptomatologie certaine  Commentaire pour vous aider à conseiller le patient : « My »  L’échelle HAD est un instrument qui permet de dépister les troubles anxieux et dépressifs.  Commentaire pour les professionnels de santé et de soins : « Pro »  L’échelle HAD est un instrument qui permet de dépister les troubles anxieux et dépressifs. Elle comporte 14 items cotés de 0 à 3. Sept questions se rapportent à l’anxiété (total A) et sept autres à la dimension dépressive (total D), permettant ainsi l’obtention de deux scores (note maximale de chaque score = 21).`,
+    type: 'textarea',
+  }
+  ],
+};

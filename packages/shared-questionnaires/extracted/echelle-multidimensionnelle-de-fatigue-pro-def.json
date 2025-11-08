@@ -1,0 +1,31 @@
+{
+  "id": "echelle-multidimensionnelle-de-fatigue-pro-def",
+  "title": "echelle multidimensionnelle de fatigue pro def",
+  "category": "sommeil",
+  "filename": "echelle-multidimensionnelle-de-fatigue-pro-def.pdf",
+  "questions": [
+    {
+      "id": "block-01",
+      "label": "S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Questionnaire :  Echelle multidimensionnelle de fatigue  Comment remplir ce questionnaire ?  Au moyen des énoncés suivants, nous aimerions comprendre comment vous vous sentiez récemment.  Répondez à toutes les questions en encerclant le chiffre approprié selon l’échelle suivante : vous répondrez 1 si vous n’êtes pas du tout d’accord et, à l’inverse vous répondrez 5 si vous êtes tout à fait d’accord. Toutes les nuances entre 1 et 5 sont possibles.  Voici un exemple d’énoncé : Je me sens reposé(e). Si vous pensez que cet énoncé est entièrement vrai, c’est-à- dire que vous êtes tout à fait d'accord avec celui-ci, encerclez le chiffre 5 à droite de l’énoncé.  Vos réponses  1   Je me sens en   forme   1   2   3   4   5  2   Physiquement, je n’ai pas la force de faire grand - chose   1   2   3   4   5  3   Je me sens très actif   1   2   3   4   5  4   J’ai envie de faire plein de choses agréables   1   2   3   4   5  5   Je me sens fatigué(e)   1   2   3   4   5  6   Je crois que j’en fais   beaucoup dans une journée   1   2   3   4   5  7   Je suis capable de me concentrer sur ce que j’entreprends   1   2   3   4   5  8   J’ai une bonne résistance physique   1   2   3   4   5  9   Je suis stressé(e) à l’idée d’avoir quelque chose à faire   1   2   3   4   5  10   Je crois que je fais très peu dans une journée   1   2   3   4   5  11   J’arrive facilement à me concentrer   1   2   3   4   5  12   Je me sens reposé(e)   1   2   3   4   5  13   Il me faut beaucoup d’efforts pour me concentrer   1   2   3   4   5  14   Physiquement, je me sens en mauvaise condition   1   2   3   4   5  15   J’ai beaucoup de projets   1   2   3   4   5  16   Je me fatigue facilement   1   2   3   4   5  17   Je n’achève que très peu de choses   1   2   3   4   5  18   J’ai envie de ne rien faire   1   2   3   4   5  19   Je me laisse facilement distraire   1   2   3   4   5  20   Physiquement, je me sens en excellente forme   1   2   3   4   5",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "block-02",
+      "label": "S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Mode de correction  Retranscrire les réponses encerclées dans les cases vides (dernière colonne à droite) pour les items 1, 3, 4, 6, 7, 8, 11, 12, 15 et 20 (case de correction identifiée « 6-rép »), il faut inverser le score : calculer « 6 – réponse encerclée », et inscrire le résultat dans la case. En bas de page, calculer les totaux des cinq sous-échelles en additionnant les chiffres inscrits dans les cases de correction.  Vous noterez donc la somme de calcul 6 – réponse du patient = point obtenu à cette question  Exemple : question 1 (je me sens forme), votre patient a entouré la case « 2 », vous devez porter le chiffre 4 dans la case réponse ; en effet, 6 -2 = 4  Cotation :  →   L’instrument comporte cinq sous-échelles, chacune d’entre-elles incluant quatre questions :  Fatigue générale (Gén) ; Fatigue physique (Phy) ;   Fatigue mentale (Men) ; Réduction des activités (Act) ;   Réduction de la motivati on (Mot).  →   Au total, 10 des 20 items (items 1, 3, 4, 6, 7, 8, 11, 12, 15 et 20) doivent être inversés (6 – réponse  inscrite sur l’échelle de 1 à 5) ;  →   Pour obtenir les scores totaux, il suffit d’additionner les scores transformés des quatre items de  chacune des sous- échelles (minimum = 4 ; maximum = 20) ;  →   La clé de correction se trouve directement sur le questionnaire :  il faut retranscrire la réponse telle quelle dans les cases vides ;  il faut inverser (6   – réponse inscrite) dans les cases portant la mention « 6-rép »  Il n’y a pas de barème interprétation mais il existe des seuils suggérant la prestance de fatigue significative issue de la littérature médicale  Des scores seuils selon l’âge et le sexe ont été proposés pour la sous-échelle de fatigue générale  en fonction de données épidémiologiques allemandes (Schwarz et al., 2003 ; Singer et al., 2011).  Ces scores correspondent au 25e percentile de la population allemande.  SCORES SEUILS SUGGÉRANT LA PRÉSENCE DE FATIGUE SIGNIFICATIVE  (pour la sous-échelle de fatigue générale seulement)  Sexe / âge   ≤ 39 ans   40-59 ans   ≥ 60 ans  Hommes   ≥ 9   ≥ 11   ≥ 14  Femmes   ≥ 11   ≥ 12   ≥ 1 4  Selon   l’intensité   des   scores   et   le   type   de   fatigue,   une   prise   en   charge   nutritionnelle, micronutritionnelle   ou   un   changement   de   mode   de   vie   seront   mis   en   place   de   façon personnalisée et individualisée",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "block-03",
+      "label": "S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Grille de calcul de l’échelle MFI  question  numéro  Réponse du patient   Générale   Physique   Mentale   Activité   Motivation  1   1   2   3   4   5   6-réponse  2  3   6-réponse  4   6-réponse  5  6   6-réponse  7   6-réponse  8   6-réponse  9  10  11  12   6-réponse  13  14  15   6-réponse  16  17  18  19  20   6-réponse  Totaux",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    }
+  ],
+  "extracted_text_length": 4972,
+  "source": "ocr"
+}

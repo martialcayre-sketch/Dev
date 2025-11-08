@@ -1,0 +1,21 @@
+import type { Questionnaire } from '../../types';
+
+export const questionnaire_test_des_5_mots_def_pro: Questionnaire = {
+  metadata: {
+    id: 'questionnaire-test-des-5-mots-def-pro',
+    title: `questionnaire test des 5 mots def pro`,
+    category: 'neuro-psychologie',
+  },
+  questions: [
+  {
+    id: 'block-01',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  LE TEST DE 5 MOTS  Dubois B. L'épreuve des cinq mots.  On lui présente une liste de 5 mots et on lui demande de les lire à haute voix et de les retenir. Ces 5 mots sont placés dans 5 catégories (les catégories ne sont pas présentées).  Objet   Catégorie / Indice (à masquer)  Rose   Fleur  Eléphant   Animal  Chemise   Vêtement  Abricot   Fruit  Violon   Instrument de musique  ETAPE D'APPRENTISSAGE (rappel immédiat)  Présentation de la liste  - Montrer la liste de 5 mots et dire :  "Lisez cette liste de mots à haute voix et essayer de les retenir.  Je vous les redemanderai tout à l'heure"  - Une fois la liste lue et toujours présentée au patient (les catégories sont masquées), lui dire :  "pouvez-vous me dire, tout en regardant la feuilles, le nom du fruit, du vêtement, etc.. "  Contrôle de l'encodage = score d'apprentissage  - Cacher la feuille et dire au patient  "pouvez-vous me dire la liste des mots que vous venez d'apprendre ?"  -   En cas d'oubli et seulement pour les mots oubliés, poser la question en donnant la catégorie (indice) " Quel est le nom du fruit, du vêtement, etc..."  -   Compter les bonnes réponses (avec ou sans indice) = score d'apprentissage`,
+    type: 'textarea',
+  },
+  {
+    id: 'block-02',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Si le score est inférieur à 5, montrer à nouveau la liste de 5 mots et rappeler les catégories et les mots oubliés  SI le score est égal à 5, l'enregistrement des mots a été effectif, on peut passer à l'épreuve de mémoire  ETAPE DE MEMOIRE (rappel différé)  Activité d'attention intercurrente  Son but est seulement de détourner l'attention du sujet pendant 3 à 5 minutes  Etude de la mémorisation (rappel différé)  - Demander au patient  "Pouvez-vous me redonner les 5 mots que vous avez appris tout à l'heure ?"  - Pour les mots oubliés, poser la question en donnant la catégorie (indice)  "Quel est le nom du fruit, du vêtement, etc..."  - Compter le nombre de bons mots rapportés : c'est le score de mémoire  RESULTATS  C'est le total : score d'apprentissage + score de mémoire qui doit être égal à 10  Il existe un trouble de la mémoire dès qu'un mot a été oublié.  L'indiçage permet de différentier un trouble mnésique d'un trouble de l'attention lié à l'âge ou à l'anxiété, dépression, etc...  Dans une population, générale âgée, les valeurs totales < 10 ont une sensibilité de 63% et une spécificité de 91% avec une valeur prédictive de 11,4`,
+    type: 'textarea',
+  }
+  ],
+};

@@ -1,17 +1,13 @@
-FROM node:20-bullseye
+FROM node:20-bookworm-slim
 
-# Install Java 21 (for future tools if needed)
-RUN apt-get update && \
-    apt-get install -y wget gnupg ca-certificates && \
-    echo "deb http://deb.debian.org/debian bookworm-backports main" >> /etc/apt/sources.list && \
-    apt-get update && \
-    apt-get install -y openjdk-21-jdk && \
-    rm -rf /var/lib/apt/lists/*
+# NOTE: Corepack a des problèmes de signature de clés avec certaines versions.
+# On installe pnpm et firebase-tools directement via npm pour plus de robustesse.
+# Utilisation de bookworm-slim (Debian 12) pour réduire les vulnérabilités.
 
 WORKDIR /workspaces
 
-# Enable Corepack (pnpm)
-RUN corepack enable
+# Installer pnpm et firebase-tools globalement
+RUN npm install -g pnpm@9.15.9 firebase-tools
 
 CMD ["sleep", "infinity"]
 

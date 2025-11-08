@@ -1,0 +1,24 @@
+{
+  "id": "score-de-francis-des-troubles-fonctionnels-intestinaux-def-pro",
+  "title": "score de francis des troubles fonctionnels intestinaux def pro",
+  "category": "gastro-enterologie",
+  "filename": "score-de-francis-des-troubles-fonctionnels-intestinaux-def-pro.pdf",
+  "questions": [
+    {
+      "id": "block-01",
+      "label": "S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Questionnaire :  Score de Francis des troubles fonctionnels intestinaux  Souffrez-vous actuellement de douleurs abdominales ?  \u0000   Oui  \u0000   Non  Si oui, quelle est l’intensité de ses douleurs abdominales (douleurs au ventre) ?  0%   100%  Veuillez indiquer le nombre de jours au cours desquels vous souffrez sur une période de 10 jours.  Exemple : si votre réponse et 4, cela signifie que vous souffrez 4 jours sur 10. Si vous souffrez tous les jours, inscrivez le chiffre 10.  Nombre de jours au cours desquelles vous souffrez : ……………………. X 10  Souffrez-vous actuellement de problème de distension abdominale (ballonnements, ventre gonflé, tendu) ?  \u0000   Oui  \u0000   Non  Si vous êtes une femme, ne tenez pas compte des problèmes de distension liée aux règles.  Si oui, quelle est l’importance de ces problèmes de distension abdominale ?  0%   100%  Dans quelle mesure êtes-vous satisfaits (e) de la fréquence habituelle de vos selles ?  0%   100%  Dans quelle mesure votre syndrome de côlon irritable affecte ou perturbe votre vie en général ?  0%   100%  Aucune  douleur  Douleurs peu  intenses  Douleurs assez intenses  Douleurs intenses   Douleurs très intenses  Aucune distension  Distension peu importante  Distension assez importante  Distension importante   Distension très importante  Très satisfait(e)  Assez satisfait(e)   Pas satisfait(e)   Pas du tout satisfait(e)  Pas du tout   Pas beaucoup   Assez   Totalement",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "block-02",
+      "label": "S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Note à l’attention du professionnel de santé  le score de Francis   est utilisé pour évaluer l’intensité d’un trouble fonctionnel de l’intestin. Il permet également le suivi du patient et l’évaluation de l’impact de votre prise en charge .  Le calcul des points pour les échelles d’évaluation analogique en pourcentage  Pour l’établissement du score, il faut noter la valeur numérique du pourcentage dans les échelles analogiques d’évaluation :  Par exemple, dans la question 1b, si le patient à noter des douleurs d’intensité 70 %, le score pour cet item sera de 70  Le calcul des points pour les autres questions  Pour calculer le score de ces questions, il faut multiplier par 10 le chiffre inscrit par le patient  Par exemple dans la question 1c, si le patient a répondu qu’il souffrait 4 jours sur 10, il a noté le chiffre « 4 » dans sa case réponse, vous attribuez donc une valeur de 40 (4x10) à cet item pour le calcul du score final.  Le calcul du score final et son interprétation  Pour l’établissement du score, il vous suffit de faire la somme des points attribués pour chaque item :  Score <70 : valeurs normales  Score compris entre 70 et 300 : troubles fonctionnels significatifs, l’intensité du trouble ressenti est proportionnelle au score  Score >300 : troubles fonctionnels d’intensité sévère",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    }
+  ],
+  "extracted_text_length": 2955,
+  "source": "ocr"
+}

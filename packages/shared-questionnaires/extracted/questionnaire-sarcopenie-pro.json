@@ -1,0 +1,17 @@
+{
+  "id": "questionnaire-sarcopenie-pro",
+  "title": "questionnaire sarcopenie pro",
+  "category": "gerontologie",
+  "filename": "questionnaire-sarcopenie-pro.pdf",
+  "questions": [
+    {
+      "id": "block-01",
+      "label": "S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Questionnaire :  Sarcopénie  QUESTION   SCORE  Force  Avez - vous des difficultés pour soulever et  transporter 4,5 kg de poids ?  Aucune = 0  Un peu = 1  Beaucoup ou incapable = 2  Troubles de la marche  Avez-vous des difficultés pour traverser une pièce ?   Aucune = 0  Un peu = 1  Beaucoup ou incapable = 2  Lever d’une chaise  Avez-vous des difficultés pour vous lever d’une  chaise ?  Aucune = 0  Un peu = 1  Beaucoup, avec aide ou incapable = 2  Montée des escaliers  Avez-vous des difficultés pour monter 10 marches ?   Aucune = 0  Un peu = 1  Beaucoup, avec aide ou incapable = 2  Chutes  Combien de fois êtes-vous tombé dans les 12  derniers mois ?  Pas de chute = 0  1 à 3 chutes = 1  ≥ 4 chutes = 2  Si vous avez un   score supérieur ou égal à 4 , alors on peut   supposer la présence d’une sarcopénie   et doit donc entraîner un diagnostic plus approfondi. Au contraire, si le score est inférieur ou égal à 3, alors le patient est diagnostiqué « non sarcopénique » mais le patient sera amené à refaire le test si la situation s’aggrave.",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    }
+  ],
+  "extracted_text_length": 1159,
+  "source": "ocr"
+}

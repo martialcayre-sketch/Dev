@@ -1,0 +1,51 @@
+import type { Questionnaire } from '../../types';
+
+export const questionnaire_contextuel_mode_de_vie_pro_def: Questionnaire = {
+  metadata: {
+    id: 'questionnaire-contextuel-mode-de-vie-pro-def',
+    title: `questionnaire contextuel mode de vie pro def`,
+    category: 'mode-de-vie',
+  },
+  questions: [
+  {
+    id: 'block-01',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Questionnaire contextuel de mode de vie  Le questionnaire suivant s’intéresse à votre mode de vie  Pour y répondre, soyez spontané en répondant aux différentes questions, évaluez-vous au cours de ces dernières semaines.  Répondez aux questions suivantes en cochant la réponse qui vous correspond le plus.  Additionnez les points des réponses`,
+    type: 'textarea',
+  },
+  {
+    id: 'block-02',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Votre sommeil  Additionnez les points des réponses  Votre score sommeil =  Le score pour les Professionnels de la santé et de soins`,
+    type: 'textarea',
+  },
+  {
+    id: 'block-03',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Votre rythme biologique  Votre score rythme biologique =  Le score pour les Professionnels de la santé et de soins`,
+    type: 'textarea',
+  },
+  {
+    id: 'block-04',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Votre adaptation et le stress  Votre score adaptation et le stress =  Le score pour les Professionnels de la santé et de soins`,
+    type: 'textarea',
+  },
+  {
+    id: 'block-05',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Votre activité physique  Votre score activité physique =  Le score pour les Professionnels de la santé et de soins`,
+    type: 'textarea',
+  },
+  {
+    id: 'block-06',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Votre exposition aux toxiques  Votre score exposition aux toxiques =  Le score pour les Professionnels de la santé et de soins`,
+    type: 'textarea',
+  },
+  {
+    id: 'block-07',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Votre relation aux autres  Votre score relation aux autres =  Le score pour les Professionnels de la santé et de soins`,
+    type: 'textarea',
+  },
+  {
+    id: 'block-08',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Votre mode alimentaire  Votre score mode alimentaire =  Le score pour les Professionnels de la santé et de soins`,
+    type: 'textarea',
+  }
+  ],
+};

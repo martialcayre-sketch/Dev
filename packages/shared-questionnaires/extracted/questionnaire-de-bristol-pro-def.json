@@ -1,0 +1,24 @@
+{
+  "id": "questionnaire-de-bristol-pro-def",
+  "title": "questionnaire de bristol pro def",
+  "category": "gastro-enterologie",
+  "filename": "questionnaire-de-bristol-pro-def.pdf",
+  "questions": [
+    {
+      "id": "block-01",
+      "label": "S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Echelle de Bristol  Indiquez sur ce schéma votre type de selles habituelles  Description des différents types  Type 1 : Petites crottes dures et détachées, ressemblant à des noisettes. Difficiles à évacuer.  Type 2 : En forme de saucisse, mais dures et grumeleuses.  Type 3 : Comme une saucisse, mais avec des craquelures sur la surface.  Type 4 : Ressemble à une saucisse ou un serpent, lisse et douce.  Type 5 : Morceaux mous, avec des bords nets (néanmoins aisés à évacuer).  Type 6 : Morceaux duveteux, en lambeaux, selles détrempées.  Type 7 : Pas de morceau solide, entièrement liquide.  Cette échelle a été publiée par l’université de médecine de Bristol et a pour but d’identifier puis de classifier l’état des selles selon leur aspect, il permet par un repérage visuel de faire préciser aux patients l’aspect le plus fréquemment rencontré de ses selles.",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "block-02",
+      "label": "S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Interprétation des résultats  •   Type 1 : Petites crottes dures et détachées, morcelées, ressemblant à des noisettes, d’évacuation difficile  •   Type 2 : En forme de saucisses, mais dures, bosselées et grumeleuses.  = Constipation  •   Type 3 : Comme une saucisse, mais avec des craquelures sur la surface.  •   Type 4 : Ressemble à une saucisse ou un serpent, mais de texture lisse et douce.  = Selles normales  •   Type 5 : Morceaux mous, avec des bords nets (néanmoins aisés à évacuer).  •   Type 6 : Morceaux duveteux, en lambeaux, selles détrempées.  •   Type 7 : Pas de morceaux solides, entièrement liquide.  = Diarrhée",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    }
+  ],
+  "extracted_text_length": 1712,
+  "source": "ocr"
+}

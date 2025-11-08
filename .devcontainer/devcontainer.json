@@ -4,7 +4,7 @@
     "dockerfile": "Dockerfile",
     "context": "."
   },
-  "postCreateCommand": "corepack enable && pnpm --version || true",
+  "postCreateCommand": "pnpm install",
   "customizations": {
     "vscode": {
       "settings": {
@@ -20,4 +20,3 @@
   },
   "remoteUser": "node"
 }
-

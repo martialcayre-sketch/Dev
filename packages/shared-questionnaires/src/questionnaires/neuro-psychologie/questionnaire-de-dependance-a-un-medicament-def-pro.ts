@@ -1,0 +1,16 @@
+import type { Questionnaire } from '../../types';
+
+export const questionnaire_de_dependance_a_un_medicament_def_pro: Questionnaire = {
+  metadata: {
+    id: 'questionnaire-de-dependance-a-un-medicament-def-pro',
+    title: `questionnaire de dependance a un medicament def pro`,
+    category: 'neuro-psychologie',
+  },
+  questions: [
+  {
+    id: 'block-01',
+    label: `S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Questionnaire de dépendance à un médicament  Critères diagnostiques de dépendance (DSM-IV)  Cocher la ou les cases qui vous conviennent  Tolérance manifestée par le besoin d’accroître les doses consommées pour obtenir l’effet désiré ou par une diminution des effets à dose consommée constante  Symptômes de sevrage à la suite d’une période d’abstinence, évités ou améliorés par une nouvelle prise de médicaments  Prise du médicament en plus grande quantité ou pendant plus longtemps que prévu  Un désir persistant ou des efforts infructueux pour diminuer ou contrôler la consommation  Beaucoup de temps passé à utiliser ou à se procurer le médicament  Abandonner ou réduire ses activités sociales, professionnelles ou de loisir à cause de l’usage du médicament  Continuer à utiliser malgré la connaissance des risques pour la santé  Commentaires destinés aux professionnels de santé :  Dépendance à une substance si 3 ou plus des critères suivants sont présents  Spécifier s’il s’agit d’une dépendance physique (présence de l’item 1 ou de l’item 2)`,
+    type: 'textarea',
+  }
+  ],
+};

@@ -1,0 +1,31 @@
+{
+  "id": "bdi-echelle-de-depression-de-beck-def-pro",
+  "title": "bdi echelle de depression de beck def pro",
+  "category": "neuro-psychologie",
+  "filename": "bdi-echelle-de-depression-de-beck-def-pro.pdf",
+  "questions": [
+    {
+      "id": "block-01",
+      "label": "S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Questionnaire :  Echelle de dépression de Beck BDI  Entourez la bonne réponse à chaque question, puis faites le total comme il est indiqué  en bas de page .  Notez…  points  Question 1  Je ne me sens pas triste   0  Je me sens cafardeux ou triste   1  Je me sens tout le temps cafardeux ou triste, et je n’arrive pas à en sortir   2  Je suis si triste et sens cafardeux ou triste que je ne peux pas le supporter   3  Question 2  Je ne suis pas particulièrement découragé ni pessimiste au niveau de l’avenir   0  J’ai le sentiment de découragement au sujet de l’avenir   1  Pour mon avenir, je n’ai aucun motif d’espérer   2  Je sens qu’il n’y a aucun espoir pour mon avenir, et que la situation ne peut s’améliorer   3  Question 3  Je n’ai aucun sentiment d’échec de ma vie   0  J’ai l’impression que j’ai échoué dans ma vie plus que la plupart des gens   1  Quand je regarde ma vie passée, tout ce que j’y découvre n’est qu’échecs   2  J’ai un sentiment d’échec complet dans toute ma vie personnelle   3  Question 4  Je ne me sens pas particulièrement insatisfait   0  Je ne sais pas profiter agréablement des circonstances   1  Je ne tire plus aucune satisfaction de quoi que ce soit   2  Je   suis mécontent de tout   3  Question 5  Je ne me sens pas coupable   0  Je me sens mauvais ou indigne une bonne partie du temps   1  Je me sens coupable   2  Je me juge très mauvais et j’ai l’impression que je ne vaux rien   3  Question 6  Je ne suis pas déçu par moi - même   0  Je   suis déçu par moi - même   1  Je me dégoûte moi - même   2  Je me hais   3  Question 7  Je ne pense pas à me faire du mal   0  Je pense que la mort me libèrerait   1  J’ai des plans précis pour me suicider   2  Si je le pouvais, je me tuerais   3",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "block-02",
+      "label": "S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Question 8  Je n’ai pas perdu   l’intérêt pour les autres gens   0  Maintenant, je m’intéresse moins aux autres gens qu’autrefois   1  J’ai perdu tout l’intérêt que je portais aux autres gens, et j’ai peu de sentiments pour eux   2  J’ai perdu tout intérêt pour les autres, et ils m’indiffèrent   totalement   3  Question 9  Je suis capable de me décider aussi facile que de coutume   0  J’essaie de ne pas avoir à prendre de décision   1  J’ai de grandes difficultés à prendre des décisions   2  Je ne suis plus capable de prendre la moindre décision   3  Question 10  Je n’ai   pas le sentiment d’être plus laid qu’auparavant   0  Je crains   de paraître vieux ou disgracieux   1  J’ai l’impression qu’il y a un changement dans mon apparence physique qui me rend disgracieux  2  J’ai l’impression d’être laid et repoussant   3  Question 11  Je travaille aussi facilement qu’avant   0  Il me faut un effort supplémentaire pour commencer à faire quelque chose   1  Il faut que je fasse un très grand effort pour faire quoi que ce soit   2  Je suis incapable de faire le moindre travail   3  Question 12  Je ne suis pas plus fatigué(e) que d’habitude   0  Je suis fatigué(e) plus facilement que d’habitude   1  Faire quoi que ce soit me fatigue   2  Je suis incapable de faire le moindre travail   3  Question 13  Mon appétit est toujours aussi bon   0  Mon appétit n’est pas aussi bon que d’habitude   1  Mon appétit est beaucoup moins bon maintenant   2  Je n’ai plus du tout d’appétit   3  Total score   /39",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "block-03",
+      "label": "S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Commentaire pour le professionnel de santé et de soins : \"Pro\"  Le questionnaire de Beck ou inventaire de dépression de Beck (AaronT ; Beck MD) adapté en français par Freston en 1994 permet l’évaluation de l’intensité d’un syndrome dépressif. Il est performant pour l’adulte, moins performant pour la personne âgée et les adolescents.  C’est un auto-questionnaire qui doit refléter dans les réponses l’état psychologique des 7 derniers jours voire des dernières semaines. Les symptômes doivent être présents depuis au moins 3 à 4 semaines.  Score et interprétation :  1 à 10 : Variation de l’humeur considérée comme physiologique  11 à 16 : Troubles bénins de l’humeur mais corrections à apporter  17 à 20 : Cas limite de dépression clinique  21 à 30 : Dépression avérée  31 à 39 : Dépression grave",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    }
+  ],
+  "extracted_text_length": 4367,
+  "source": "ocr"
+}

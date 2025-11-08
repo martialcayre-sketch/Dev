@@ -1,0 +1,21 @@
+import type { Questionnaire } from '../../types';
+
+export const test_qct2_de_gilliard_questionnaire_de_comportement_tabagique_def_pro: Questionnaire = {
+  metadata: {
+    id: 'test-qct2-de-gilliard-questionnaire-de-comportement-tabagique-def-pro',
+    title: `test qct2 de gilliard questionnaire de comportement tabagique def pro`,
+    category: 'tabacologie',
+  },
+  questions: [
+  {
+    id: 'block-01',
+    label: `Quand   on   sait,   c’est   plus   facile   d’arrêter  S.I.I.N. -   Scientific Institute for Intelligent Nutrition  Institut Scientifique pour une Nutrition Raisonnée  Questionnaire de comportement tabagique :  Test QCT2 de Gilliard  Ce questionnaire est destiné à étudier les raisons qui vous incitent actuellement à fumer. Pour chaque affirmation, nous vous demandons de préciser ce qui correspond à votre cas. Pour cela inscrivez une croix dans une et une seule des quatre colonnes de droite.  0  Pas du  tout  1  Plutôt  non  2  Plutôt  oui  3  Tout  à fait  1   - Je fume automatiquement, sans même y penser.   D  2   - Je fume pour faire comme les autres.   S  3   - Je fume quand je suis anxieux(se), préoccupé(e),  inquiet(e).   A  4   - Le plaisir de fumer commence avec les gestes que je fais pour allumer ma cigarette.   H  5   - Dès que je ne fume pas, j’en suis très conscient(e) et je  ne peux pas contrôler le désir de fumer.   D  6   - Je fume quand je suis avec d’autres fumeurs pour me faire accepter par eux.   S  7   - Je fume quand je me sens triste, déprimé(e).   A  8   - Je prends plaisir à allumer et à tenir une cigarette.   H  9   - Quand je n’ai pas pu fumer depuis un moment, j’ai  vraiment une envie irrésistible d’une cigarette.   D  10   - Je fume pour en imposer aux autres.   S  11   - Fumer me calme, me détend, me décontracte.   A  12   - J’aime manipuler une cigarette.   H  13   - Je prends une cigarette sans savoir pourquoi, sans  m’en rendre compte.   D  14   - Je fume quand je fais une pause.   S  15   - Je fume quand je suis en colère.   A  16   - Tirer sur une cigarette est relaxant.   H  17   - Je fume par habitude.   D  18   - Je fume pour avoir plus confiance en moi.   S  19   - J’allume une cigarette lorsque je suis tracassé(e).   A`,
+    type: 'textarea',
+  },
+  {
+    id: 'block-02',
+    label: `Quand   on   sait,   c’est   plus   facile   d’arrêter  S.I.I.N. -   Scientific Institute for Intelligent Nutrition  Institut Scientifique pour une Nutrition Raisonnée  20 - J’ai du plaisir à regarder les volutes de fumée.   H  21 - Lorsque je n’ai plus de cigarette, il faut absolument que je m’en  procure.   D  22 - Je fume pour me donner une certaine contenance.   S  23 - Je fume chaque fois que je suis mal à l’aise.   A  24 - Je trouve beaucoup de plaisir dans l’acte de fumer.   H  25 - Je fume dans les moments d’attente.   D  26 - Je fume pour me donner du courage.   S  27 - Je fume quand je me sens seul(e) pour me tenir  compagnie.   A  28 - Quand je me relaxe, j’ai du plaisir à fumer.   H  RÉSULTAT :  Faites la somme des D puis des S, puis des A et enfin des H, vous obtenez 4 totaux sur 21.  DÉPENDANCE :   1+5+9+13+17+21+25  DIMENSION SOCIALE :   2+6+10+14+18+22+26  RÉGULATION DES AFFECTS NÉGATIFS :   3+7+11+15+19+23+27  RECHERCHE DE PLAISIR :   4+8+12+16+20+24+28  D - DÉPENDANCE :   TOTAL = . . /21  S - DIMENSION SOCIALE :   TOTAL = . . /21  A - RÉGULATION DES AFFECTS NÉGATIFS :   TOTAL = . . /21  H - HÉDONISME/GESTE :   TOTAL = . . /21  Bibliographie :  Tabac-info-service.fr : Quand on sait, c’est plus facile d’arrêter  GILLIARD J., BRUCHON-SCHWEITZER M. COUSSON-GELIE F.  Construction et validation d’un questionnaire de comportement tabagiques (QCT 2). Psychologie et Psychométrie, 2000, 21, 4, 77-93.  GILLIARD J., BRUCHON-SCHWEITZER M.  Development and validation of a multidimensional smoking behavior questionnaire : SBQ. Psychological Reports, 2001, 89, 499-509.  GILLIARD J., BRUCHON-SCHWEITZER M.  Les conduites tabagiques et leurs déterminants. Chap. 10, in : « Les facteurs psychosociaux de la santé ». Paris, Dunod, 2001.`,
+    type: 'textarea',
+  }
+  ],
+};

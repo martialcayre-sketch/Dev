@@ -1,0 +1,52 @@
+{
+  "id": "questionnaire-dopamine-noradrenaline-serotonine-melatonine-def-my-et-pro",
+  "title": "questionnaire dopamine noradrenaline serotonine melatonine def my et pro",
+  "category": "neuro-psychologie",
+  "filename": "questionnaire-dopamine-noradrenaline-serotonine-melatonine-def-my-et-pro.pdf",
+  "questions": [
+    {
+      "id": "block-01",
+      "label": "S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Signes évocateurs d’insuffisance en Dopamine  Cotation : comptabilisez les points attribués à chaque réponse, cochez en fonction de l’intensité ressentie lors des symptômes cités ci-dessous (0 à 4)  Je ressens   0   1   2   3   4  J’ai des   difficultés à me lever le matin  J’ai du mal à commencer une action  Je me sens moins créatif, moins imaginatif que je ne l’ai été  Je ressens de la fatigue avant même de commencer à agir  Je porte moins d'intérêt à mes loisirs, mes   activités  J'ai moins de désir sexuel et amoureux  Mon sommeil est agité physiquement, je remue beaucoup  Je n’ai plus tellement de nouveaux projets  J’ai du mal à me concentrer, à suivre le fil de ma pensée  Je cherche   souvent mes mots  Score total",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "block-02",
+      "label": "S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Signes évocateurs d’insuffisance en Noradrénaline  Cotation : comptabilisez les points attribués à chaque réponse, cochez en fonction de l’intensité ressentie lors des symptômes cités ci-dessous (0 à 4)  Je ressens   0   1   2   3   4  J’ai une mauvaise opinion de moi - même  Je manque de confiance  J’ai souvent le sentiment de ne pas être à la hauteur  J’ai besoin de sentir l’approbation des autres  J’ai besoin d’être aimé, rassuré  Je ne   persévère pas, je suis vite découragé  Je me sens moralement fatigué  Je prends rarement plaisir à ce que je fais  Je ne suis pas digne d’être aimé  Je me sens triste, sans joie, sans plaisir  Score total",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "block-03",
+      "label": "S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Signes évocateurs d’insuffisance en Sérotonine  Cotation : comptabilisez les points attribués à chaque réponse, cochez en fonction de l’intensité ressentie lors des symptômes cités ci-dessous (0 à 4)  Je ressens   0   1   2   3   4  Je suis irritable, impulsif, et vite en   colère  Je suis impatient, je ne supporte pas d’attendre  Je ne supporte pas les contraintes  Je suis attiré vers le sucré, le chocolat en fin de journée  Je me sens dépendant facilement, tabac, alcool, drogues,  sports...  J’ai du mal à prendre du recul, à rester zen  J’ai du mal à trouver le sommeil, à me rendormir la nuit  Je me sens vite vulnérable au stress, au bruit  Je suis susceptible, un rien m’agace  Je change très vite d’humeur  Score total",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "block-04",
+      "label": "S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Signes évocateurs d’insuffisance en Mélatonine  Cotation : comptabilisez les points attribués à chaque réponse, cochez en fonction de l’intensité ressentie lors des symptômes cités ci-dessous (0 à 4)  Je ressens   0   1   2   3   4  Je me sens   marginal, exclus, mal à l’aise dans un groupe  Je suis plutôt discret et en retrait en société  J’ai un sommeil «   fragile   »  J’ai du mal à aller me coucher le soir  Je n’aime pas partager de confidences, je suis discret, réservé  Je ne suis pas très conciliant ni adaptable  Mes rythmes de vie sont souvent irréguliers ou décalés  J’ai du mal à me mettre à la place des autres, à les  comprendre  J’ai plutôt du mal à m’exprimer, à partager  Je supporte mal les décalages horaires  Score total",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "block-05",
+      "label": "S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  REMPLIR SELON  0 : non, jamais  1 : cela arrive parfois mais rarement  2 : régulièrement mais cela ne dure pas  3 : fréquemment et cela me gêne  4 : oui, c'est invalidant dans ma vie   quotidiennement  SCORE  0 à   10 : peu de signes cliniques évocateurs  10 à 19 : perturbations, probable dysfonction  Plus de 20 : fortement perturbé, évocateur de dysfonction  Commentaires pour vous aider à conseiller le patient : « My »  Les neurotransmetteurs sont des messagers chimiques intervenant dans la régulation de nombreuses fonctions telles que l’humeur, la pensée, la mémoire, le sommeil, le comportement… leur équilibre est un élément important dans la santé mentale et le bien- être. Ce questionnaire permet de repérer des troubles fonctionnels dans lesquels l’équilibre des neurotransmetteurs est impliqué. Il permet d’orienter de façon personnelle vers des conseils thérapeutiques, des conseils nutritionnels et micronutritionnels ou de modes de vie adaptés.",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    },
+    {
+      "id": "block-06",
+      "label": "S.I.I.N.- Scientific Institute for Intelligent Nutrition Institut Scientifique pour une Nutrition Raisonnée  Commentaire pour les professionnels de santé et de soins :   « Pro »  Ce questionnaire évalue des signes cliniques en relation avec des troubles fonctionnels des principaux neurotransmetteurs impliqués dans la régulation cognitive, de l’humeur, du sommeil, de l’adaptation et des comportements. Il permet de repérer des dysfonctions de certains axes de neurotransmetteurs.  Mais également une vue d’ensemble synthétique du bon équilibre de ces différents axes. La mise en évidence d’une dysfonction permet une correction fonctionnelle plus précise par des thérapeutiques médicamenteuses ou non médicamenteuses, des conseils alimentaires et micronutritionnels ou des conseils de modes de vie adaptés.",
+      "type": "textarea",
+      "options": null,
+      "points": null
+    }
+  ],
+  "extracted_text_length": 5177,
+  "source": "ocr"
+}
