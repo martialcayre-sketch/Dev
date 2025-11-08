@@ -3,8 +3,8 @@ import { AlertCircle, CheckCircle2, Clock, Edit3, Send } from 'lucide-react';
 
 interface Props {
   status: QuestionnaireStatus;
-  submittedAt?: Date | null;
-  completedAt?: Date | null;
+  submittedAt?: Date | string | null;
+  completedAt?: Date | string | null;
 }
 
 /**
@@ -12,12 +12,18 @@ interface Props {
  * Affiche un badge coloré selon le statut actuel
  */
 export default function QuestionnaireStatusBanner({ status, submittedAt, completedAt }: Props) {
-  const formatDate = (date: Date | null | undefined) => {
+  const formatDate = (date: Date | string | null | undefined) => {
     if (!date) return '';
-    return new Intl.DateTimeFormat('fr-FR', {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    }).format(date);
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      if (isNaN(dateObj.getTime())) return '';
+      return new Intl.DateTimeFormat('fr-FR', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      }).format(dateObj);
+    } catch {
+      return '';
+    }
   };
 
   switch (status) {

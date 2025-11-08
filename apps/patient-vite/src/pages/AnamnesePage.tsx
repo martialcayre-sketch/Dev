@@ -1,7 +1,7 @@
 import { DashboardShell } from '@/components/layout/DashboardShell';
-import { auth, firestore } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
+import api from '@/services/api';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { AlertCircle, ArrowLeft, CheckCircle2, Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -54,14 +54,13 @@ export default function AnamnesePage() {
       setLoading(false);
     });
     return () => unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
   const loadExistingData = async (uid: string) => {
     try {
-      const anamneseDoc = await getDoc(doc(firestore, 'patients', uid, 'consultation', 'anamnese'));
-      if (anamneseDoc.exists()) {
-        setFormData((prev) => ({ ...prev, ...(anamneseDoc.data() as any) }));
+      const anamneseData = await api.getAnamnese(uid);
+      if (anamneseData) {
+        setFormData((prev) => ({ ...prev, ...anamneseData }));
       }
     } catch (error) {
       console.error('Error loading anamnese data:', error);
@@ -100,13 +99,12 @@ export default function AnamnesePage() {
     setSaving(true);
     setMessage('');
     try {
-      await setDoc(
-        doc(firestore, 'patients', user.uid, 'consultation', 'anamnese'),
-        { ...formData, updatedAt: new Date().toISOString() },
-        { merge: true }
-      );
+      await api.saveAnamnese(user.uid, formData);
       setMessage("✅ Fiche d'anamnèse enregistrée avec succès !");
-      setTimeout(() => navigate('/dashboard/consultation', { replace: true }), 2000);
+      // Force reload to update dashboard status
+      setTimeout(() => {
+        window.location.href = '/dashboard/consultation';
+      }, 2000);
     } catch (error: any) {
       console.error('Error saving anamnese:', error);
       setMessage("❌ Erreur lors de l'enregistrement : " + error.message);

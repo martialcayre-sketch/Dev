@@ -4,20 +4,11 @@ import SubmitToPractitionerButton from '@/components/questionnaires/SubmitToPrac
 import { SliderInput } from '@/components/SliderInput';
 import DayFlowAlimForm from '@/features/dayflow-alim/DayFlowAlimForm';
 import { useFirebaseUser } from '@/hooks/useFirebaseUser';
-import { firestore } from '@/lib/firebase';
+// Suppression des accès Firestore directs: tout passe par l'API backend
 import { THEMES, getQuestions } from '@/questionnaires/data';
+import type { Questionnaire } from '@/services/api';
 import api from '@/services/api';
-import {
-  addDoc,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  serverTimestamp,
-  updateDoc,
-  where,
-} from 'firebase/firestore';
+// (Plus d'import Firestore ici)
 import { AlertTriangle, ArrowLeft, CheckCircle2, Save } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -29,8 +20,9 @@ export default function QuestionnaireDetailPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [questionnaire, setQuestionnaire] = useState<any>(null);
-  const [responses, setResponses] = useState<Record<string, any>>({});
+  const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
+  type ResponseMap = Record<string, string | number>;
+  const [responses, setResponses] = useState<ResponseMap>({});
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [page, setPage] = useState(0);
 
@@ -97,46 +89,40 @@ export default function QuestionnaireDetailPage() {
           return;
         }
 
-        const path = `patients/${user.uid}/questionnaires/${id}`;
-        console.log('[QuestionnaireDetail] Fetching:', path);
-        const ref = doc(firestore, 'patients', user.uid, 'questionnaires', id);
-        const snap = await getDoc(ref);
+        // Lire via API backend (source unifiée root collection)
+        const { questionnaire: q } = await api.getQuestionnaireDetail(user.uid, id);
+        console.log('[QuestionnaireDetail] Loaded questionnaire (API):', q);
+        console.log('[QuestionnaireDetail] Responses from API:', q.responses);
+        setQuestionnaire(q);
 
-        if (!snap.exists()) {
-          console.error('[QuestionnaireDetail] Document not found:', path);
-          console.log('[QuestionnaireDetail] User UID:', user.uid);
-          console.log('[QuestionnaireDetail] Questionnaire ID:', id);
-          setError(
-            'Questionnaire introuvable - Vérifiez que le questionnaire existe dans Firestore'
-          );
+        // Initialiser les réponses avec valeurs par défaut pour plaintes-et-douleurs
+        if (id === 'plaintes-et-douleurs') {
+          const defaultResponses: Record<string, number> = {};
+          const questions = getQuestions(id);
+          const qResponses = (q.responses || {}) as ResponseMap;
+          console.log('[QuestionnaireDetail] qResponses:', qResponses);
+          questions.forEach((question) => {
+            // Si la réponse existe, l'utiliser, sinon mettre 5 par défaut
+            const existing = qResponses[question.id];
+            defaultResponses[question.id] = typeof existing === 'number' ? existing : 5;
+          });
+          console.log('[QuestionnaireDetail] Final responses set:', defaultResponses);
+          setResponses(defaultResponses);
         } else {
-          const q = { id: snap.id, ...snap.data() } as any;
-          console.log('[QuestionnaireDetail] Loaded questionnaire:', q);
-          setQuestionnaire(q);
-
-          // Initialiser les réponses avec valeurs par défaut pour plaintes-et-douleurs
-          if (id === 'plaintes-et-douleurs') {
-            const defaultResponses: Record<string, any> = {};
-            const questions = getQuestions(id);
-            questions.forEach((question) => {
-              // Si la réponse existe déjà dans Firestore, l'utiliser, sinon mettre 5 par défaut
-              defaultResponses[question.id] = q.responses?.[question.id] ?? 5;
-            });
-            setResponses(defaultResponses);
-          } else {
-            setResponses(q.responses || {});
-          }
+          const qResponses = (q.responses || {}) as ResponseMap;
+          setResponses(qResponses);
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error('[QuestionnaireDetail] Error:', e);
-        setError(e?.message || String(e));
+        const message = e instanceof Error ? e.message : String(e);
+        setError(message);
       } finally {
         setLoading(false);
       }
     })();
-  }, [id, user, authLoading]);
+  }, [id, user, authLoading, navigate]);
 
-  const handleSave = async (markAsCompleted: boolean = false) => {
+  const handleSave = async () => {
     if (!user || !id) return;
     setSaving(true);
     setError(null);
@@ -146,58 +132,11 @@ export default function QuestionnaireDetailPage() {
       // Use HTTP API for auto-save instead of direct Firestore update
       await api.saveQuestionnaireResponses(user.uid, id, responses);
 
-      // If marking as completed, still use Firestore for now
-      // TODO: Create HTTP endpoint for completion
-      if (markAsCompleted) {
-        const ref = doc(firestore, 'patients', user.uid, 'questionnaires', id);
-        await updateDoc(ref, {
-          status: 'completed',
-          completedAt: serverTimestamp(),
-        });
-
-        // Marquer notification liée comme lue
-        const notificationsRef = collection(firestore, 'patients', user.uid, 'notifications');
-        const notifQuery = query(
-          notificationsRef,
-          where('questionnaireId', '==', id),
-          where('read', '==', false)
-        );
-        const notifSnapshot = await getDocs(notifQuery);
-        await Promise.all(notifSnapshot.docs.map((d) => updateDoc(d.ref, { read: true })));
-
-        // Optionnel: enregistrer la soumission pour le praticien si practitionerId présent sur patient
-        try {
-          const patientRef = doc(firestore, 'patients', user.uid);
-          const patientSnap = await getDoc(patientRef);
-          if (patientSnap.exists() && questionnaire) {
-            const pdata: any = patientSnap.data();
-            if (pdata.practitionerId) {
-              const submissionsRef = collection(firestore, 'questionnaireSubmissions');
-              await addDoc(submissionsRef, {
-                patientUid: user.uid,
-                patientName:
-                  `${pdata.firstname || ''} ${pdata.lastname || ''}`.trim() ||
-                  pdata.email ||
-                  'Patient',
-                practitionerId: pdata.practitionerId,
-                questionnaire: questionnaire.title,
-                questionnaireId: id,
-                submittedAt: new Date(),
-                responses,
-              });
-            }
-          }
-        } catch (e) {
-          // Non bloquant
-          console.warn('Failed to record submission (non-fatal):', e);
-        }
-      }
-
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 2000);
-      if (markAsCompleted) navigate('/dashboard/questionnaires');
-    } catch (e: any) {
-      setError(e?.message || String(e));
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e);
+      setError(message);
     } finally {
       setSaving(false);
     }
@@ -267,7 +206,7 @@ export default function QuestionnaireDetailPage() {
 
   // Mode de vie redirige vers la page dédiée life-journey
 
-  const handleSaveClick = (complete = false) => handleSave(complete);
+  const handleSaveClick = () => handleSave();
   const canEdit = questionnaire.status !== 'submitted' && questionnaire.status !== 'completed';
 
   // DNSM specialized rendering
@@ -332,7 +271,7 @@ export default function QuestionnaireDetailPage() {
             <button
               type="button"
               disabled={saving || !canEdit}
-              onClick={() => handleSaveClick(false)}
+              onClick={handleSaveClick}
               className="inline-flex items-center gap-2 px-4 py-2 rounded border border-white/20 text-white/90 hover:bg-white/10 disabled:opacity-50"
             >
               <Save className="h-4 w-4" />
@@ -354,7 +293,9 @@ export default function QuestionnaireDetailPage() {
           )}
 
           <div
-            className={`rounded-3xl border border-white/10 bg-white/5 p-8 space-y-8 ${!canEdit ? 'opacity-60 pointer-events-none select-none' : ''}`}
+            className={`rounded-3xl border border-white/10 bg-white/5 p-8 space-y-8 ${
+              !canEdit ? 'opacity-60 pointer-events-none select-none' : ''
+            }`}
           >
             {themeFields[page].map((q, idx) => (
               <div key={q.id} className="space-y-3">
@@ -458,7 +399,8 @@ export default function QuestionnaireDetailPage() {
 
   // Generic renderer (plaintes-et-douleurs, alimentaire)
   const questions = getQuestions(questionnaireId);
-  const onChange = (qid: string, value: any) => setResponses((prev) => ({ ...prev, [qid]: value }));
+  const onChange = (qid: string, value: string | number) =>
+    setResponses((prev) => ({ ...prev, [qid]: value }));
   const total = questions.length;
   const answered = questions.filter(
     (q) => responses[q.id] !== undefined && responses[q.id] !== ''
@@ -506,7 +448,7 @@ export default function QuestionnaireDetailPage() {
             <button
               type="button"
               disabled={saving || !canEdit}
-              onClick={() => handleSaveClick(false)}
+              onClick={handleSaveClick}
               className="inline-flex items-center gap-2 px-4 py-2 rounded border border-white/20 text-white/90 hover:bg-white/10 disabled:opacity-50"
             >
               <Save className="h-4 w-4" />
@@ -536,7 +478,9 @@ export default function QuestionnaireDetailPage() {
         )}
 
         <div
-          className={`rounded-3xl border border-white/10 bg-white/5 p-8 space-y-8 ${!canEdit ? 'opacity-60 pointer-events-none select-none' : ''}`}
+          className={`rounded-3xl border border-white/10 bg-white/5 p-8 space-y-8 ${
+            !canEdit ? 'opacity-60 pointer-events-none select-none' : ''
+          }`}
         >
           {questions.map((q, idx) => {
             const isPlaintes = questionnaireId === 'plaintes-et-douleurs';
@@ -547,7 +491,7 @@ export default function QuestionnaireDetailPage() {
                   <SliderInput
                     id={q.id}
                     label={q.label}
-                    value={responses[q.id] ?? 5}
+                    value={typeof responses[q.id] === 'number' ? (responses[q.id] as number) : 5}
                     onChange={(value) => onChange(q.id, value)}
                     min={1}
                     max={10}

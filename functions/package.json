@@ -17,8 +17,7 @@
     "express": "^4.19.2",
     "firebase-admin": "^12.6.0",
     "firebase-functions": "^6.0.0",
-    "zod": "^3.23.8",
-    "@neuronutrition/shared-questionnaires": "workspace:*"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",

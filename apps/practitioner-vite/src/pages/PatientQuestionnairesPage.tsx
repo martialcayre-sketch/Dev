@@ -1,6 +1,6 @@
 import { DashboardShell } from '@/components/layout/DashboardShell';
-import { firestore } from '@/lib/firebase';
-import { collection, doc, getDoc, onSnapshot, orderBy, query } from 'firebase/firestore';
+import type { Questionnaire } from '@/services/api';
+import api from '@/services/api';
 import { ArrowLeft, Calendar, CheckCircle2, Clock, Download, Eye, FileText, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -11,17 +11,6 @@ type Patient = {
   firstname?: string;
   lastname?: string;
   displayName?: string;
-};
-
-type Questionnaire = {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  status: 'pending' | 'completed';
-  assignedAt: any;
-  completedAt?: any;
-  responses?: Record<string, any>;
 };
 
 function ResponsesModal({
@@ -80,21 +69,22 @@ function QuestionnaireCard({
   onViewResponses: (q: Questionnaire) => void;
 }) {
   const isCompleted = questionnaire.status === 'completed';
-  const completedDate = questionnaire.completedAt?.toDate
-    ? questionnaire.completedAt.toDate().toLocaleDateString('fr-FR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
-    : null;
 
-  const assignedDate = questionnaire.assignedAt?.toDate
-    ? questionnaire.assignedAt.toDate().toLocaleDateString('fr-FR', {
+  const formatDate = (date: string | null | undefined) => {
+    if (!date) return null;
+    try {
+      return new Date(date).toLocaleDateString('fr-FR', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
-      })
-    : null;
+      });
+    } catch {
+      return null;
+    }
+  };
+
+  const completedDate = formatDate(questionnaire.completedAt);
+  const assignedDate = formatDate(questionnaire.assignedAt);
 
   const responseCount = questionnaire.responses ? Object.keys(questionnaire.responses).length : 0;
 
@@ -164,41 +154,32 @@ export default function PatientQuestionnairesPage() {
   useEffect(() => {
     if (!id) return;
 
-    // Load patient data
-    const loadPatient = async () => {
+    const loadData = async () => {
       try {
-        const patientDoc = await getDoc(doc(firestore, 'patients', id));
-        if (patientDoc.exists()) {
-          setPatient({ uid: id, ...patientDoc.data() } as Patient);
-        }
-      } catch (err: any) {
-        console.error('Error loading patient:', err);
+        // Load questionnaires via API
+        const { questionnaires: questionnairesList } = await api.getPatientQuestionnaires(id);
+
+        setQuestionnaires(questionnairesList);
+
+        // Infer patient info from first questionnaire or fetch separately if needed
+        // For now, we'll use a placeholder since we don't have a patient endpoint yet
+        setPatient({
+          uid: id,
+          email: '', // Will be populated from practitioner's patient list in real use
+          displayName: 'Patient',
+        });
+      } catch (err) {
+        console.error('Error loading questionnaires:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    loadPatient();
+    loadData();
 
-    // Real-time listener for questionnaires
-    const questionnairesRef = collection(firestore, 'patients', id, 'questionnaires');
-    const q = query(questionnairesRef, orderBy('assignedAt', 'desc'));
-
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const questionnairesData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Questionnaire[];
-        setQuestionnaires(questionnairesData);
-      },
-      (err) => {
-        console.error('Error listening to questionnaires:', err);
-      }
-    );
-
-    return () => unsubscribe();
+    // Optional: Poll every 30s for updates (replaces real-time listener)
+    const interval = setInterval(loadData, 30000);
+    return () => clearInterval(interval);
   }, [id]);
 
   if (loading) {

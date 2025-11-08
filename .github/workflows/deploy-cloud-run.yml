@@ -32,7 +32,7 @@ jobs:
             --region=europe-west1 \
             --allow-unauthenticated \
             --project="${{ secrets.GCP_PROJECT_ID }}"
-  
+
   deploy-frontends:
     runs-on: ubuntu-latest
     permissions:

@@ -27,9 +27,9 @@ export interface Questionnaire {
   status: QuestionnaireStatus;
   patientUid: string;
   practitionerId?: string;
-  assignedAt: any;
-  completedAt?: any;
-  submittedAt?: any;
+  assignedAt: string | null;
+  completedAt?: string | null;
+  submittedAt?: string | null;
   responses?: Record<string, any>;
   progress?: number;
 }
@@ -131,7 +131,7 @@ async function fetchWithTimeout<T>(
 
   try {
     // Get auth token if user is logged in
-    let headers: Record<string, string> = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
     };
@@ -265,6 +265,86 @@ export const api = {
     return fetchWithTimeout(url, {
       method: 'POST',
     });
+  },
+
+  /**
+   * Get consultation data (identification + anamnese)
+   */
+  async getConsultation(patientId: string): Promise<{
+    identification: any | null;
+    anamnese: any | null;
+  }> {
+    const url = `${API_BASE_URL}/patients/${patientId}/consultation`;
+    return fetchWithTimeout(url, { method: 'GET' });
+  },
+
+  /**
+   * Get identification data
+   */
+  async getIdentification(patientId: string): Promise<any> {
+    const url = `${API_BASE_URL}/patients/${patientId}/consultation/identification`;
+    return fetchWithTimeout(url, { method: 'GET' });
+  },
+
+  /**
+   * Save identification data
+   */
+  async saveIdentification(
+    patientId: string,
+    data: any
+  ): Promise<{ ok: boolean; message: string; updatedAt: string }> {
+    const url = `${API_BASE_URL}/patients/${patientId}/consultation/identification`;
+    return fetchWithTimeout(url, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Get anamnese data
+   */
+  async getAnamnese(patientId: string): Promise<any> {
+    const url = `${API_BASE_URL}/patients/${patientId}/consultation/anamnese`;
+    return fetchWithTimeout(url, { method: 'GET' });
+  },
+
+  /**
+   * Save anamnese data
+   */
+  async saveAnamnese(
+    patientId: string,
+    data: any
+  ): Promise<{ ok: boolean; message: string; updatedAt: string }> {
+    const url = `${API_BASE_URL}/patients/${patientId}/consultation/anamnese`;
+    return fetchWithTimeout(url, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Get patient dashboard data
+   */
+  async getPatientDashboard(patientId: string): Promise<{
+    profile: any;
+    pendingQuestionnaires: any[];
+    scores: any;
+    nextConsultation: any;
+    consultationStatus: {
+      hasIdentification: boolean;
+      hasAnamnese: boolean;
+    };
+  }> {
+    const url = `${API_BASE_URL}/patients/${patientId}/dashboard`;
+    return fetchWithTimeout(url, { method: 'GET' });
+  },
+
+  /**
+   * Get patient scores (all questionnaires)
+   */
+  async getPatientScores(patientId: string): Promise<any> {
+    const url = `${API_BASE_URL}/patients/${patientId}/scores`;
+    return fetchWithTimeout(url, { method: 'GET' });
   },
 };
 

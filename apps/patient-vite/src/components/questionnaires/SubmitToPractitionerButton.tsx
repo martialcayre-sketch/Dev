@@ -1,5 +1,5 @@
+import api from '@/services/api';
 import type { QuestionnaireStatus } from '@neuronutrition/shared-questionnaires';
-import { getFunctions, httpsCallable } from 'firebase/functions';
 import { useMemo, useState } from 'react';
 
 interface Props {
@@ -52,8 +52,7 @@ export default function SubmitToPractitionerButton({
     setLoading(true);
     setErr(null);
     try {
-      const fn = httpsCallable(getFunctions(), 'submitQuestionnaire');
-      await fn({ patientId, questionnaireId });
+      await api.submitQuestionnaire(patientId, questionnaireId);
       setOk(true);
       onSuccess?.();
     } catch (e: any) {

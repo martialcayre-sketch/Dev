@@ -1,16 +1,20 @@
 # Cloud Run Dockerfile for API
-FROM node:20-slim AS base
+FROM node:20-slim
 WORKDIR /app
-COPY package.json package-lock.json* pnpm-lock.yaml* .npmrc* ./
 
-# Use npm inside the container for simplicity
-RUN npm ci || npm install
+# Install pnpm globally
+RUN npm install -g pnpm@9.15.9
 
-COPY tsconfig.json ./tsconfig.json
+# Copy package files
+COPY package.json ./
+
+# Install production dependencies
+RUN pnpm install --prod
+
+# Copy application source
 COPY src ./src
-RUN npm run build
 
 EXPOSE 8080
 ENV NODE_ENV=production
-CMD ["npm", "start"]
+CMD ["node", "src/server.js"]
 

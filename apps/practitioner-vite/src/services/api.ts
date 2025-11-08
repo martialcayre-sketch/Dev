@@ -26,9 +26,9 @@ export interface Questionnaire {
   status: QuestionnaireStatus;
   patientUid: string;
   practitionerId?: string;
-  assignedAt: any;
-  completedAt?: any;
-  submittedAt?: any;
+  assignedAt: string | null;
+  completedAt?: string | null;
+  submittedAt?: string | null;
   responses?: Record<string, any>;
   progress?: number;
 }

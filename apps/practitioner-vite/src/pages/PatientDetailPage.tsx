@@ -3,7 +3,9 @@ import LifeJourneyRadarCard from '@/components/LifeJourneyRadarCard';
 import { DashboardShell } from '@/components/layout/DashboardShell';
 import { useFirebaseUser } from '@/hooks/useFirebaseUser';
 import { firestore } from '@/lib/firebase';
-import { collection, doc, getDoc, onSnapshot, orderBy, query } from 'firebase/firestore';
+import type { Questionnaire } from '@/services/api';
+import api from '@/services/api';
+import { doc, getDoc } from 'firebase/firestore';
 import {
   Activity,
   AlertCircle,
@@ -31,17 +33,6 @@ type Patient = {
   createdAt?: any;
   pendingQuestionnairesCount?: number;
   lastQuestionnaireCompletedAt?: any;
-};
-
-type Questionnaire = {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  status: 'pending' | 'completed';
-  assignedAt: any;
-  completedAt?: any;
-  responses?: Record<string, any>;
 };
 
 const COLOR_SCHEMES = {
@@ -209,20 +200,34 @@ export default function PatientDetailPage() {
             practitionerId: patientDoc.data().practitionerId,
           });
           setPatient(patientData);
+
+          // Load questionnaires via API
+          try {
+            const { questionnaires: questionnairesList } = await api.getPatientQuestionnaires(id);
+            setQuestionnaires(questionnairesList);
+            console.log('[PatientDetailPage] Questionnaires loaded:', questionnairesList.length);
+          } catch (qErr) {
+            console.error('[PatientDetailPage] Error loading questionnaires:', qErr);
+            // Non-blocking, continue with empty list
+          }
         } else {
           console.error('[PatientDetailPage] Patient document does not exist');
           setError('Patient non trouvé');
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('[PatientDetailPage] Error loading patient:', err);
-        console.error('[PatientDetailPage] Error code:', err.code);
-        console.error('[PatientDetailPage] Error message:', err.message);
 
-        // Fournir un message d'erreur plus détaillé
-        if (err.code === 'permission-denied') {
-          setError("Accès refusé : vous n'avez pas les permissions pour voir ce patient");
+        if (err instanceof Error) {
+          console.error('[PatientDetailPage] Error message:', err.message);
+
+          // Fournir un message d'erreur plus détaillé
+          if ('code' in err && err.code === 'permission-denied') {
+            setError("Accès refusé : vous n'avez pas les permissions pour voir ce patient");
+          } else {
+            setError(`Erreur lors du chargement : ${err.message}`);
+          }
         } else {
-          setError(`Erreur lors du chargement : ${err.message}`);
+          setError('Erreur lors du chargement');
         }
       } finally {
         setLoading(false);
@@ -231,27 +236,18 @@ export default function PatientDetailPage() {
 
     loadPatient();
 
-    // Real-time listener for questionnaires
-    const questionnairesRef = collection(firestore, 'patients', id, 'questionnaires');
-    const q = query(questionnairesRef, orderBy('assignedAt', 'desc'));
-
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        console.log('[PatientDetailPage] Questionnaires loaded:', snapshot.docs.length);
-        const questionnairesData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Questionnaire[];
-        setQuestionnaires(questionnairesData);
-      },
-      (err) => {
-        console.error('[PatientDetailPage] Error listening to questionnaires:', err);
-        console.error('[PatientDetailPage] Questionnaires error code:', err.code);
+    // Optional: Poll every 30s for questionnaires updates (replaces real-time listener)
+    const interval = setInterval(async () => {
+      if (!id) return;
+      try {
+        const { questionnaires: questionnairesList } = await api.getPatientQuestionnaires(id);
+        setQuestionnaires(questionnairesList);
+      } catch {
+        // Silent fail for polling
       }
-    );
+    }, 30000);
 
-    return () => unsubscribe();
+    return () => clearInterval(interval);
   }, [id, authLoading, user]);
 
   if (authLoading || loading) {
