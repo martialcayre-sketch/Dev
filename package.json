@@ -36,9 +36,9 @@
   },
   "devDependencies": {
     "firebase-admin": "^12.7.0",
-    "firebase-tools": "^14.20.0",
+    "firebase-tools": "^14.24.1",
     "pdf-parse": "^2.4.5",
-    "pdfjs-dist": "^5.4.296"
+    "pdfjs-dist": "^5.4.394"
   },
   "engines": {
     "node": ">=20.17.0 <21"
