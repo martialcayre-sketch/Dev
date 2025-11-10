@@ -1,20 +1,68 @@
 {
-  "name": "NeuroNutrition Monorepo (Docker-Only)",
+  "name": "NeuroNutrition Monorepo",
   "build": {
     "dockerfile": "Dockerfile",
     "context": "."
   },
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
   "postCreateCommand": "pnpm install",
+  "forwardPorts": [3010, 3020, 5001, 5173, 5174, 8080, 9099],
+  "portsAttributes": {
+    "3020": {
+      "label": "Patient App",
+      "onAutoForward": "notify"
+    },
+    "3010": {
+      "label": "Practitioner App",
+      "onAutoForward": "notify"
+    },
+    "5001": {
+      "label": "Firebase Functions",
+      "onAutoForward": "silent"
+    },
+    "5173": {
+      "label": "Patient Vite Dev",
+      "onAutoForward": "notify"
+    },
+    "5174": {
+      "label": "Practitioner Vite Dev",
+      "onAutoForward": "notify"
+    },
+    "8080": {
+      "label": "Firestore Emulator",
+      "onAutoForward": "silent"
+    },
+    "9099": {
+      "label": "Firebase Auth Emulator",
+      "onAutoForward": "silent"
+    }
+  },
+  "remoteEnv": {
+    "FIRESTORE_EMULATOR_HOST": "localhost:8080",
+    "FIREBASE_AUTH_EMULATOR_HOST": "localhost:9099"
+  },
   "customizations": {
     "vscode": {
       "settings": {
         "chat.agent.enabled": true,
-        "chat.tools.global.autoApprove": false
+        "chat.tools.global.autoApprove": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        }
       },
       "extensions": [
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
-        "ms-vscode-remote.remote-containers"
+        "ms-vscode-remote.remote-containers",
+        "bradlc.vscode-tailwindcss",
+        "formulahendry.auto-rename-tag",
+        "streetsidesoftware.code-spell-checker",
+        "GitHub.copilot",
+        "GitHub.copilot-chat"
       ]
     }
   },
