@@ -21,21 +21,24 @@ export function usePatientQuestionnaires() {
 
   // Stable ref to avoid redefining functions in event listeners
   const fetchRef = useRef<() => Promise<void>>();
+  const isFetchingRef = useRef(false); // Prevent concurrent requests
 
   useEffect(() => {
     let isMounted = true;
 
     fetchRef.current = async () => {
-      if (!user) {
-        if (isMounted) {
+      if (!user || isFetchingRef.current) {
+        if (!user && isMounted) {
           setItems([]);
           setLoading(false);
         }
         return;
       }
+
+      isFetchingRef.current = true;
+
       try {
         setError(null);
-        console.log('[usePatientQuestionnaires] Fetching for user:', user.uid);
         const response = await api.getPatientQuestionnaires(user.uid);
         if (!isMounted) return;
         const questionnaires = response.questionnaires || [];
@@ -46,6 +49,8 @@ export function usePatientQuestionnaires() {
         console.error('[usePatientQuestionnaires] Error:', e);
         setError(e?.message || String(e));
         setLoading(false);
+      } finally {
+        isFetchingRef.current = false;
       }
     };
 
@@ -54,10 +59,10 @@ export function usePatientQuestionnaires() {
       setLoading(true);
       fetchRef.current();
 
-      // Poll (background refresh) every 15s instead of 10s to reduce load
+      // Poll every 30s instead of 15s to reduce server load
       const pollInterval = setInterval(() => {
         fetchRef.current && fetchRef.current();
-      }, 15000);
+      }, 30000);
 
       // Refetch on window focus & visibility change (for email link open)
       const onFocus = () => {

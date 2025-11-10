@@ -9,6 +9,7 @@ import {
   getAllQuestionnaires,
   getQuestionnaireById,
 } from '../../../lib/shared-questionnaires/index.js';
+import { AuthenticatedRequest, requireOwnerOrPractitioner, verifyAuth } from '../middleware/auth';
 
 const router = express.Router();
 const db = admin.firestore();
@@ -17,43 +18,45 @@ const db = admin.firestore();
  * GET /api/patients/:patientId/questionnaires
  * Liste tous les questionnaires d'un patient (from root collection)
  */
-router.get('/patients/:patientId/questionnaires', async (req: Request, res: Response) => {
-  try {
-    const { patientId } = req.params;
+router.get(
+  '/patients/:patientId/questionnaires',
+  verifyAuth,
+  requireOwnerOrPractitioner('patientId'),
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { patientId } = req.params;
 
-    // TODO: Vérifier authentification (middleware)
-    // TODO: Vérifier que l'utilisateur est le patient OU son praticien
+      logger.info(`[GET] Fetching questionnaires for patient: ${patientId}`);
 
-    logger.info(`[GET] Fetching questionnaires for patient: ${patientId}`);
+      const questionnairesSnap = await db
+        .collection('questionnaires')
+        .where('patientUid', '==', patientId)
+        .get();
 
-    const questionnairesSnap = await db
-      .collection('questionnaires')
-      .where('patientUid', '==', patientId)
-      .get();
+      logger.info(`[GET] Found ${questionnairesSnap.docs.length} questionnaires`);
 
-    logger.info(`[GET] Found ${questionnairesSnap.docs.length} questionnaires`);
+      // Sort manually after fetching (avoids index requirement)
+      const questionnaires = questionnairesSnap.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          // Calculer progression si possible
+          progress: calculateProgress(doc.data().responses, doc.data().questions),
+        }))
+        .sort((a: any, b: any) => {
+          // Sort by assignedAt desc (most recent first)
+          const aTime = a.assignedAt?.toMillis?.() || 0;
+          const bTime = b.assignedAt?.toMillis?.() || 0;
+          return bTime - aTime;
+        });
 
-    // Sort manually after fetching (avoids index requirement)
-    const questionnaires = questionnairesSnap.docs
-      .map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        // Calculer progression si possible
-        progress: calculateProgress(doc.data().responses, doc.data().questions),
-      }))
-      .sort((a: any, b: any) => {
-        // Sort by assignedAt desc (most recent first)
-        const aTime = a.assignedAt?.toMillis?.() || 0;
-        const bTime = b.assignedAt?.toMillis?.() || 0;
-        return bTime - aTime;
-      });
-
-    return res.json({ questionnaires });
-  } catch (error: any) {
-    logger.error('GET /patients/:patientId/questionnaires error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+      return res.json({ questionnaires });
+    } catch (error: any) {
+      logger.error('GET /patients/:patientId/questionnaires error:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
   }
-});
+);
 
 /**
  * GET /api/patients/:patientId/questionnaires/:questionnaireId

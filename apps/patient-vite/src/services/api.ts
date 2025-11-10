@@ -7,6 +7,7 @@
  */
 
 import { auth } from '@/lib/firebase';
+import { requestCache } from '@/lib/requestCache';
 
 // ============================================================================
 // Types
@@ -210,8 +211,20 @@ export const api = {
    * Get all questionnaires for a patient
    */
   async getPatientQuestionnaires(patientId: string): Promise<QuestionnairesListResponse> {
+    const cacheKey = `patient:${patientId}:questionnaires`;
+    const cached = requestCache.get<QuestionnairesListResponse>(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
     const url = `${API_BASE_URL}/patients/${patientId}/questionnaires`;
-    return fetchWithTimeout(url, { method: 'GET' });
+    const response = await fetchWithTimeout(url, { method: 'GET' });
+
+    // Cache for 20 seconds
+    requestCache.set(cacheKey, response, 20000);
+
+    return response;
   },
 
   /**
@@ -221,8 +234,20 @@ export const api = {
     patientId: string,
     questionnaireId: string
   ): Promise<QuestionnaireDetailResponse> {
+    const cacheKey = `patient:${patientId}:questionnaire:${questionnaireId}`;
+    const cached = requestCache.get<QuestionnaireDetailResponse>(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
     const url = `${API_BASE_URL}/patients/${patientId}/questionnaires/${questionnaireId}`;
-    return fetchWithTimeout(url, { method: 'GET' });
+    const response = await fetchWithTimeout(url, { method: 'GET' });
+
+    // Cache for 15 seconds
+    requestCache.set(cacheKey, response, 15000);
+
+    return response;
   },
 
   /**
@@ -235,10 +260,16 @@ export const api = {
     responses: Record<string, any>
   ): Promise<SaveResponsesResponse> {
     const url = `${API_BASE_URL}/patients/${patientId}/questionnaires/${questionnaireId}/responses`;
-    return fetchWithTimeout(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'PATCH',
       body: JSON.stringify({ responses }),
     });
+
+    // Invalidate cache for this questionnaire and list
+    requestCache.invalidate(`patient:${patientId}:questionnaire:${questionnaireId}`);
+    requestCache.invalidate(`patient:${patientId}:questionnaires`);
+
+    return response;
   },
 
   /**
