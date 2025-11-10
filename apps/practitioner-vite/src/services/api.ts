@@ -29,7 +29,7 @@ export interface Questionnaire {
   assignedAt: string | null;
   completedAt?: string | null;
   submittedAt?: string | null;
-  responses?: Record<string, any>;
+  responses?: Record<string, string | number | boolean | string[] | number[]>;
   progress?: number;
 }
 
@@ -40,7 +40,7 @@ export interface Patient {
   lastname?: string;
   status?: 'pending' | 'approved' | 'rejected';
   practitionerId?: string;
-  createdAt?: any;
+  createdAt?: string;
 }
 
 export interface ApiResponse<T> {

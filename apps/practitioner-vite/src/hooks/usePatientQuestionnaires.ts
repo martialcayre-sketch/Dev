@@ -4,21 +4,10 @@
  */
 
 import api from '@/services/api';
+import type { Questionnaire } from '@/services/api';
 import { useEffect, useState } from 'react';
 
-export interface PatientQuestionnaire {
-  id: string;
-  title: string;
-  category?: string;
-  description?: string;
-  status: 'pending' | 'in_progress' | 'submitted' | 'completed' | 'reopened';
-  assignedAt?: any;
-  completedAt?: any;
-  submittedAt?: any;
-  patientUid: string;
-  practitionerId?: string;
-  responses?: Record<string, any>;
-}
+export type PatientQuestionnaire = Questionnaire;
 
 export function usePatientQuestionnaires(patientId: string | undefined) {
   const [questionnaires, setQuestionnaires] = useState<PatientQuestionnaire[]>([]);
@@ -46,10 +35,11 @@ export function usePatientQuestionnaires(patientId: string | undefined) {
           setQuestionnaires(response.questionnaires || []);
           setLoading(false);
         }
-      } catch (e: any) {
-        console.error('[usePatientQuestionnaires] Error:', e);
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        console.error('[usePatientQuestionnaires] Error:', errorMessage);
         if (isMounted) {
-          setError(e?.message || String(e));
+          setError(errorMessage);
           setLoading(false);
         }
       }

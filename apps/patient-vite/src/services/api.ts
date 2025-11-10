@@ -31,7 +31,7 @@ export interface Questionnaire {
   assignedAt: string | null;
   completedAt?: string | null;
   submittedAt?: string | null;
-  responses?: Record<string, any>;
+  responses?: Record<string, string | number | boolean | string[] | number[]>;
   progress?: number;
 }
 
@@ -52,12 +52,90 @@ export interface QuestionnaireDetailResponse {
 }
 
 export interface SaveResponsesPayload {
-  responses: Record<string, any>;
+  responses: Record<string, string | number | boolean | string[] | number[]>;
 }
 
 export interface SaveResponsesResponse {
   ok: boolean;
   savedAt: string;
+}
+
+export interface CompleteQuestionnaireResponse {
+  ok: boolean;
+  completedAt: string;
+  message: string;
+}
+
+export interface SubmitQuestionnaireResponse {
+  ok: boolean;
+  submittedAt: string;
+  message: string;
+}
+
+export interface IdentificationData {
+  firstName?: string;
+  lastName?: string;
+  birthDate?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  postalCode?: string;
+  country?: string;
+}
+
+export interface AnamneseData {
+  medicalHistory?: string;
+  currentMedications?: string;
+  allergies?: string;
+  familyHistory?: string;
+  lifestyle?: string;
+  dietaryHabits?: string;
+  [key: string]: string | string[] | undefined;
+}
+
+export interface ConsultationData {
+  identification: IdentificationData | null;
+  anamnese: AnamneseData | null;
+}
+
+export interface SaveDataResponse {
+  ok: boolean;
+  message: string;
+  updatedAt: string;
+}
+
+export interface PatientDashboard {
+  profile: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+  };
+  pendingQuestionnaires: Questionnaire[];
+  scores: {
+    overall?: number;
+    categories?: Record<string, number>;
+  };
+  nextConsultation: {
+    date?: string;
+    practitionerId?: string;
+  } | null;
+  consultationStatus: {
+    hasIdentification: boolean;
+    hasAnamnese: boolean;
+  };
+}
+
+export interface PatientScores {
+  overall?: number;
+  categories?: Record<string, number>;
+  byQuestionnaire?: Record<
+    string,
+    {
+      score: number;
+      completedAt: string;
+    }
+  >;
 }
 
 // ============================================================================
@@ -73,9 +151,9 @@ const REQUEST_TIMEOUT = 30000; // 30 seconds
 
 export class ApiError extends Error {
   statusCode?: number;
-  details?: any;
+  details?: unknown;
 
-  constructor(message: string, statusCode?: number, details?: any) {
+  constructor(message: string, statusCode?: number, details?: unknown) {
     super(message);
     this.name = 'ApiError';
     this.statusCode = statusCode;
@@ -219,7 +297,7 @@ export const api = {
     }
 
     const url = `${API_BASE_URL}/patients/${patientId}/questionnaires`;
-    const response = await fetchWithTimeout(url, { method: 'GET' });
+    const response = await fetchWithTimeout<QuestionnairesListResponse>(url, { method: 'GET' });
 
     // Cache for 20 seconds
     requestCache.set(cacheKey, response, 20000);
@@ -242,7 +320,7 @@ export const api = {
     }
 
     const url = `${API_BASE_URL}/patients/${patientId}/questionnaires/${questionnaireId}`;
-    const response = await fetchWithTimeout(url, { method: 'GET' });
+    const response = await fetchWithTimeout<QuestionnaireDetailResponse>(url, { method: 'GET' });
 
     // Cache for 15 seconds
     requestCache.set(cacheKey, response, 15000);
@@ -257,10 +335,10 @@ export const api = {
   async saveQuestionnaireResponses(
     patientId: string,
     questionnaireId: string,
-    responses: Record<string, any>
+    responses: Record<string, string | number | boolean | string[] | number[]>
   ): Promise<SaveResponsesResponse> {
     const url = `${API_BASE_URL}/patients/${patientId}/questionnaires/${questionnaireId}/responses`;
-    const response = await fetchWithTimeout(url, {
+    const response = await fetchWithTimeout<SaveResponsesResponse>(url, {
       method: 'PATCH',
       body: JSON.stringify({ responses }),
     });
@@ -280,7 +358,7 @@ export const api = {
     questionnaireId: string
   ): Promise<{ ok: boolean; submittedAt: string; message: string }> {
     const url = `${API_BASE_URL}/patients/${patientId}/questionnaires/${questionnaireId}/submit`;
-    return fetchWithTimeout(url, {
+    return fetchWithTimeout<{ ok: boolean; submittedAt: string; message: string }>(url, {
       method: 'POST',
     });
   },
@@ -291,9 +369,9 @@ export const api = {
   async completeQuestionnaire(
     patientId: string,
     questionnaireId: string
-  ): Promise<{ ok: boolean; completedAt: string; message: string }> {
+  ): Promise<CompleteQuestionnaireResponse> {
     const url = `${API_BASE_URL}/patients/${patientId}/questionnaires/${questionnaireId}/complete`;
-    return fetchWithTimeout(url, {
+    return fetchWithTimeout<CompleteQuestionnaireResponse>(url, {
       method: 'POST',
     });
   },
@@ -301,20 +379,17 @@ export const api = {
   /**
    * Get consultation data (identification + anamnese)
    */
-  async getConsultation(patientId: string): Promise<{
-    identification: any | null;
-    anamnese: any | null;
-  }> {
+  async getConsultation(patientId: string): Promise<ConsultationData> {
     const url = `${API_BASE_URL}/patients/${patientId}/consultation`;
-    return fetchWithTimeout(url, { method: 'GET' });
+    return fetchWithTimeout<ConsultationData>(url, { method: 'GET' });
   },
 
   /**
    * Get identification data
    */
-  async getIdentification(patientId: string): Promise<any> {
+  async getIdentification(patientId: string): Promise<IdentificationData> {
     const url = `${API_BASE_URL}/patients/${patientId}/consultation/identification`;
-    return fetchWithTimeout(url, { method: 'GET' });
+    return fetchWithTimeout<IdentificationData>(url, { method: 'GET' });
   },
 
   /**
@@ -322,10 +397,10 @@ export const api = {
    */
   async saveIdentification(
     patientId: string,
-    data: any
-  ): Promise<{ ok: boolean; message: string; updatedAt: string }> {
+    data: IdentificationData
+  ): Promise<SaveDataResponse> {
     const url = `${API_BASE_URL}/patients/${patientId}/consultation/identification`;
-    return fetchWithTimeout(url, {
+    return fetchWithTimeout<SaveDataResponse>(url, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
@@ -334,9 +409,9 @@ export const api = {
   /**
    * Get anamnese data
    */
-  async getAnamnese(patientId: string): Promise<any> {
+  async getAnamnese(patientId: string): Promise<AnamneseData> {
     const url = `${API_BASE_URL}/patients/${patientId}/consultation/anamnese`;
-    return fetchWithTimeout(url, { method: 'GET' });
+    return fetchWithTimeout<AnamneseData>(url, { method: 'GET' });
   },
 
   /**
@@ -344,10 +419,10 @@ export const api = {
    */
   async saveAnamnese(
     patientId: string,
-    data: any
-  ): Promise<{ ok: boolean; message: string; updatedAt: string }> {
+    data: AnamneseData
+  ): Promise<SaveDataResponse> {
     const url = `${API_BASE_URL}/patients/${patientId}/consultation/anamnese`;
-    return fetchWithTimeout(url, {
+    return fetchWithTimeout<SaveDataResponse>(url, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
@@ -356,26 +431,17 @@ export const api = {
   /**
    * Get patient dashboard data
    */
-  async getPatientDashboard(patientId: string): Promise<{
-    profile: any;
-    pendingQuestionnaires: any[];
-    scores: any;
-    nextConsultation: any;
-    consultationStatus: {
-      hasIdentification: boolean;
-      hasAnamnese: boolean;
-    };
-  }> {
+  async getPatientDashboard(patientId: string): Promise<PatientDashboard> {
     const url = `${API_BASE_URL}/patients/${patientId}/dashboard`;
-    return fetchWithTimeout(url, { method: 'GET' });
+    return fetchWithTimeout<PatientDashboard>(url, { method: 'GET' });
   },
 
   /**
    * Get patient scores (all questionnaires)
    */
-  async getPatientScores(patientId: string): Promise<any> {
+  async getPatientScores(patientId: string): Promise<PatientScores> {
     const url = `${API_BASE_URL}/patients/${patientId}/scores`;
-    return fetchWithTimeout(url, { method: 'GET' });
+    return fetchWithTimeout<PatientScores>(url, { method: 'GET' });
   },
 };
 

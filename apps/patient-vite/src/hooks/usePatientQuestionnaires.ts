@@ -1,5 +1,6 @@
 import { useFirebaseUser } from '@/hooks/useFirebaseUser';
 import api from '@/services/api';
+import type { Timestamp } from 'firebase/firestore';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 export type PatientQuestionnaire = {
@@ -8,9 +9,9 @@ export type PatientQuestionnaire = {
   category?: string;
   description?: string;
   status: 'pending' | 'in_progress' | 'submitted' | 'completed' | 'reopened';
-  assignedAt?: any;
-  completedAt?: any;
-  submittedAt?: any;
+  assignedAt?: Timestamp | null;
+  completedAt?: Timestamp | null;
+  submittedAt?: Timestamp | null;
 };
 
 export function usePatientQuestionnaires() {
@@ -44,10 +45,11 @@ export function usePatientQuestionnaires() {
         const questionnaires = response.questionnaires || [];
         setItems(questionnaires as PatientQuestionnaire[]);
         setLoading(false);
-      } catch (e: any) {
+      } catch (e) {
         if (!isMounted) return;
-        console.error('[usePatientQuestionnaires] Error:', e);
-        setError(e?.message || String(e));
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        console.error('[usePatientQuestionnaires] Error:', errorMessage);
+        setError(errorMessage);
         setLoading(false);
       } finally {
         isFetchingRef.current = false;

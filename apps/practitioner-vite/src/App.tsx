@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import AnalyticsExportPage from './pages/AnalyticsExportPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import ConsultationCreatePage from './pages/ConsultationCreatePage';
@@ -26,37 +27,39 @@ import ToolsQuestionnairesCategoryPage from './pages/ToolsQuestionnairesCategory
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/patients/invitations" element={<PatientsInvitationsPage />} />
-        <Route path="/patients/create" element={<PatientCreatePage />} />
-        <Route path="/patients/:id/questionnaires" element={<PatientQuestionnairesPage />} />
-        <Route path="/patients/:id/dayflow-alim" element={<PatientDayFlowAlimPage />} />
-        <Route path="/patients/:id" element={<PatientDetailPage />} />
-        <Route path="/patients/*" element={<PatientsPage />} />
-        <Route path="/tools/*" element={<ToolsPage />} />
-        <Route
-          path="/tools/questionnaires/:category"
-          element={<ToolsQuestionnairesCategoryPage />}
-        />
-        <Route path="/diagnostics/*" element={<DiagnosticsPage />} />
-        <Route path="/plans/*" element={<PlansPage />} />
-        <Route path="/plans/create" element={<PlanCreatePage />} />
-        <Route path="/supplements/*" element={<SupplementsPage />} />
-        <Route path="/analytics/*" element={<AnalyticsPage />} />
-        <Route path="/analytics/export" element={<AnalyticsExportPage />} />
-        <Route path="/documents/*" element={<DocumentsPage />} />
-        <Route path="/documents/send" element={<DocumentSendPage />} />
-        <Route path="/messages/*" element={<MessagesPage />} />
-        <Route path="/settings/*" element={<SettingsPage />} />
-        <Route path="/consultations/*" element={<ConsultationsListPage />} />
-        <Route path="/consultations/create" element={<ConsultationCreatePage />} />
-        <Route path="/consultations/:id" element={<ConsultationDetailPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/patients/invitations" element={<PatientsInvitationsPage />} />
+          <Route path="/patients/create" element={<PatientCreatePage />} />
+          <Route path="/patients/:id/questionnaires" element={<PatientQuestionnairesPage />} />
+          <Route path="/patients/:id/dayflow-alim" element={<PatientDayFlowAlimPage />} />
+          <Route path="/patients/:id" element={<PatientDetailPage />} />
+          <Route path="/patients/*" element={<PatientsPage />} />
+          <Route path="/tools/*" element={<ToolsPage />} />
+          <Route
+            path="/tools/questionnaires/:category"
+            element={<ToolsQuestionnairesCategoryPage />}
+          />
+          <Route path="/diagnostics/*" element={<DiagnosticsPage />} />
+          <Route path="/plans/*" element={<PlansPage />} />
+          <Route path="/plans/create" element={<PlanCreatePage />} />
+          <Route path="/supplements/*" element={<SupplementsPage />} />
+          <Route path="/analytics/*" element={<AnalyticsPage />} />
+          <Route path="/analytics/export" element={<AnalyticsExportPage />} />
+          <Route path="/documents/*" element={<DocumentsPage />} />
+          <Route path="/documents/send" element={<DocumentSendPage />} />
+          <Route path="/messages/*" element={<MessagesPage />} />
+          <Route path="/settings/*" element={<SettingsPage />} />
+          <Route path="/consultations/*" element={<ConsultationsListPage />} />
+          <Route path="/consultations/create" element={<ConsultationCreatePage />} />
+          <Route path="/consultations/:id" element={<ConsultationDetailPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }

@@ -1,5 +1,6 @@
 import { auth, firestore } from '@/lib/firebase';
 import { collection, doc, onSnapshot, orderBy, query, updateDoc, where } from 'firebase/firestore';
+import type { Timestamp } from 'firebase/firestore';
 import { Bell, Check } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -9,7 +10,7 @@ type NotificationItem = {
   message?: string;
   link?: string;
   read?: boolean;
-  createdAt?: any;
+  createdAt?: Timestamp | null;
 };
 
 export function NotificationBell() {
@@ -23,7 +24,12 @@ export function NotificationBell() {
     const ref = collection(firestore, 'patients', u.uid, 'notifications');
     const q = query(ref, where('read', '==', false), orderBy('createdAt', 'desc'));
     const unsub = onSnapshot(q, (snap) => {
-      setItems(snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })));
+      setItems(
+        snap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        })) as NotificationItem[]
+      );
     });
     return () => unsub();
   }, []);
