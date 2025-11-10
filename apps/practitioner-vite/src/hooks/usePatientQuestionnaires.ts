@@ -3,8 +3,8 @@
  * Utilise l'API HTTP au lieu de Firestore direct
  */
 
-import api from '@/services/api';
 import type { Questionnaire } from '@/services/api';
+import api from '@/services/api';
 import { useEffect, useState } from 'react';
 
 export type PatientQuestionnaire = Questionnaire;

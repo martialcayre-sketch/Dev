@@ -395,10 +395,7 @@ export const api = {
   /**
    * Save identification data
    */
-  async saveIdentification(
-    patientId: string,
-    data: IdentificationData
-  ): Promise<SaveDataResponse> {
+  async saveIdentification(patientId: string, data: IdentificationData): Promise<SaveDataResponse> {
     const url = `${API_BASE_URL}/patients/${patientId}/consultation/identification`;
     return fetchWithTimeout<SaveDataResponse>(url, {
       method: 'PUT',
@@ -417,10 +414,7 @@ export const api = {
   /**
    * Save anamnese data
    */
-  async saveAnamnese(
-    patientId: string,
-    data: AnamneseData
-  ): Promise<SaveDataResponse> {
+  async saveAnamnese(patientId: string, data: AnamneseData): Promise<SaveDataResponse> {
     const url = `${API_BASE_URL}/patients/${patientId}/consultation/anamnese`;
     return fetchWithTimeout<SaveDataResponse>(url, {
       method: 'PUT',

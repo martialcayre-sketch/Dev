@@ -28,5 +28,10 @@
     "**/dist": true
   },
   "javascript.updateImportsOnFileMove.enabled": "always",
-  "typescript.updateImportsOnFileMove.enabled": "always"
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "cSpell.language": "en,fr-FR",
+  "cSpell.useGitignore": true,
+  "cSpell.diagnosticLevel": "Hint",
+  "cSpell.dictionaries": ["en-us", "fr-fr"],
+  "chat.tools.global.autoApprove": true
 }

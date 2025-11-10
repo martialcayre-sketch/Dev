@@ -1,18 +1,38 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: 'e2e',
   timeout: 60_000,
   retries: 0,
+  fullyParallel: false,
+  projects: [
+    {
+      name: 'patient',
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'http://localhost:3020',
+      },
+      testMatch: /.*patient.*\.spec\.ts/,
+    },
+    {
+      name: 'practitioner',
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'http://localhost:3010',
+      },
+      testMatch: /.*practitioner.*\.spec\.ts/,
+    },
+    {
+      name: 'redirects',
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'http://localhost:3020',
+      },
+      testMatch: /redirects\.spec\.ts/,
+    },
+  ],
   use: {
-    baseURL: 'http://localhost:5173',
     headless: true,
     trace: 'on-first-retry',
-  },
-  webServer: {
-    command: 'pnpm dev',
-    port: 5173,
-    timeout: 120_000,
-    reuseExistingServer: true,
   },
 });

@@ -10,6 +10,7 @@
     "api"
   ],
   "scripts": {
+    "prepare": "husky install",
     "dev": "pnpm --filter web dev",
     "dev:patient-spa": "pnpm -C apps/patient-vite dev",
     "dev:practitioner-spa": "pnpm -C apps/practitioner-vite dev",
@@ -18,11 +19,14 @@
     "deploy:run": "gcloud run deploy api --source=api --region=europe-west1 --allow-unauthenticated",
     "deploy:run:patient": "gcloud run deploy patient-app --source=apps/patient-vite --region=europe-west1 --allow-unauthenticated",
     "deploy:run:practitioner": "gcloud run deploy practitioner-app --source=apps/practitioner-vite --region=europe-west1 --allow-unauthenticated",
-    "build": "pnpm --filter web build && pnpm --filter functions build || exit 0",
-    "build:web": "pnpm -C apps/patient-vite build && pnpm -C apps/practitioner-vite build",
-    "lint": "pnpm --filter web lint || true",
-    "test": "pnpm --filter web test || true",
+    "build": "turbo run build",
+    "build:web": "turbo run build --filter=./apps/*",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
     "format": "pnpm --filter web format || true",
+    "spellcheck": "cspell --no-progress --show-context '**/*.{ts,tsx,js,jsx,md,mdx,html,css}'",
+    "spellcheck:fix": "pnpm run spellcheck -- --unique --wordsOnly",
     "extract": "node scripts/extract_pdf_text.mjs",
     "extract:mode": "node scripts/extract_pdf_text.mjs 'Mode de vie'",
     "deploy:hosting:patient": "firebase deploy --only hosting:patient",
@@ -35,10 +39,15 @@
     "dev:stack:linux": "bash scripts/dev-local.sh"
   },
   "devDependencies": {
+    "@cspell/dict-fr-fr": "^2.2.0",
+    "@playwright/test": "^1.56.1",
+    "cspell": "^8.14.2",
     "firebase-admin": "^12.7.0",
     "firebase-tools": "^14.20.0",
+    "husky": "^9.1.0",
     "pdf-parse": "^2.4.5",
-    "pdfjs-dist": "^5.4.296"
+    "pdfjs-dist": "^5.4.296",
+    "turbo": "^2.1.1"
   },
   "engines": {
     "node": ">=20.17.0 <21"

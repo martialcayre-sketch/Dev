@@ -1,6 +1,8 @@
 import cors from 'cors';
 import express from 'express';
-import { logRequest } from './middleware/auth.js';
+import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+import { authenticateToken, logRequest } from './middleware/auth.js';
 import adminRouter from './routes/admin.js';
 import analyticsRouter from './routes/analytics.js';
 import consultationRouter from './routes/consultation.js';
@@ -9,6 +11,11 @@ import questionnairesRouter from './routes/questionnaires.js';
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(helmet());
+
+// Basic rate limiting across API to mitigate abuse
+const limiter = rateLimit({ windowMs: 60 * 1000, max: 120 });
+app.use(limiter);
 
 // Log middleware (optional, pour debug)
 app.use(logRequest);
@@ -19,6 +26,8 @@ router.get('/health', (_req, res) => res.json({ ok: true }));
 router.get('/hello', (_req, res) =>
   res.json({ message: 'Hello from Cloud Run API - Backend First Architecture' })
 );
+// Require auth for all subsequent routes by default; route files can add role checks
+router.use(authenticateToken);
 
 // Mount all routes
 router.use(questionnairesRouter);

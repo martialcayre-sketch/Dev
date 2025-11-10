@@ -576,7 +576,9 @@ export default function LifeJourney7Spheres(props: {
     alimentation: {},
   });
   const [isSaving, setIsSaving] = useState(false);
-  const saveTimeoutRef = useRef<number | null>(null);
+  // On Node + browser type mismatch (setTimeout returns number in browsers, Timeout in Node typings via @types/node).
+  // Use ReturnType<typeof setTimeout> for compatibility across environments.
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const counts = useMemo(() => {
     const perSphere = Object.fromEntries(
