@@ -50,3 +50,10 @@ pnpm-debug.log*
 
 # TypeScript
 *.tsbuildinfo
+
+# Turbo
+.turbo/
+
+# Tools and temporary downloads
+.tools/
+nodejs

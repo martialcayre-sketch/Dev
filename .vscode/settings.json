@@ -20,7 +20,8 @@
   "search.exclude": {
     "**/node_modules": true,
     "**/dist": true,
-    "**/.git": true
+    "**/.git": true,
+    "**/.turbo": true
   },
   "files.exclude": {
     "**/.git": true,
@@ -29,9 +30,8 @@
   },
   "javascript.updateImportsOnFileMove.enabled": "always",
   "typescript.updateImportsOnFileMove.enabled": "always",
-  "cSpell.language": "en,fr-FR",
-  "cSpell.useGitignore": true,
-  "cSpell.diagnosticLevel": "Hint",
-  "cSpell.dictionaries": ["en-us", "fr-fr"],
+  "cSpell.enabled": true,
+  "cSpell.language": "en,fr",
+  "chat.agent.enabled": true,
   "chat.tools.global.autoApprove": true
 }

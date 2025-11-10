@@ -52,7 +52,11 @@
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
           "source.fixAll.eslint": "explicit"
-        }
+        },
+        "cSpell.enabled": true,
+        "cSpell.language": "en,fr",
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "typescript.enablePromptUseWorkspaceTsdk": true
       },
       "extensions": [
         "dbaeumer.vscode-eslint",
@@ -62,7 +66,10 @@
         "formulahendry.auto-rename-tag",
         "streetsidesoftware.code-spell-checker",
         "GitHub.copilot",
-        "GitHub.copilot-chat"
+        "GitHub.copilot-chat",
+        "firebase.vscode-firebase",
+        "ms-vscode.vscode-typescript-next",
+        "christian-kohler.path-intellisense"
       ]
     }
   },
