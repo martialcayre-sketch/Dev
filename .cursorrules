@@ -1,0 +1,316 @@
+# Cursor AI Rules - NeuroNutrition App
+
+## Project Identity
+
+- **Name:** NeuroNutrition App
+- **Type:** Healthcare Web Application (Practitioner-Patient Management)
+- **Architecture:** pnpm Monorepo (13 packages)
+- **Primary Languages:** TypeScript, React, Firebase
+- **Environment:** Windows, Node 20.18.0, pnpm 9.15.9
+
+## Code Style
+
+### TypeScript
+
+- Use strict mode with explicit return types for public functions
+- Prefer `type` over `interface` for simple types
+- Use Zod for runtime validation
+- No `any` types unless absolutely necessary
+- Use `Record<string, T>` for objects with unknown keys
+
+### React
+
+- Functional components only (no class components)
+- Use hooks (useState, useEffect, useMemo, useCallback)
+- Lazy load heavy components with React.lazy()
+- Custom hooks for reusable logic (prefix with `use`)
+- Error boundaries for all route components
+
+### File Organization
+
+- Components: PascalCase (e.g., `PatientDashboard.tsx`)
+- Hooks: camelCase with `use` prefix (e.g., `useAuth.ts`)
+- Utils: camelCase (e.g., `calculateScore.ts`)
+- Types: PascalCase in `types.ts` or `@types` folder
+- Tests: Same name with `.test.ts` or `.spec.ts` suffix
+
+### Imports
+
+- Group imports: React → External → Internal → Types
+- Use absolute imports via path aliases (`@/...`)
+- Import specific functions, not entire libraries
+- Prefer named exports over default exports
+
+## Performance Rules
+
+### Bundle Size
+
+- Keep chunks under 500KB (gzip)
+- Use code splitting for routes
+- Lazy load charts and heavy components
+- Manual chunks: react-vendor, firebase, charts, questionnaires
+
+### React Optimization
+
+- Memoize expensive calculations with useMemo
+- Wrap callback functions with useCallback when passed as props
+- Use React.memo() for components with expensive renders
+- Debounce user input handlers (auto-save, search)
+
+### Firebase
+
+- Batch Firestore writes when possible
+- Use Firestore transactions for critical updates
+- Cache frequently accessed data in React state
+- Limit query results with `.limit()`
+
+## Architecture Patterns
+
+### Separation of Concerns
+
+```
+apps/
+  patient-vite/       → Patient UI only
+  practitioner-vite/  → Practitioner UI only
+packages/
+  shared-core/        → Business logic, types
+  shared-ui/          → Reusable components
+  shared-charts/      → Chart components
+  shared-api/         → API client utilities
+functions/            → Cloud Functions (Node 20)
+```
+
+### Data Flow
+
+```
+Component → Custom Hook → Firebase Service → Firestore
+                ↓
+            Local State (useState)
+```
+
+### Error Handling
+
+- Always wrap async operations in try-catch
+- Show user-friendly error messages
+- Log errors to console in development
+- Use ErrorBoundary for React errors
+
+## Security Best Practices
+
+### Authentication
+
+- Always check `request.auth.uid` in Firestore rules
+- Validate user roles before privileged operations
+- Use Firebase Auth tokens, never custom tokens
+- Never store sensitive data in localStorage
+
+### Data Validation
+
+```typescript
+// Always validate user input with Zod
+const patientSchema = z.object({
+  email: z.string().email(),
+  displayName: z.string().min(2),
+});
+
+const validated = patientSchema.parse(userInput);
+```
+
+### Firestore Rules
+
+- Patients can only read/write their own data
+- Practitioners can read their patients' data
+- Use `get()` to verify relationships
+- Never trust client-side data
+
+## Testing Requirements
+
+### Unit Tests (Jest)
+
+- Test business logic in `shared-core`
+- Test custom hooks
+- Test utility functions
+- Aim for 80% coverage on critical paths
+
+### E2E Tests (Playwright)
+
+- Test authentication flows
+- Test questionnaire submission
+- Test practitioner-patient workflows
+- Run against Firebase emulators
+
+## Git Workflow
+
+### Commit Messages
+
+```
+feat: add Life Journey questionnaire
+fix: resolve bundle size issue in practitioner app
+refactor: extract chart components to shared package
+test: add E2E tests for patient signup
+docs: update deployment guide
+```
+
+### Branch Strategy
+
+- `main`: production-ready code
+- `dev`: development branch (optional)
+- Feature branches: `feat/questionnaire-improvements`
+- Bugfix branches: `fix/auth-redirect`
+
+## Common Commands
+
+### Development
+
+```bash
+pnpm dev:patient          # Patient app (port 3020)
+pnpm dev:practitioner     # Practitioner app (port 3010)
+pnpm dev:emu              # Firebase emulators
+```
+
+### Build & Deploy
+
+```bash
+pnpm build                # Build all packages (Turbo)
+pnpm build:web            # Build patient + practitioner apps
+firebase deploy           # Deploy all (hosting + functions)
+```
+
+### Testing
+
+```bash
+pnpm -C functions test    # Unit tests
+pnpm exec playwright test # E2E tests
+```
+
+## Prohibited Patterns
+
+### ❌ Never Do This
+
+```typescript
+// Don't use 'any'
+const data: any = response;
+
+// Don't import entire libraries
+import _ from 'lodash';
+
+// Don't use class components
+class Dashboard extends React.Component {}
+
+// Don't use deprecated baseUrl
+{ "baseUrl": ".", "paths": {...} }
+
+// Don't mutate state directly
+state.items.push(newItem);
+```
+
+### ✅ Always Do This
+
+```typescript
+// Use specific types
+const data: PatientData = response;
+
+// Import specific functions
+import { debounce } from 'lodash-es';
+
+// Use functional components
+function Dashboard() {}
+
+// Use paths without baseUrl
+{ "paths": { "@/*": ["./src/*"] } }
+
+// Use immutable updates
+setState([...state.items, newItem]);
+```
+
+## Firebase Specific
+
+### Cloud Functions
+
+- Use 2nd gen functions (Node 20)
+- Set region: `europe-west1`
+- Use environment variables for config
+- Handle errors with try-catch
+- Return proper HTTP status codes
+
+### Firestore
+
+- Use subcollections for nested data
+- Create composite indexes for complex queries
+- Batch writes when creating multiple documents
+- Use transactions for critical updates
+- Set TTL on temporary data
+
+### Hosting
+
+- Patient: `neuronutrition-app-patient.web.app`
+- Practitioner: `neuronutrition-app-practitioner.web.app`
+- Multi-site config in `firebase.json`
+
+## Package Management
+
+### pnpm Workspaces
+
+- Install root deps: `pnpm add -D -w <package>`
+- Install package deps: `pnpm add <package> --filter <workspace>`
+- Use workspace protocol: `"@neuronutrition/shared-core": "workspace:*"`
+
+### Turbo Cache
+
+- Builds are cached by Turbo
+- Clean cache: `pnpm exec turbo clean`
+- Force rebuild: `pnpm build --force`
+
+## Documentation Standards
+
+### Code Comments
+
+```typescript
+/**
+ * Calculate Life Journey global score (0-180 points)
+ * @param answers - User answers (questionId -> value)
+ * @returns Calculated scores for all 7 spheres
+ */
+export function calculateLifeJourneyScore(answers: Record<string, number>): LifeJourneyScores {
+  // Implementation
+}
+```
+
+### README Files
+
+- Every package should have a README
+- Include purpose, usage, and examples
+- Document public APIs
+- List dependencies and peer dependencies
+
+## AI Assistant Preferences
+
+### When Generating Code
+
+1. Prefer TypeScript over JavaScript
+2. Use functional React patterns
+3. Follow existing code style
+4. Include error handling
+5. Add TypeScript types/interfaces
+6. Write self-documenting code
+7. Add comments for complex logic
+
+### When Suggesting Changes
+
+1. Explain the reasoning
+2. Consider bundle size impact
+3. Check for breaking changes
+4. Suggest tests if needed
+5. Reference existing patterns in codebase
+
+### When Debugging
+
+1. Check Firebase console logs
+2. Verify Firestore rules
+3. Inspect network requests
+4. Check bundle stats (stats.html)
+5. Review TypeScript errors
+
+---
+
+**Follow these rules for consistent, maintainable, and performant code.**
