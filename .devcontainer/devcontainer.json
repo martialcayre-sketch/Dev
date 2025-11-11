@@ -56,7 +56,10 @@
         "cSpell.enabled": true,
         "cSpell.language": "en,fr",
         "typescript.tsdk": "node_modules/typescript/lib",
-        "typescript.enablePromptUseWorkspaceTsdk": true
+        "typescript.enablePromptUseWorkspaceTsdk": true,
+        "github.copilot.advanced": {
+          "contextFiles": [".github/copilot-context.md", ".cursorrules"]
+        }
       },
       "extensions": [
         "dbaeumer.vscode-eslint",
