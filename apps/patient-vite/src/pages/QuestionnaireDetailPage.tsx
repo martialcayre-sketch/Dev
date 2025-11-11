@@ -1,8 +1,10 @@
 import { DashboardShell } from '@/components/layout/DashboardShell';
+import DNSMRadar from '@/components/questionnaires/DNSMRadar';
 import QuestionnaireStatusBanner from '@/components/questionnaires/QuestionnaireStatusBanner';
 import SubmitToPractitionerButton from '@/components/questionnaires/SubmitToPractitionerButton';
 import { SliderInput } from '@/components/SliderInput';
 import DayFlowAlimForm from '@/features/dayflow-alim/DayFlowAlimForm';
+import { useDNSMScore, type DNSMInterpretation } from '@/hooks/useDNSMScore';
 import { useFirebaseUser } from '@/hooks/useFirebaseUser';
 // Suppression des accès Firestore directs: tout passe par l'API backend
 import { THEMES, getQuestions } from '@/questionnaires/data';
@@ -25,6 +27,13 @@ export default function QuestionnaireDetailPage() {
   const [responses, setResponses] = useState<ResponseMap>({});
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [page, setPage] = useState(0);
+
+  // Calculer les scores DNSM (toujours appelé, même si pas DNSM)
+  const {
+    scores: dnsmScores,
+    interpretations: dnsmInterpretations,
+    isComplete: dnsmComplete,
+  } = useDNSMScore(responses as Record<string, number>);
 
   // Fonction stable pour générer une permutation déterministe (doit être avant toute logique conditionnelle)
   const seededPermutation = useCallback((key: string) => {
@@ -258,6 +267,43 @@ export default function QuestionnaireDetailPage() {
             </div>
           </div>
 
+          {/* Radar DNSM - affiché une fois que quelques réponses existent */}
+          {Object.keys(responses).length > 10 && <DNSMRadar scores={dnsmScores} />}
+
+          {/* Interprétations par axe */}
+          {dnsmComplete && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {dnsmInterpretations.map((interp: DNSMInterpretation) => (
+                <div
+                  key={interp.axis}
+                  className={`rounded-2xl border p-4 ${
+                    interp.status === 'normal'
+                      ? 'border-emerald-500/30 bg-emerald-500/10'
+                      : interp.status === 'probable'
+                      ? 'border-amber-500/30 bg-amber-500/10'
+                      : 'border-rose-500/30 bg-rose-500/10'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-white capitalize">{interp.axis}</span>
+                    <span className="text-xs text-white/60">{interp.score}/40</span>
+                  </div>
+                  <p
+                    className={`text-sm ${
+                      interp.status === 'normal'
+                        ? 'text-emerald-300'
+                        : interp.status === 'probable'
+                        ? 'text-amber-300'
+                        : 'text-rose-300'
+                    }`}
+                  >
+                    {interp.label}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1">
               <div className="h-2 w-full rounded bg-white/10 overflow-hidden">
@@ -266,7 +312,9 @@ export default function QuestionnaireDetailPage() {
                   style={{ width: `${((page + 1) / 4) * 100}%` }}
                 />
               </div>
-              <p className="mt-2 text-xs text-white/60">Page {page + 1} sur 4</p>
+              <p className="mt-2 text-xs text-white/60">
+                Page {page + 1} sur 4 - {THEMES[page].label}
+              </p>
             </div>
             <button
               type="button"
@@ -328,14 +376,18 @@ export default function QuestionnaireDetailPage() {
 
           <div className="flex gap-4 mt-4 items-center">
             {page > 0 && (
-              <button type="button" className="px-4 py-2 bg-gray-300 rounded" onClick={handlePrev}>
+              <button
+                type="button"
+                className="px-4 py-2 rounded border border-white/20 text-white/90 hover:bg-white/10"
+                onClick={handlePrev}
+              >
                 Précédent
               </button>
             )}
             {page < 3 && (
               <button
                 type="button"
-                className="px-4 py-2 bg-black text-white rounded"
+                className="px-4 py-2 bg-nn-primary-500 text-white rounded hover:bg-nn-primary-600"
                 onClick={handleNext}
                 disabled={!canEdit}
               >
@@ -348,7 +400,7 @@ export default function QuestionnaireDetailPage() {
                   patientId={user!.uid}
                   questionnaireId={id}
                   status={questionnaire.status}
-                  disabled={!canEdit}
+                  disabled={!canEdit || !dnsmComplete}
                   onSuccess={() => navigate('/dashboard/questionnaires')}
                 />
               </div>
@@ -357,9 +409,7 @@ export default function QuestionnaireDetailPage() {
         </div>
       </DashboardShell>
     );
-  }
-
-  // DayFlow 360 – Alimentation specialized rendering
+  } // DayFlow 360 – Alimentation specialized rendering
   if (isDayFlowAlim) {
     const friendlyTitle = 'DayFlow 360 – Alimentation';
     const friendlyCategory = 'Alimentation';
