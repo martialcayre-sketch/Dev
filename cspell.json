@@ -1,0 +1,111 @@
+{
+  "version": "0.2",
+  "language": "en,fr",
+  "dictionaries": [
+    "en",
+    "fr-fr",
+    "typescript",
+    "node",
+    "html",
+    "css",
+    "companies",
+    "softwareTerms",
+    "npm",
+    "custom-terms"
+  ],
+  "dictionaryDefinitions": [
+    {
+      "name": "custom-terms",
+      "path": "./cspell-custom-dictionary.txt",
+      "description": "NeuroNutrition custom terms and French business vocabulary"
+    }
+  ],
+  "ignorePaths": [
+    "node_modules/**",
+    ".git/**",
+    "dist/**",
+    "build/**",
+    ".turbo/**",
+    "*.min.js",
+    "*.min.css",
+    "pnpm-lock.yaml",
+    "*.svg",
+    "*.ico",
+    "*.woff*",
+    "*.ttf",
+    "*.eot",
+    "**/questionnaires/**/*.ts",
+    "**/data-questionnaires/**",
+    "scripts/add-practitioner*.js"
+  ],
+  "ignoreRegExpList": [
+    "/\\b[A-Z]{2,10}\\b/g",
+    "/\\b\\d+px\\b/g",
+    "/\\b#[0-9a-fA-F]{3,8}\\b/g",
+    "/\\brgba?\\([^)]+\\)/g",
+    "/\\bhsl\\([^)]+\\)/g",
+    "/\\b[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}\\b/g",
+    "/firebase\\w+/gi",
+    "/vite\\w+/gi",
+    "/console\\.(log|error|warn|info)\\b/gi",
+    "/'[^']*'/g",
+    "/\"[^\"]*\"/g",
+    "/\\bconst\\s+\\w+\\s*=/gi",
+    "/\\bfunction\\s+\\w+/gi",
+    "/\\binterface\\s+\\w+/gi",
+    "/\\btype\\s+\\w+/gi",
+    "/\\b[a-zA-Z]+Id\\b/gi"
+  ],
+  "words": [
+    "neuronutrition",
+    "questionnaire",
+    "questionnaires",
+    "practitioner",
+    "firebase",
+    "firestore",
+    "vite",
+    "tailwindcss",
+    "typescript",
+    "pnpm",
+    "turbo",
+    "recharts",
+    "lucide",
+    "shadcn",
+    "zod",
+    "tsx",
+    "jsx",
+    "eslint",
+    "vitest",
+    "playwright",
+    "devcontainer",
+    "dockerfile",
+    "workflow",
+    "monorepo"
+  ],
+  "languageSettings": [
+    {
+      "languageId": "typescript",
+      "locale": "en,fr",
+      "allowCompoundWords": true
+    },
+    {
+      "languageId": "typescriptreact",
+      "locale": "en,fr",
+      "allowCompoundWords": true
+    },
+    {
+      "languageId": "javascript",
+      "locale": "en,fr",
+      "allowCompoundWords": true
+    },
+    {
+      "languageId": "javascriptreact",
+      "locale": "en,fr",
+      "allowCompoundWords": true
+    },
+    {
+      "languageId": "markdown",
+      "locale": "en,fr"
+    }
+  ]
+}
