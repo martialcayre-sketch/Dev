@@ -1,22 +1,107 @@
 {
-  "name": "NeuroNutrition Monorepo (Docker-Only)",
+  "name": "NeuroNutrition Monorepo - GitHub Codespaces Optimized",
   "build": {
     "dockerfile": "Dockerfile",
     "context": "."
   },
-  "postCreateCommand": "pnpm install",
+  "postCreateCommand": "pnpm install --frozen-lockfile",
+  "forwardPorts": [3000, 3010, 3020, 5000, 5001, 5002, 5003, 5004, 5005, 8080, 8081, 9099],
+  "portsAttributes": {
+    "3000": {
+      "label": "Main Dev Server",
+      "onAutoForward": "openPreview"
+    },
+    "3010": {
+      "label": "Practitioner App",
+      "onAutoForward": "openPreview"
+    },
+    "3020": {
+      "label": "Patient App",
+      "onAutoForward": "openPreview"
+    },
+    "5000": {
+      "label": "Firebase Emulator UI",
+      "onAutoForward": "openBrowser"
+    },
+    "5001": {
+      "label": "Firebase Hosting Emulator"
+    },
+    "5002": {
+      "label": "Firebase Functions Emulator"
+    },
+    "5003": {
+      "label": "Firestore Emulator"
+    },
+    "5004": {
+      "label": "Firebase Auth Emulator"
+    },
+    "5005": {
+      "label": "Firebase Storage Emulator"
+    },
+    "8080": {
+      "label": "API Server"
+    },
+    "8081": {
+      "label": "Firestore Web UI"
+    },
+    "9099": {
+      "label": "Firebase Auth Web UI"
+    }
+  },
   "customizations": {
     "vscode": {
       "settings": {
         "chat.agent.enabled": true,
-        "chat.tools.global.autoApprove": false
+        "chat.tools.global.autoApprove": false,
+        "github.copilot.enable": {
+          "*": true,
+          "plaintext": false,
+          "markdown": true
+        },
+        "github.copilot.chat.enabled": true,
+        "github.copilot.completions.enable": true,
+        "workbench.startupEditor": "readme",
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit",
+          "source.organizeImports": "explicit"
+        },
+        "typescript.preferences.useAliasesForRenames": false,
+        "typescript.updateImportsOnFileMove.enabled": "always",
+        "javascript.updateImportsOnFileMove.enabled": "always",
+        "files.watcherExclude": {
+          "**/node_modules/**": true,
+          "**/dist/**": true,
+          "**/.git/**": true
+        }
       },
       "extensions": [
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
-        "ms-vscode-remote.remote-containers"
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-typescript-next",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "github.vscode-github-actions",
+        "ms-vscode.vscode-json",
+        "yzhang.markdown-all-in-one",
+        "ms-playwright.playwright",
+        "ms-vscode-remote.remote-containers",
+        "ms-vscode.remote-repositories",
+        "toba.vsfire"
       ]
     }
   },
-  "remoteUser": "node"
+  "remoteUser": "node",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "nodeGypDependencies": true,
+      "version": "20"
+    }
+  },
+  "mounts": [
+    "source=neuronutrition-node-modules,target=${containerWorkspaceFolder}/node_modules,type=volume"
+  ]
 }

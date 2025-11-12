@@ -17,7 +17,7 @@ $projectId = "neuronutrition-app"
 Write-Host "📊 Step 1: Querying all patients..." -ForegroundColor Yellow
 
 # Get all patients
-$patientsJson = npx -y firebase-tools firestore:get patients --project $projectId --format json 2>&1 | Out-String
+$patientsJson = pnpm -w exec firebase firestore:get patients --project $projectId --format json 2>&1 | Out-String
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Failed to query patients" -ForegroundColor Red
@@ -43,7 +43,7 @@ try {
         
         # Get questionnaires for this patient
         $questionnairesPath = "patients/$patientId/questionnaires"
-        $questionnairesJson = npx -y firebase-tools firestore:get $questionnairesPath --project $projectId --format json 2>&1 | Out-String
+        $questionnairesJson = pnpm -w exec firebase firestore:get $questionnairesPath --project $projectId --format json 2>&1 | Out-String
         
         if ($LASTEXITCODE -ne 0) {
             Write-Host "   ⚠️  No questionnaires or error accessing subcollection" -ForegroundColor Yellow
@@ -67,7 +67,7 @@ try {
                 
                 # Read the full document
                 $qDocPath = "patients/$patientId/questionnaires/$questionnaireId"
-                $qDataJson = npx -y firebase-tools firestore:get $qDocPath --project $projectId --format json 2>&1 | Out-String
+                $qDataJson = pnpm -w exec firebase firestore:get $qDocPath --project $projectId --format json 2>&1 | Out-String
                 
                 if ($LASTEXITCODE -ne 0) {
                     Write-Host "   ❌ Failed to read questionnaire $questionnaireId" -ForegroundColor Red
@@ -83,7 +83,7 @@ try {
                 Write-Host "   ✅ Migrating $questionnaireId to root collection..." -ForegroundColor Green
                 
                 # Write the document
-                npx -y firebase-tools firestore:set $rootPath --data "$qDataJson" --project $projectId 2>&1 | Out-Null
+                pnpm -w exec firebase firestore:set $rootPath --data "$qDataJson" --project $projectId 2>&1 | Out-Null
                 
                 if ($LASTEXITCODE -eq 0) {
                     $migratedCount++

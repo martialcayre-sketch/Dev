@@ -23,10 +23,37 @@
     "**/.git": true
   },
   "files.exclude": {
-    "**/.git": true,
     "**/node_modules": true,
-    "**/dist": true
+    "**/dist": true,
+    "**/.git": true
   },
   "javascript.updateImportsOnFileMove.enabled": "always",
-  "typescript.updateImportsOnFileMove.enabled": "always"
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": true
+  },
+  "github.copilot.chat.enabled": true,
+  "github.copilot.completions.enable": true,
+  "github.copilot.advanced": {
+    "debug.overrideEngine": "copilot",
+    "debug.testOverrideProxyUrl": "",
+    "debug.overrideProxyUrl": ""
+  },
+  "workbench.colorTheme": "GitHub Dark Default",
+  "workbench.startupEditor": "readme",
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/.git/**": true,
+    "**/pnpm-lock.yaml": true,
+    "**/.firebase/**": true
+  },
+  "emmet.includeLanguages": {
+    "typescript": "html",
+    "typescriptreact": "html"
+  },
+  "typescript.preferences.useAliasesForRenames": false
 }

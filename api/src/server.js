@@ -4,6 +4,7 @@ import { logRequest } from './middleware/auth.js';
 import adminRouter from './routes/admin.js';
 import analyticsRouter from './routes/analytics.js';
 import consultationRouter from './routes/consultation.js';
+import practitionersRouter from './routes/practitioners.js';
 import questionnairesRouter from './routes/questionnaires.js';
 
 const app = express();
@@ -25,6 +26,7 @@ router.use(questionnairesRouter);
 router.use(consultationRouter);
 router.use(analyticsRouter);
 router.use(adminRouter);
+router.use(practitionersRouter);
 
 app.use('/', router);
 app.use('/api', router);

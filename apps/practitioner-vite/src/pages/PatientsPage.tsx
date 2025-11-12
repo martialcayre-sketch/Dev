@@ -1,20 +1,9 @@
 import { DashboardShell } from '@/components/layout/DashboardShell';
 import { useFirebaseUser } from '@/hooks/useFirebaseUser';
-import { firestore, functions } from '@/lib/firebase';
+import { functions } from '@/lib/firebase';
+import api from '@/services/api';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import {
-  Timestamp,
-  collection,
-  deleteDoc,
-  doc,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  updateDoc,
-  where,
-} from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import {
   AlertCircle,
@@ -36,8 +25,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 interface Patient {
-  id: string;
+  uid: string; // ID from API
+  id: string; // Alias for compatibility (non-optional)
   email: string;
+  displayName?: string;
+  firstname?: string;
+  lastname?: string;
   fullName?: string;
   name?: string;
   phone?: string;
@@ -76,47 +69,36 @@ export default function PatientsPage() {
       setInviteSuccess(false);
 
       try {
-        const patientsQuery = query(
-          collection(firestore, 'patients'),
-          where('practitionerId', '==', user.uid),
-          orderBy('createdAt', 'desc'),
-          limit(100)
-        );
-        const snapshot = await getDocs(patientsQuery);
+        // ✅ Utiliser l'API backend au lieu de Firestore direct
+        const response = await api.getPractitionerPatients(user.uid);
         if (!isMounted) return;
 
-        const docs = snapshot.docs
-          .map((d) => {
-            const data = d.data() as Record<string, unknown>;
-            const createdAt = (data.createdAt as Timestamp | undefined)?.toDate?.();
-            const upcoming = (data.nextConsultationAt as Timestamp | undefined)?.toDate?.() ?? null;
-            const fullName =
-              typeof data.fullName === 'string'
-                ? data.fullName
-                : `${(data.firstName as string | undefined) ?? ''} ${(data.lastName as string | undefined) ?? ''}`.trim();
+        const formattedPatients = response.patients.map((p: any) => {
+          const fullName =
+            p.displayName || `${p.firstname || ''} ${p.lastname || ''}`.trim() || 'Patient';
 
-            return {
-              id: d.id,
-              email: (data.email as string) ?? '',
-              fullName: fullName || undefined,
-              name: fullName || undefined,
-              phone: (data.phone as string | undefined) ?? undefined,
-              status: (data.status as string | undefined) ?? 'active',
-              createdAt: createdAt ?? undefined,
-              upcomingConsultation: upcoming,
-              hasNewConsultationActivity:
-                (data.hasNewConsultationActivity as boolean | undefined) ?? false,
-              consultationComplete: (data.consultationComplete as boolean | undefined) ?? false,
-              archived: (data.archived as boolean | undefined) ?? false,
-              hasQuestionnairesAssigned:
-                (data.hasQuestionnairesAssigned as boolean | undefined) ?? false,
-              pendingQuestionnairesCount:
-                (data.pendingQuestionnairesCount as number | undefined) ?? 0,
-            } satisfies Patient;
-          })
-          .filter((p) => !p.archived);
+          return {
+            uid: p.uid,
+            id: p.uid, // Alias pour compatibilité avec le code existant
+            email: p.email,
+            displayName: p.displayName,
+            firstname: p.firstname,
+            lastname: p.lastname,
+            fullName,
+            name: fullName,
+            phone: p.phone || undefined,
+            status: p.status || 'active',
+            createdAt: p.createdAt ? new Date(p.createdAt) : undefined,
+            upcomingConsultation: null,
+            hasNewConsultationActivity: false,
+            consultationComplete: false,
+            archived: false,
+            hasQuestionnairesAssigned: p.hasQuestionnairesAssigned || false,
+            pendingQuestionnairesCount: 0,
+          } as Patient;
+        });
 
-        setPatients(docs);
+        setPatients(formattedPatients);
       } catch (err: any) {
         console.error('Erreur Firestore patients', err);
         const errorMsg = err?.message || err?.code || 'Erreur inconnue';
@@ -186,20 +168,21 @@ export default function PatientsPage() {
   async function handleArchivePatient(patient: Patient) {
     if (
       !window.confirm(
-        `Archiver ${patient.name || patient.email} ? Le patient ne sera plus visible dans la liste active.`
+        `Archiver ${
+          patient.name || patient.email
+        } ? Le patient ne sera plus visible dans la liste active.`
       )
     ) {
       return;
     }
+
+    if (!user?.uid) return;
+
     setArchivingId(patient.id);
     setError(null);
 
     try {
-      const patientRef = doc(firestore, 'patients', patient.id);
-      await updateDoc(patientRef, {
-        archived: true,
-        archivedAt: new Date().toISOString(),
-      });
+      await api.archivePatient(user.uid, patient.id);
       setPatients((prev) => prev.filter((p) => p.id !== patient.id));
     } catch (err: any) {
       console.error('Archive patient error', err);
@@ -212,38 +195,21 @@ export default function PatientsPage() {
   async function handleDeletePatient(patient: Patient) {
     if (
       !window.confirm(
-        `⚠️ ATTENTION : Supprimer définitivement ${patient.name || patient.email} ? Cette action est irréversible.`
+        `⚠️ ATTENTION : Supprimer définitivement ${
+          patient.name || patient.email
+        } ? Cette action est irréversible.`
       )
     ) {
       return;
     }
+
+    if (!user?.uid) return;
+
     setDeletingId(patient.id);
     setError(null);
 
     try {
-      const consultationsRef = collection(firestore, `patients/${patient.id}/consultations`);
-      const paymentsRef = collection(firestore, `patients/${patient.id}/payments`);
-
-      const consultationsSnap = await getDocs(
-        query(consultationsRef, where('status', '==', 'pending'))
-      );
-      const paymentsSnap = await getDocs(query(paymentsRef, where('status', '==', 'unpaid')));
-
-      if (!consultationsSnap.empty) {
-        setError(`Impossible de supprimer : ${consultationsSnap.size} consultation(s) en attente.`);
-        setDeletingId(null);
-        return;
-      }
-
-      if (!paymentsSnap.empty) {
-        setError(`Impossible de supprimer : ${paymentsSnap.size} paiement(s) en attente.`);
-        setDeletingId(null);
-        return;
-      }
-
-      const patientRef = doc(firestore, 'patients', patient.id);
-      await deleteDoc(patientRef);
-
+      await api.deletePatient(user.uid, patient.id);
       setPatients((prev) => prev.filter((p) => p.id !== patient.id));
     } catch (err: any) {
       console.error('Delete patient error', err);

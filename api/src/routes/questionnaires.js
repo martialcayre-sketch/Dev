@@ -411,4 +411,68 @@ router.get(
   }
 );
 
+/**
+ * GET /patients/:patientId/questionnaires/:questionnaireId/scores/dnsm
+ * Calculer les scores DNSM pour un questionnaire
+ */
+router.get(
+  '/patients/:patientId/questionnaires/:questionnaireId/scores/dnsm',
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const { patientId, questionnaireId } = req.params;
+
+      console.log(`[API] GET DNSM scores for ${questionnaireId}`);
+
+      // Récupérer le questionnaire
+      const qDoc = await db.collection('questionnaires').doc(questionnaireId).get();
+
+      if (!qDoc.exists) {
+        // Fallback subcollection
+        const subDoc = await db
+          .collection('patients')
+          .doc(patientId)
+          .collection('questionnaires')
+          .doc(questionnaireId)
+          .get();
+
+        if (!subDoc.exists) {
+          return res.status(404).json({ error: 'Questionnaire not found' });
+        }
+
+        const responses = subDoc.data()?.responses || {};
+        const analysis = DNSMScoringService.analyze(responses);
+
+        return res.json({
+          ok: true,
+          questionnaireId,
+          patientId,
+          ...analysis,
+        });
+      }
+
+      const data = qDoc.data();
+
+      // Vérifier que c'est bien un questionnaire DNSM
+      if (data.id !== 'dnsm' && data.title !== 'DNSM') {
+        return res.status(400).json({ error: 'This endpoint is only for DNSM questionnaires' });
+      }
+
+      // Calculer les scores
+      const responses = data.responses || {};
+      const analysis = DNSMScoringService.analyze(responses);
+
+      return res.json({
+        ok: true,
+        questionnaireId,
+        patientId,
+        ...analysis,
+      });
+    } catch (error) {
+      console.error('[API] GET DNSM scores error:', error);
+      return res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+  }
+);
+
 export default router;
