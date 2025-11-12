@@ -3,6 +3,8 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { authenticateToken, logRequest } from './middleware/auth.js';
+import { requestId } from './middleware/request-id.js';
+import { makeOk, makeError } from './lib/envelope.js';
 import adminRouter from './routes/admin.js';
 import analyticsRouter from './routes/analytics.js';
 import consultationRouter from './routes/consultation.js';
@@ -18,12 +20,13 @@ app.use(helmet());
 const limiter = rateLimit({ windowMs: 60 * 1000, max: 120 });
 app.use(limiter);
 
-// Log middleware (optional, pour debug)
+// Request correlation + logs
+app.use(requestId);
 app.use(logRequest);
 
 // Support both root routes and /api/* when proxied by Firebase Hosting
 const router = express.Router();
-router.get('/health', (_req, res) => res.json({ ok: true }));
+router.get('/health', (req, res) => res.json(makeOk({ status: 'ok' }, req.id)));
 router.get('/hello', (_req, res) =>
   res.json({ message: 'Hello from Cloud Run API - Backend First Architecture' })
 );
@@ -41,7 +44,7 @@ app.use('/', router);
 app.use('/api', router);
 
 app.use((req, res) => {
-  res.status(404).json({ error: 'Not found', path: req.path });
+  res.status(404).json(makeError('not_found', 'Not found', req.id, { path: req.path }));
 });
 
 const port = Number(process.env.PORT || 8080);
