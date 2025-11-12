@@ -215,4 +215,177 @@ router.post('/admin/questionnaires/backfill', requireAdminSecret, async (req, re
   }
 });
 
+/**
+ * GET /practitioners/:practitionerId/patients
+ * Récupère la liste des patients d'un praticien
+ */
+router.get('/practitioners/:practitionerId/patients', async (req, res) => {
+  try {
+    const { practitionerId } = req.params;
+    const status = req.query.status; // 'pending', 'approved', 'rejected', ou undefined pour tous
+
+    console.log(`[API] GET /practitioners/${practitionerId}/patients (status=${status || 'all'})`);
+
+    let query = db.collection('patients').where('practitionerId', '==', practitionerId);
+
+    if (status) {
+      query = query.where('status', '==', status);
+    }
+
+    const snap = await query.get();
+
+    const patients = snap.docs.map((doc) => ({
+      uid: doc.id,
+      ...serializeDoc(doc),
+    }));
+
+    console.log(`[API] Found ${patients.length} patients`);
+
+    return res.json({ ok: true, patients, total: patients.length });
+  } catch (error) {
+    console.error('[API] GET /practitioners/:id/patients error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * GET /practitioners/:practitionerId/consultations
+ * Récupère la liste des consultations d'un praticien
+ */
+router.get('/practitioners/:practitionerId/consultations', async (req, res) => {
+  try {
+    const { practitionerId } = req.params;
+    const limitParam = parseInt(req.query.limit || '50', 10);
+
+    console.log(`[API] GET /practitioners/${practitionerId}/consultations (limit=${limitParam})`);
+
+    // Récupérer tous les patients du praticien
+    const patientsSnap = await db
+      .collection('patients')
+      .where('practitionerId', '==', practitionerId)
+      .get();
+
+    const consultations = [];
+
+    // Pour chaque patient, récupérer ses consultations
+    for (const patientDoc of patientsSnap.docs) {
+      const patientId = patientDoc.id;
+      const patientData = patientDoc.data();
+
+      const consultationsSnap = await db
+        .collection('patients')
+        .doc(patientId)
+        .collection('consultations')
+        .orderBy('createdAt', 'desc')
+        .limit(limitParam)
+        .get();
+
+      consultationsSnap.docs.forEach((consultDoc) => {
+        consultations.push({
+          id: consultDoc.id,
+          patientId,
+          patientName: patientData.displayName || patientData.email || 'Patient',
+          ...serializeDoc(consultDoc),
+        });
+      });
+    }
+
+    // Trier par date de création (plus récent en premier)
+    consultations.sort((a, b) => {
+      const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bDate - aDate;
+    });
+
+    // Limiter le résultat total
+    const limitedConsultations = consultations.slice(0, limitParam);
+
+    console.log(`[API] Found ${limitedConsultations.length} consultations`);
+
+    return res.json({
+      ok: true,
+      consultations: limitedConsultations,
+      total: limitedConsultations.length,
+    });
+  } catch (error) {
+    console.error('[API] GET /practitioners/:id/consultations error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * GET /practitioners/:practitionerId/metrics
+ * Récupère les métriques d'un praticien
+ */
+router.get('/practitioners/:practitionerId/metrics', async (req, res) => {
+  try {
+    const { practitionerId } = req.params;
+
+    console.log(`[API] GET /practitioners/${practitionerId}/metrics`);
+
+    // Récupérer les patients
+    const patientsSnap = await db
+      .collection('patients')
+      .where('practitionerId', '==', practitionerId)
+      .get();
+
+    const totalPatients = patientsSnap.size;
+    const approvedPatients = patientsSnap.docs.filter(
+      (doc) => doc.get('status') === 'approved'
+    ).length;
+    const pendingPatients = patientsSnap.docs.filter(
+      (doc) => doc.get('status') === 'pending'
+    ).length;
+
+    // Récupérer les questionnaires soumis (status submitted ou completed)
+    const questionnairesSnap = await db
+      .collection('questionnaires')
+      .where('practitionerId', '==', practitionerId)
+      .where('status', 'in', ['submitted', 'completed'])
+      .get();
+
+    const totalQuestionnaires = questionnairesSnap.size;
+    const submittedQuestionnaires = questionnairesSnap.docs.filter(
+      (doc) => doc.get('status') === 'submitted'
+    ).length;
+    const completedQuestionnaires = questionnairesSnap.docs.filter(
+      (doc) => doc.get('status') === 'completed'
+    ).length;
+
+    // Récupérer le nombre de consultations
+    let totalConsultations = 0;
+    for (const patientDoc of patientsSnap.docs) {
+      const consultationsSnap = await db
+        .collection('patients')
+        .doc(patientDoc.id)
+        .collection('consultations')
+        .get();
+      totalConsultations += consultationsSnap.size;
+    }
+
+    const metrics = {
+      patients: {
+        total: totalPatients,
+        approved: approvedPatients,
+        pending: pendingPatients,
+      },
+      questionnaires: {
+        total: totalQuestionnaires,
+        submitted: submittedQuestionnaires,
+        completed: completedQuestionnaires,
+      },
+      consultations: {
+        total: totalConsultations,
+      },
+    };
+
+    console.log(`[API] Metrics:`, metrics);
+
+    return res.json({ ok: true, metrics });
+  } catch (error) {
+    console.error('[API] GET /practitioners/:id/metrics error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;

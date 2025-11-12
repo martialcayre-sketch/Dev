@@ -4,12 +4,127 @@
  */
 
 /**
+ * DNSM Scoring Service (Dopamine, Noradrénaline, Sérotonine, Mélatonine)
+ * Échelle Likert 0-4, 10 questions par axe, score max 40/axe, 160 total
+ */
+export class DNSMScoringService {
+  /**
+   * Calculer les scores DNSM à partir des réponses
+   * @param {Record<string, number>} responses - Réponses du questionnaire
+   * @returns {Object} Scores bruts et normalisés
+   */
+  static calculateScores(responses) {
+    if (!responses || typeof responses !== 'object') {
+      throw new Error('Invalid responses object');
+    }
+
+    // IDs des questions par axe
+    const dopamineIds = Array.from({ length: 10 }, (_, i) => `da-${i + 1}`);
+    const noradrenalineIds = Array.from({ length: 10 }, (_, i) => `na-${i + 1}`);
+    const serotonineIds = Array.from({ length: 10 }, (_, i) => `se-${i + 1}`);
+    const melatonineIds = Array.from({ length: 10 }, (_, i) => `me-${i + 1}`);
+
+    // Calculer scores bruts (somme des réponses 0-4)
+    const dopamine = dopamineIds.reduce((sum, id) => sum + (responses[id] || 0), 0);
+    const noradrenaline = noradrenalineIds.reduce((sum, id) => sum + (responses[id] || 0), 0);
+    const serotonine = serotonineIds.reduce((sum, id) => sum + (responses[id] || 0), 0);
+    const melatonine = melatonineIds.reduce((sum, id) => sum + (responses[id] || 0), 0);
+
+    const total = dopamine + noradrenaline + serotonine + melatonine;
+
+    // Vérifier complétion (toutes les 40 questions répondues)
+    const allIds = [...dopamineIds, ...noradrenalineIds, ...serotonineIds, ...melatonineIds];
+    const isComplete = allIds.every((id) => responses[id] !== undefined && responses[id] !== null);
+
+    // Normalisation en pourcentage (score/40 * 100)
+    const dopaminePercent = Math.round((dopamine / 40) * 100);
+    const noradrenalinePercent = Math.round((noradrenaline / 40) * 100);
+    const serotoninePercent = Math.round((serotonine / 40) * 100);
+    const melatoninePercent = Math.round((melatonine / 40) * 100);
+    const globalPercent = Math.round((total / 160) * 100);
+
+    return {
+      dopamine,
+      noradrenaline,
+      serotonine,
+      melatonine,
+      total,
+      dopaminePercent,
+      noradrenalinePercent,
+      serotoninePercent,
+      melatoninePercent,
+      globalPercent,
+      isComplete,
+    };
+  }
+
+  /**
+   * Obtenir l'interprétation clinique d'un score d'axe
+   * @param {string} axis - Nom de l'axe
+   * @param {number} score - Score brut (0-40)
+   * @param {number} percent - Score normalisé (0-100%)
+   * @returns {Object} Interprétation
+   */
+  static interpretAxis(axis, score, percent) {
+    let status;
+    let label;
+    let color;
+
+    if (score <= 10) {
+      status = 'normal';
+      label = 'Fonctionnement normal';
+      color = 'emerald';
+    } else if (score <= 19) {
+      status = 'probable';
+      label = 'Dysfonction probable';
+      color = 'amber';
+    } else {
+      status = 'marquee';
+      label = 'Dysfonction marquée';
+      color = 'rose';
+    }
+
+    return { axis, score, percent, status, label, color };
+  }
+
+  /**
+   * Générer toutes les interprétations DNSM
+   * @param {Object} scores - Scores calculés
+   * @returns {Array} Liste des interprétations par axe
+   */
+  static getInterpretations(scores) {
+    return [
+      this.interpretAxis('dopamine', scores.dopamine, scores.dopaminePercent),
+      this.interpretAxis('noradrenaline', scores.noradrenaline, scores.noradrenalinePercent),
+      this.interpretAxis('serotonine', scores.serotonine, scores.serotoninePercent),
+      this.interpretAxis('melatonine', scores.melatonine, scores.melatoninePercent),
+    ];
+  }
+
+  /**
+   * Calculer et interpréter un questionnaire DNSM complet
+   * @param {Record<string, number>} responses
+   * @returns {Object} Scores, interprétations et complétion
+   */
+  static analyze(responses) {
+    const scores = this.calculateScores(responses);
+    const interpretations = this.getInterpretations(scores);
+
+    return {
+      scores,
+      interpretations,
+      isComplete: scores.isComplete,
+    };
+  }
+}
+
+/**
  * DayFlow Scoring (5 axes SIIN)
  */
 export class DayFlowScoringService {
   interpretDayFlow(scores) {
     const { AIA = 0, SER = 0, DOP = 0, NEU = 0, CON = 0 } = scores;
-    
+
     const ordered = Object.entries(scores)
       .map(([k, v]) => [k, v])
       .sort((a, b) => a[1] - b[1]); // plus faible en premier
@@ -151,12 +266,12 @@ export class LifeJourneyScoringService {
    */
   calculateScores(answers) {
     const scores = {};
-    
+
     for (const [sphereKey, sphereConfig] of Object.entries(this.spheres)) {
       const sphereAnswers = answers[sphereKey] || {};
       const raw = Object.values(sphereAnswers).reduce((sum, val) => sum + (Number(val) || 0), 0);
       const percent = Math.round((raw / sphereConfig.maxScore) * 100);
-      
+
       scores[sphereKey] = {
         raw,
         max: sphereConfig.maxScore,
@@ -204,9 +319,13 @@ export class LifeJourneyScoringService {
     if (globalScore >= 75) {
       summary = 'Excellent equilibre de vie ! Maintenez vos bonnes habitudes.';
     } else if (globalScore >= 50) {
-      summary = `Bon niveau general (${globalScore}/100). ${weak.length > 0 ? `À ameliorer : ${weak.slice(0, 2).join(', ')}` : ''}`;
+      summary = `Bon niveau general (${globalScore}/100). ${
+        weak.length > 0 ? `À ameliorer : ${weak.slice(0, 2).join(', ')}` : ''
+      }`;
     } else {
-      summary = `Plusieurs spheres necessitent attention (${globalScore}/100). Priorites : ${weak.slice(0, 3).join(', ')}`;
+      summary = `Plusieurs spheres necessitent attention (${globalScore}/100). Priorites : ${weak
+        .slice(0, 3)
+        .join(', ')}`;
     }
 
     return {
@@ -260,12 +379,10 @@ export class LifeJourneyScoringService {
       ],
     };
 
-    return weakSpheres
-      .slice(0, 3)
-      .map((sphere) => ({
-        sphere,
-        actions: recommendations[sphere] || [],
-      }));
+    return weakSpheres.slice(0, 3).map((sphere) => ({
+      sphere,
+      actions: recommendations[sphere] || [],
+    }));
   }
 }
 

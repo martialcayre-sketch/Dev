@@ -3,7 +3,7 @@ name: deploy-hosting
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: ["deploy-cloud-run"]
+    workflows: ['deploy-cloud-run']
     types: [completed]
 
 jobs:
@@ -24,11 +24,6 @@ jobs:
         with:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
-      - name: Install Firebase CLI
-        run: npm i -g firebase-tools
-
       - name: Deploy Firebase Hosting (patient + practitioner)
         run: |
-          firebase deploy --only hosting:patient,hosting:practitioner --project neuronutrition-app
-
-
+          pnpm -w exec firebase deploy --only hosting:patient,hosting:practitioner --project neuronutrition-app

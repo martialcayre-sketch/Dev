@@ -1,7 +1,7 @@
 name: Deploy Firebase
 on:
   push:
-    branches: [ "main" ]
+    branches: ['main']
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -9,7 +9,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 'lts/*' }
-      - run: npm i -g pnpm firebase-tools
       - run: pnpm i
       - name: Build Web
         run: pnpm -F web build || pnpm build
@@ -22,7 +21,7 @@ jobs:
           if [ -n "${FIREBASE_SERVICE_ACCOUNT}" ]; then
             echo "$FIREBASE_SERVICE_ACCOUNT" | base64 -d > sa.json
             export GOOGLE_APPLICATION_CREDENTIALS="$PWD/sa.json"
-            firebase deploy --only functions,hosting --non-interactive --project "$FIREBASE_PROJECT_ID"
+            pnpm -w exec firebase deploy --only functions,hosting --non-interactive --project "$FIREBASE_PROJECT_ID"
           else
-            firebase deploy --only functions,hosting --non-interactive --project "$FIREBASE_PROJECT_ID" --token "$FIREBASE_TOKEN"
+            pnpm -w exec firebase deploy --only functions,hosting --non-interactive --project "$FIREBASE_PROJECT_ID" --token "$FIREBASE_TOKEN"
           fi
