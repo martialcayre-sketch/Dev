@@ -24,6 +24,8 @@ test-results/
 .env.test.local
 .env.production.local
 serviceAccountKey.json
+.secrets/
+functions/.secrets/
 
 # Playwright and tests
 playwright-report/

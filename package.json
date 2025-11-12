@@ -42,22 +42,23 @@
     "dev:practitioner": "pnpm -C apps/practitioner-vite dev",
     "dev:stack:win": "powershell -ExecutionPolicy Bypass -File scripts/dev-local.ps1",
     "dev:stack:mac": "bash scripts/dev-local.sh",
-    "dev:stack:linux": "bash scripts/dev-local.sh"
+    "dev:stack:linux": "bash scripts/dev-local.sh",
+    "check:all": "node scripts/check-all.mjs"
   },
   "devDependencies": {
-    "@cspell/dict-fr-fr": "^2.2.0",
+    "@cspell/dict-fr-fr": "^2.3.2",
     "@playwright/test": "^1.56.1",
-    "cspell": "^8.14.2",
+    "cspell": "^9.3.1",
     "firebase-admin": "^13.6.0",
     "firebase-tools": "^14.24.2",
-    "husky": "^9.1.0",
+    "husky": "^9.1.7",
     "pdf-parse": "^2.4.5",
     "pdfjs-dist": "^5.4.296",
     "rollup-plugin-visualizer": "^6.0.5",
     "turbo": "^2.6.1"
   },
   "engines": {
-    "node": ">=20.17.0 <23"
+    "node": ">=22.0.0 <25"
   },
   "dependencies": {
     "firebase": "^12.5.0"

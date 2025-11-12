@@ -2,10 +2,26 @@
   "name": "NeuroNutrition Monorepo",
   "build": {
     "dockerfile": "Dockerfile",
-    "context": "."
+    "context": ".."
   },
-  "postCreateCommand": "pnpm install && pnpm run build",
-  "forwardPorts": [3010, 3020, 5001, 5173, 5174, 8080, 9099],
+  
+  // Optimisation: installation conditionnelle uniquement si node_modules absent
+  "onCreateCommand": "[ ! -d node_modules ] && pnpm install || echo 'Dependencies already installed'",
+  "postStartCommand": "echo '✅ Dev container ready! Run: pnpm dev'",
+  
+  // Configuration pnpm store persistant
+  "mounts": [
+    "source=neuronutrition-pnpm-store,target=/home/node/.pnpm-store,type=volume"
+  ],
+  
+  // Variables d'environnement optimisées
+  "containerEnv": {
+    "NODE_OPTIONS": "--max-old-space-size=4096",
+    "PNPM_HOME": "/home/node/.local/share/pnpm"
+  },
+  
+  // Configuration réseau optimisée
+  "forwardPorts": [3010, 3020, 5000, 5001, 5002, 5003, 5004, 5173, 5174, 8080, 9099],
   "portsAttributes": {
     "3020": {
       "label": "Patient App",
@@ -15,8 +31,24 @@
       "label": "Practitioner App",
       "onAutoForward": "notify"
     },
+    "5000": {
+      "label": "Firebase Emulator UI",
+      "onAutoForward": "openBrowser"
+    },
     "5001": {
+      "label": "Firebase Hosting",
+      "onAutoForward": "silent"
+    },
+    "5002": {
       "label": "Firebase Functions",
+      "onAutoForward": "silent"
+    },
+    "5003": {
+      "label": "Firestore Emulator",
+      "onAutoForward": "silent"
+    },
+    "5004": {
+      "label": "Auth Emulator",
       "onAutoForward": "silent"
     },
     "5173": {
@@ -28,23 +60,40 @@
       "onAutoForward": "notify"
     },
     "8080": {
-      "label": "Firestore Emulator",
+      "label": "API Server",
       "onAutoForward": "silent"
     },
     "9099": {
-      "label": "Firebase Auth Emulator",
+      "label": "Firebase Auth Legacy",
       "onAutoForward": "silent"
     }
   },
+  
+  // Variables d'environnement Firebase
   "remoteEnv": {
-    "FIRESTORE_EMULATOR_HOST": "localhost:8080",
-    "FIREBASE_AUTH_EMULATOR_HOST": "localhost:9099"
+    "FIRESTORE_EMULATOR_HOST": "localhost:5003",
+    "FIREBASE_AUTH_EMULATOR_HOST": "localhost:5004",
+    "FIREBASE_STORAGE_EMULATOR_HOST": "localhost:9199",
+    "CI": "false",
+    "NODE_ENV": "development"
   },
+  
+  // Configuration spécifique Codespaces
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
+  },
+  
   "customizations": {
     "vscode": {
       "settings": {
-        "chat.agent.enabled": true,
-        "chat.tools.global.autoApprove": true,
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "/bin/bash"
+          }
+        },
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
@@ -54,24 +103,64 @@
         "cSpell.language": "en,fr",
         "typescript.tsdk": "node_modules/typescript/lib",
         "typescript.enablePromptUseWorkspaceTsdk": true,
-        "github.copilot.advanced": {
-          "contextFiles": [".github/copilot-context.md", ".cursorrules"]
-        }
+        "files.watcherExclude": {
+          "**/node_modules/**": true,
+          "**/.git/**": true,
+          "**/dist/**": true,
+          "**/build/**": true,
+          "**/.turbo/**": true,
+          "**/.pnpm-store/**": true
+        },
+        "search.exclude": {
+          "**/node_modules": true,
+          "**/dist": true,
+          "**/build": true,
+          "**/.turbo": true,
+          "pnpm-lock.yaml": true
+        },
+        "eslint.validate": [
+          "javascript",
+          "javascriptreact",
+          "typescript",
+          "typescriptreact"
+        ],
+        "tailwindCSS.experimental.classRegex": [
+          ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+          ["cn\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+        ]
       },
       "extensions": [
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
-        "ms-vscode-remote.remote-containers",
         "bradlc.vscode-tailwindcss",
         "formulahendry.auto-rename-tag",
+        "formulahendry.auto-close-tag",
         "streetsidesoftware.code-spell-checker",
         "GitHub.copilot",
         "GitHub.copilot-chat",
+        "GitHub.vscode-pull-request-github",
         "firebase.vscode-firebase",
         "ms-vscode.vscode-typescript-next",
-        "christian-kohler.path-intellisense"
+        "christian-kohler.path-intellisense",
+        "usernamehw.errorlens",
+        "eamodio.gitlens",
+        "naumovs.color-highlight",
+        "dsznajder.es7-react-js-snippets"
+      ]
+    },
+    "codespaces": {
+      "openFiles": [
+        "README.md",
+        "PROJECT_CONTEXT.md"
       ]
     }
   },
-  "remoteUser": "node"
+  
+  "remoteUser": "node",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "version": "latest"
+    }
+  }
 }

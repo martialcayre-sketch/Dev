@@ -1,12 +1,16 @@
 {
+  "globalEnv": ["NODE_ENV", "CI"],
+  "globalDependencies": ["package.json", "pnpm-lock.yaml"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "build/**"]
+      "outputs": ["dist/**", "build/**"],
+      "env": ["NODE_ENV"]
     },
     "typecheck": {
       "dependsOn": ["^typecheck"],
-      "outputs": []
+      "outputs": [],
+      "cache": false
     },
     "lint": {
       "dependsOn": ["^lint"],
@@ -14,7 +18,14 @@
     },
     "test": {
       "dependsOn": ["build"],
-      "outputs": ["coverage/**"]
+      "outputs": ["coverage/**"],
+      "cache": false
+    },
+    "dev": {
+      "dependsOn": [],
+      "cache": false,
+      "persistent": true
     }
-  }
+  },
+  "ui": "tui"
 }

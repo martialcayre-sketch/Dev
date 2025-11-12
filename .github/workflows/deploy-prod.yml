@@ -1,0 +1,129 @@
+name: Deploy Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_id:
+        description: "GCP/Firebase Project ID (prod)"
+        required: true
+        type: string
+      region:
+        description: "GCP Region"
+        default: "europe-west1"
+        required: true
+        type: string
+      deploy_functions:
+        description: "Deploy Cloud Functions"
+        type: boolean
+        default: true
+      deploy_hosting_patient:
+        description: "Deploy Firebase Hosting: patient"
+        type: boolean
+        default: true
+      deploy_hosting_practitioner:
+        description: "Deploy Firebase Hosting: practitioner"
+        type: boolean
+        default: true
+      deploy_cloud_run_api:
+        description: "Deploy Cloud Run API from /api"
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-prod-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.22.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Auth to Google Cloud (via Service Account JSON)
+        if: ${{ secrets.GCP_SA_KEY != '' }}
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          export_environment_variables: true
+
+      - name: Setup gcloud
+        if: ${{ secrets.GCP_SA_KEY != '' }}
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ inputs.project_id }}
+
+      - name: Install firebase-tools
+        run: npm i -g firebase-tools@14.24.2
+
+      - name: Build Cloud Functions
+        if: ${{ inputs.deploy_functions }}
+        run: pnpm -C functions run build
+
+      - name: Build Web Apps
+        if: ${{ inputs.deploy_hosting_patient || inputs.deploy_hosting_practitioner }}
+        run: pnpm -w run build:web
+
+      - name: Deploy Cloud Functions
+        if: ${{ inputs.deploy_functions }}
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          if [ -n "$FIREBASE_TOKEN" ]; then
+            firebase deploy --only functions --project "${{ inputs.project_id }}"
+          else
+            # ADC via auth action
+            firebase deploy --only functions --project "${{ inputs.project_id }}"
+          fi
+
+      - name: Deploy Hosting - patient
+        if: ${{ inputs.deploy_hosting_patient }}
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          if [ -n "$FIREBASE_TOKEN" ]; then
+            firebase deploy --only hosting:patient --project "${{ inputs.project_id }}"
+          else
+            firebase deploy --only hosting:patient --project "${{ inputs.project_id }}"
+          fi
+
+      - name: Deploy Hosting - practitioner
+        if: ${{ inputs.deploy_hosting_practitioner }}
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          if [ -n "$FIREBASE_TOKEN" ]; then
+            firebase deploy --only hosting:practitioner --project "${{ inputs.project_id }}"
+          else
+            firebase deploy --only hosting:practitioner --project "${{ inputs.project_id }}"
+          fi
+
+      - name: Deploy Cloud Run API
+        if: ${{ inputs.deploy_cloud_run_api }}
+        run: |
+          gcloud --quiet run deploy api \
+            --source=api \
+            --region="${{ inputs.region }}" \
+            --allow-unauthenticated \
+            --project "${{ inputs.project_id }}"

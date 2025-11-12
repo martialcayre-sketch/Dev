@@ -1,4 +1,52 @@
 name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.22.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Lint
+        run: pnpm -w run lint -c
+
+      - name: Typecheck
+        run: pnpm -w run typecheck -c
+
+      - name: Build Cloud Functions
+        run: pnpm -C functions run build
+
+      - name: Build Patient App
+        run: pnpm -C apps/patient-vite run build
+
+      - name: Build Practitioner App
+        run: pnpm -C apps/practitioner-vite run build
+name: CI
 on:
   pull_request:
   push:

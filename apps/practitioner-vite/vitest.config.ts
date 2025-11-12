@@ -8,6 +8,7 @@ export default defineConfig({
     globals: true,
     passWithNoTests: true,
     coverage: {
+      provider: 'v8',
       reporter: ['text', 'html'],
     },
   },

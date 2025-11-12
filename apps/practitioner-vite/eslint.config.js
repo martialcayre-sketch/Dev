@@ -10,11 +10,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default [
-  { ignores: ['dist/**', 'build/**', 'node_modules/**', '*.config.d.ts', 'eslint.config.js'] },
+  { ignores: ['dist/**', 'build/**', 'node_modules/**', '*.config.d.ts', 'eslint.config.js', '*.config.ts'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
     files: ['**/*.{ts,tsx}'],
+    ignores: ['*.config.ts'],
     languageOptions: {
       globals: { ...globals.browser, ...globals.es2021 },
       parserOptions: {
