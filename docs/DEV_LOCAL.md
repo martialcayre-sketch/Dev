@@ -24,7 +24,7 @@ Le projet est maintenant directement dans `c:\Dev\` (plus de sous-dossier `neuro
 4. Vérifications
 
 - UI Emulators: http://localhost:5000
-- API: http://localhost:5002/neuronutrition-app/europe-west1/api/health → `{"ok":true}`
+- API: http://localhost:5002/neuronutrition-app/europe-west1/api/health → `{"success":true,"data":{"status":"ok"}}`
 - Patient: http://localhost:3020
 - Practicien: http://localhost:3010
 
@@ -33,4 +33,18 @@ Le projet est maintenant directement dans `c:\Dev\` (plus de sous-dossier `neuro
 - `firebase deploy --only hosting:patient,hosting:practitioner`
 - Patient live: https://neuronutrition-app-patient.web.app
 - Practicien live: https://neuronutrition-app-practitioner.web.app
-- API live: `/api/health` → `{"ok":true}`
+- API live: `/api/health` → `{"success":true,"data":{"status":"ok"}}`
+
+## Tests Functions (Jest + Supertest)
+
+- Installer les dépendances du workspace: `pnpm install`
+- Exécuter uniquement les tests Functions:
+
+```sh
+pnpm --filter functions test
+```
+
+Notes:
+
+- Pas besoin de démarrer les émulateurs pour les tests de base (health/catalog).
+- Les endpoints renvoient une enveloppe normalisée: `{ success, data|error, requestId }`.
