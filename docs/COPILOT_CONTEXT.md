@@ -19,32 +19,34 @@ NeuroNutrition is a monorepo (pnpm workspaces) containing:
 
 ### Tech Stack Summary
 
-| Layer       | Tech                                                              |
-| ----------- | ----------------------------------------------------------------- |
-| Frontend    | React 18, Vite, TypeScript, TailwindCSS                           |
-| Serverless  | Firebase Functions v2 (Express middleware pattern)                |
-| Backend API | Express on Cloud Run                                              |
-| Data        | Firestore (patients, questionnaires, consultation subcollections) |
-| Auth        | Firebase Auth + custom claims (practitioner/admin)                |
-| Tooling     | pnpm, Turborepo, Jest (functions), Vitest (front), Husky, cspell  |
+| Layer       | Tech                                                                                  |
+| ----------- | ------------------------------------------------------------------------------------- |
+| Frontend    | React 18, Vite, TypeScript, TailwindCSS                                               |
+| Serverless  | Firebase Functions v2 (Express middleware pattern)                                    |
+| Backend API | Express on Cloud Run (hardened: validation, granular rate limits, structured logging) |
+| Data        | Firestore (patients, questionnaires, consultation subcollections)                     |
+| Auth        | Firebase Auth + custom claims (practitioner/admin)                                    |
+| Tooling     | pnpm, Turborepo, Jest (functions), Vitest (front), Husky, cspell                      |
 
 ### Key Conventions
 
-1. Firestore documents store timestamps; serialization normalizes them to ISO strings.
+1. Firestore documents store timestamps; central serializer (`api/src/lib/serialization.js`) normalizes them to ISO strings & computes progress.
 2. Double-write pattern for questionnaires: root collection + patient subcollection for backward compatibility.
 3. Authorization rules:
    - Patient endpoints require same UID or practitioner/admin role.
    - Practitioner endpoints must validate practitioner role (custom claims).
 4. Caching on client: `requestCache` (in-memory TTL) reduces redundant fetches.
 5. Error resilience: Global React `ErrorBoundary` wraps app roots.
-6. Code style enforced via ESLint with stricter production log rules (no `console.log`).
+6. Code style enforced via ESLint; structured logging via pino (`api/src/lib/logger.js`) replaces `console.log` (correlation id middleware `request-id`).
+7. Idempotency keys: Endpoints `submit`/`complete` accept header `Idempotency-Key` to ensure safe retries.
+8. Pagination par curseur: Listing praticien retourne `nextCursor` (base64 `assignedAt|docId`) pour requêtes suivantes.
 
 ### Security Guidelines
 
 1. Never return raw internal error objects—log internally, send generic messages externally.
 2. Validate IDs and ownership before mutating questionnaire or consultation data.
 3. Ensure middleware order: public health/hello routes precede `authenticateToken` usage.
-4. Rate limiting & `helmet` applied in API server to mitigate abuse and add headers hardening.
+4. Rate limiting global + per-action (`responses` 30/min, `submit` & `complete` 10/min) & `helmet` applied for abuse mitigation and header hardening.
 5. Move secrets (service account keys) outside repository (already done) and never commit ephemeral credentials.
 
 ### Performance Guidelines
@@ -126,8 +128,9 @@ DO NOT: Remove auth middleware without replacement.
 
 - Replace double-write with single canonical storage + Cloud Function backfill.
 - Add integration test suite using Firestore emulator.
-- Implement structured logging (pino) for API and Functions.
+- Structured logging (pino) + correlation IDs implemented.
 - Add OpenTelemetry lightweight tracing.
+- Expand lightweight validation to schema-based (zod) if complexity increases.
 
 ---
 

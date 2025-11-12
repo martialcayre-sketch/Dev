@@ -5,6 +5,9 @@ service cloud.firestore {
     function isSignedIn() { return request.auth != null; }
     function isAdmin() { return isSignedIn() && request.auth.token.admin == true; }
     function isOwner(ownerUid) { return isSignedIn() && request.auth.uid == ownerUid; }
+    function isPractitionerOf(patientUid) {
+      return isSignedIn() && get(/databases/$(database)/documents/patients/$(patientUid)).data.practitionerId == request.auth.uid;
+    }
 
     match /users/{uid} {
       allow read, update: if isOwner(uid) || isAdmin();
@@ -33,8 +36,10 @@ service cloud.firestore {
       // Patient can read their own document, or practitioner can read their patients, or admin can read all
       allow read: if isSignedIn() && (request.auth.uid == id || isAdmin() || resource.data.practitionerId == request.auth.uid);
       // Patient can create their own document, practitioner can create for their patients, admin can create all
-      allow create: if isSignedIn() && (isAdmin() || request.auth.uid == id || request.resource.data.practitionerId == request.auth.uid);
-      allow update: if isSignedIn() && (isAdmin() || request.resource.data.practitionerId == request.auth.uid || request.auth.uid == id);
+      allow create: if isSignedIn() && (isAdmin() || request.auth.uid == id || request.resource.data.practitionerId == request.auth.uid)
+                    && request.resource.data.practitionerId == resource.data.practitionerId;
+      allow update: if isSignedIn() && (isAdmin() || request.resource.data.practitionerId == request.auth.uid || request.auth.uid == id)
+                    && request.resource.data.practitionerId == resource.data.practitionerId;
       allow delete: if isAdmin();
       
       // Consultation sub-collection (identification, anamnese)
@@ -57,7 +62,7 @@ service cloud.firestore {
                       && (!resource.data.keys().hasAny(['status']) 
                           || (resource.data.status != 'submitted' && resource.data.status != 'completed'));
         // Practitioner can read their patient's questionnaires
-        allow read: if isSignedIn() && get(/databases/$(database)/documents/patients/$(id)).data.practitionerId == request.auth.uid;
+        allow read: if isPractitionerOf(id);
         // Admin can read all
         allow read: if isAdmin();
       }
@@ -75,7 +80,7 @@ service cloud.firestore {
         // Patient can read/write their own life journey data
         allow read, write: if isSignedIn() && request.auth.uid == id;
         // Practitioner can read their patient's life journey data
-        allow read: if isSignedIn() && get(/databases/$(database)/documents/patients/$(id)).data.practitionerId == request.auth.uid;
+        allow read: if isPractitionerOf(id);
         // Admin can read all
         allow read: if isAdmin();
       }
@@ -196,7 +201,7 @@ service cloud.firestore {
       // Patient can read their own consultations
       allow read: if isSignedIn() && request.auth.uid == patientId;
       // Practitioner can read/write their patient's consultations
-      allow read, write: if isSignedIn() && get(/databases/$(database)/documents/patients/$(patientId)).data.practitionerId == request.auth.uid;
+      allow read, write: if isPractitionerOf(patientId);
       // Admin can read all
       allow read: if isAdmin();
     }

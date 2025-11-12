@@ -150,7 +150,7 @@ router.patch(
 router.get('/practitioners/:practitionerId/questionnaires', async (req: Request, res: Response) => {
   try {
     const { practitionerId } = req.params;
-    const { status, limit = '50', offset = '0' } = req.query;
+    const { status, limit = '50', cursor } = req.query as any;
 
     // TODO: Vérifier que l'utilisateur est le praticien
 
@@ -163,13 +163,23 @@ router.get('/practitioners/:practitionerId/questionnaires', async (req: Request,
       query = query.where('status', '==', status);
     }
 
-    query = query.orderBy('assignedAt', 'desc');
+    query = query.orderBy('assignedAt', 'desc').orderBy(admin.firestore.FieldPath.documentId());
 
     const limitNum = parseInt(limit as string, 10);
-    const offsetNum = parseInt(offset as string, 10);
-
     if (limitNum > 0) {
       query = query.limit(limitNum);
+    }
+
+    // Cursor-based pagination: base64(assignedAtISO|docId)
+    if (cursor && typeof cursor === 'string') {
+      try {
+        const raw = Buffer.from(cursor, 'base64').toString('utf-8');
+        const [assignedAtIso, docId] = raw.split('|');
+        if (assignedAtIso && docId) {
+          const ts = admin.firestore.Timestamp.fromDate(new Date(assignedAtIso));
+          query = query.startAfter(ts, docId);
+        }
+      } catch {}
     }
 
     const questionnairesSnap = await query.get();
@@ -206,13 +216,23 @@ router.get('/practitioners/:practitionerId/questionnaires', async (req: Request,
       })
     );
 
-    // Apply offset manually (since Firestore doesn't have native offset)
-    const paginated = questionnaires.slice(offsetNum, offsetNum + limitNum);
+    const paginated = questionnaires.slice(0, limitNum);
+    const last: any = paginated[paginated.length - 1];
+    const nextCursor =
+      last && last.assignedAt && last.id
+        ? Buffer.from(
+            `${last.assignedAt.toDate ? last.assignedAt.toDate().toISOString() : last.assignedAt}|${
+              last.id
+            }`,
+            'utf-8'
+          ).toString('base64')
+        : null;
 
     return res.json({
       questionnaires: paginated,
       total: questionnaires.length,
-      hasMore: offsetNum + limitNum < questionnaires.length,
+      nextCursor,
+      hasMore: !!nextCursor,
     });
   } catch (error: any) {
     logger.error('GET /practitioners/:id/questionnaires error:', error);
@@ -250,10 +270,27 @@ router.post(
         return res.status(400).json({ error: 'Questionnaire already submitted or completed' });
       }
 
+      // Idempotency via header Idempotency-Key
+      const keyHeader = req.header('Idempotency-Key');
+      const idemKey = (keyHeader || '').trim();
+      if (idemKey && idemKey.length >= 8 && idemKey.length <= 128) {
+        const idemRef = db.collection('idempotency').doc(`submit_${questionnaireId}_${idemKey}`);
+        const idemSnap = await idemRef.get();
+        if (idemSnap.exists) {
+          return res.json({ ok: true, idempotent: true, submittedAt: idemSnap.get('submittedAt') });
+        }
+        await idemRef.set({
+          submittedAt: admin.firestore.FieldValue.serverTimestamp(),
+          patientId,
+          questionnaireId,
+        });
+      }
+
       const updateData = {
         status: 'submitted',
         submittedAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        idempotencyKey: idemKey || null,
       };
 
       // Double write to both collections
@@ -295,10 +332,27 @@ router.post(
         return res.status(404).json({ error: 'Questionnaire not found' });
       }
 
+      // Idempotency via header Idempotency-Key
+      const keyHeader = req.header('Idempotency-Key');
+      const idemKey = (keyHeader || '').trim();
+      if (idemKey && idemKey.length >= 8 && idemKey.length <= 128) {
+        const idemRef = db.collection('idempotency').doc(`complete_${questionnaireId}_${idemKey}`);
+        const idemSnap = await idemRef.get();
+        if (idemSnap.exists) {
+          return res.json({ ok: true, idempotent: true, completedAt: idemSnap.get('completedAt') });
+        }
+        await idemRef.set({
+          completedAt: admin.firestore.FieldValue.serverTimestamp(),
+          patientId,
+          questionnaireId,
+        });
+      }
+
       const updateData = {
         status: 'completed',
         completedAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        idempotencyKey: idemKey || null,
       };
 
       // Double write to both collections

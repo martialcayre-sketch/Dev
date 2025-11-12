@@ -1,57 +1,31 @@
 /**
  * Questionnaires API Routes
+import { encodeCursor, decodeCursor, normalizeIdempotencyKey } from '@neuronutrition/shared-backend';
  * Handles CRUD operations for patient questionnaires
  */
 
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import { admin, db } from '../lib/firebase-admin.js';
-import { authenticateToken, requirePatient, requirePractitioner } from '../middleware/auth.js';
+import {
+  authenticateToken,
+  requirePatient,
+  requirePractitioner,
+  requirePatientOrPractitioner,
+} from '../middleware/auth.js';
+import { serializeQuestionnaireDoc } from '../lib/serialization.js';
+import {
+  validateResponsesBody,
+  validatePagination,
+  enforceImmutableFields,
+} from '../middleware/validation.js';
 
 const router = express.Router();
 
-/**
- * Helper pour calculer le % de progression
- */
-function calculateProgress(responses, questions) {
-  if (!questions || !Array.isArray(questions) || questions.length === 0) {
-    return 0;
-  }
-  if (!responses || Object.keys(responses).length === 0) {
-    return 0;
-  }
-  const answered = Object.values(responses).filter((v) => v !== null && v !== undefined).length;
-  return Math.round((answered / questions.length) * 100);
-}
-
-/**
- * Helper pour serialiser les timestamps Firestore en ISO strings
- */
-function serializeTimestamp(timestamp) {
-  if (!timestamp) return null;
-  if (timestamp.toDate) {
-    return timestamp.toDate().toISOString();
-  }
-  if (timestamp._seconds !== undefined) {
-    return new Date(timestamp._seconds * 1000).toISOString();
-  }
-  return timestamp;
-}
-
-/**
- * Helper pour serialiser un document questionnaire
- */
-function serializeQuestionnaire(doc) {
-  const data = doc.data ? doc.data() : doc;
-  return {
-    id: doc.id || data.id,
-    ...data,
-    assignedAt: serializeTimestamp(data.assignedAt),
-    submittedAt: serializeTimestamp(data.submittedAt),
-    completedAt: serializeTimestamp(data.completedAt),
-    updatedAt: serializeTimestamp(data.updatedAt),
-    progress: calculateProgress(data.responses, data.questions),
-  };
-}
+// Rate limiters granulaire
+const responsesLimiter = rateLimit({ windowMs: 60 * 1000, max: 30 });
+const submitLimiter = rateLimit({ windowMs: 60 * 1000, max: 10 });
+const completeLimiter = rateLimit({ windowMs: 60 * 1000, max: 10 });
 
 /**
  * GET /patients/:patientId/questionnaires
@@ -59,10 +33,22 @@ function serializeQuestionnaire(doc) {
  */
 router.get(
   '/patients/:patientId/questionnaires',
+      // Idempotency
+      const keyHeader = req.headers['idempotency-key'];
+      const idemKey = normalizeIdempotencyKey(Array.isArray(keyHeader) ? keyHeader[0] : keyHeader);
+      if (idemKey) {
+        const idemRef = db.collection('idempotency').doc(`submit_${questionnaireId}_${idemKey}`);
+        const idemSnap = await idemRef.get();
+        if (idemSnap.exists) {
+          return res.json({ ok: true, idempotent: true, submittedAt: idemSnap.get('submittedAt') });
+        }
+        await idemRef.set({ submittedAt: admin.firestore.FieldValue.serverTimestamp(), patientId, questionnaireId });
+      }
   authenticateToken,
   requirePatient,
   async (req, res) => {
     try {
+        idempotencyKey: idemKey || null,
       const { patientId } = req.params;
 
       console.log(`[API] GET /patients/${patientId}/questionnaires`);
@@ -75,7 +61,7 @@ router.get(
       console.log(`[API] Found ${questionnairesSnap.docs.length} questionnaires (root)`);
 
       let questionnaires = questionnairesSnap.docs
-        .map((doc) => serializeQuestionnaire(doc))
+        .map((doc) => serializeQuestionnaireDoc(doc))
         .sort((a, b) => {
           const aTime = a.assignedAt ? new Date(a.assignedAt).getTime() : 0;
           const bTime = b.assignedAt ? new Date(b.assignedAt).getTime() : 0;
@@ -90,7 +76,7 @@ router.get(
           .collection('questionnaires')
           .get();
         questionnaires = subSnap.docs
-          .map((doc) => serializeQuestionnaire(doc))
+          .map((doc) => serializeQuestionnaireDoc(doc))
           .sort((a, b) => {
             const aTime = a.assignedAt ? new Date(a.assignedAt).getTime() : 0;
             const bTime = b.assignedAt ? new Date(b.assignedAt).getTime() : 0;
@@ -110,10 +96,21 @@ router.get(
 /**
  * GET /patients/:patientId/questionnaires/:questionnaireId
  * Détails d'un questionnaire spécifique (from root collection)
+      const keyHeader = req.headers['idempotency-key'];
+      const idemKey = normalizeIdempotencyKey(Array.isArray(keyHeader) ? keyHeader[0] : keyHeader);
+      if (idemKey) {
+        const idemRef = db.collection('idempotency').doc(`complete_${questionnaireId}_${idemKey}`);
+        const idemSnap = await idemRef.get();
+        if (idemSnap.exists) {
+          return res.json({ ok: true, idempotent: true, completedAt: idemSnap.get('completedAt') });
+        }
+        await idemRef.set({ completedAt: admin.firestore.FieldValue.serverTimestamp(), patientId, questionnaireId });
+      }
  */
 router.get(
   '/patients/:patientId/questionnaires/:questionnaireId',
   authenticateToken,
+        idempotencyKey: idemKey || null,
   requirePatient,
   async (req, res) => {
     try {
@@ -150,7 +147,7 @@ router.get(
         } catch (e) {
           console.warn('[API] Backfill root failed:', e);
         }
-        return res.json({ questionnaire: serializeQuestionnaire({ id: subDoc.id, ...data }) });
+        return res.json({ questionnaire: serializeQuestionnaireDoc({ id: subDoc.id, ...data }) });
       }
 
       const data = qDoc.data();
@@ -158,7 +155,7 @@ router.get(
         return res.status(403).json({ error: 'Access denied' });
       }
 
-      return res.json({ questionnaire: serializeQuestionnaire(qDoc) });
+      return res.json({ questionnaire: serializeQuestionnaireDoc(qDoc) });
     } catch (error) {
       console.error('[API] GET /patients/:patientId/questionnaires/:id error:', error);
       return res.status(500).json({ error: 'Internal server error' });
@@ -174,6 +171,9 @@ router.patch(
   '/patients/:patientId/questionnaires/:questionnaireId/responses',
   authenticateToken,
   requirePatient,
+  responsesLimiter,
+  validateResponsesBody,
+  enforceImmutableFields(['status', 'patientUid', 'practitionerId']),
   async (req, res) => {
     try {
       const { patientId, questionnaireId } = req.params;
@@ -235,6 +235,7 @@ router.post(
   '/patients/:patientId/questionnaires/:questionnaireId/submit',
   authenticateToken,
   requirePatient,
+  submitLimiter,
   async (req, res) => {
     try {
       const { patientId, questionnaireId } = req.params;
@@ -290,6 +291,7 @@ router.post(
   '/patients/:patientId/questionnaires/:questionnaireId/complete',
   authenticateToken,
   requirePractitioner,
+  completeLimiter,
   async (req, res) => {
     try {
       const { patientId, questionnaireId } = req.params;
@@ -340,10 +342,12 @@ router.get(
   '/practitioners/:practitionerId/questionnaires',
   authenticateToken,
   requirePractitioner,
+  validatePagination,
   async (req, res) => {
     try {
       const { practitionerId } = req.params;
-      const { status, limit = '50', offset = '0' } = req.query;
+      const { status } = req.query;
+      const { limit, offset } = req.pagination;
 
       console.log(`[API] GET /practitioners/${practitionerId}/questionnaires`);
 
@@ -356,11 +360,8 @@ router.get(
 
       query = query.orderBy('assignedAt', 'desc');
 
-      const limitNum = parseInt(limit, 10);
-      const offsetNum = parseInt(offset, 10);
-
-      if (limitNum > 0) {
-        query = query.limit(limitNum);
+      if (limit > 0) {
+        query = query.limit(limit);
       }
 
       const questionnairesSnap = await query.get();
@@ -388,7 +389,7 @@ router.get(
           }
 
           return {
-            ...serializeQuestionnaire(qDoc),
+            ...serializeQuestionnaireDoc(qDoc),
             patientId,
             patientName,
             patientEmail,
@@ -397,12 +398,12 @@ router.get(
       );
 
       // Apply offset manually (since Firestore doesn't have native offset)
-      const paginated = questionnaires.slice(offsetNum, offsetNum + limitNum);
+      const paginated = questionnaires.slice(offset, offset + limit);
 
       return res.json({
         questionnaires: paginated,
         total: questionnaires.length,
-        hasMore: offsetNum + limitNum < questionnaires.length,
+        hasMore: offset + limit < questionnaires.length,
       });
     } catch (error) {
       console.error('[API] GET /practitioners/:id/questionnaires error:', error);
@@ -418,6 +419,7 @@ router.get(
 router.get(
   '/patients/:patientId/questionnaires/:questionnaireId/scores/dnsm',
   authenticateToken,
+  requirePatientOrPractitioner,
   async (req, res) => {
     try {
       const { patientId, questionnaireId } = req.params;
@@ -452,6 +454,9 @@ router.get(
       }
 
       const data = qDoc.data();
+      if (req.accessRole === 'patient' && data.patientUid && data.patientUid !== patientId) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
 
       // Vérifier que c'est bien un questionnaire DNSM
       if (data.id !== 'dnsm' && data.title !== 'DNSM') {

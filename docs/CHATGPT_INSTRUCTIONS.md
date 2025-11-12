@@ -14,32 +14,32 @@ Support development of the NeuroNutrition monorepo by providing accurate, secure
 
 ### Architecture Quick Reference
 
-| Layer      | Description                                                                   |
-| ---------- | ----------------------------------------------------------------------------- |
-| Frontend   | React + Vite SPAs (patient & practitioner)                                    |
-| Backend    | Cloud Run Express API (server.js)                                             |
-| Serverless | Firebase Functions for specialized endpoints                                  |
-| Data       | Firestore collections (patients, questionnaires, consultation subcollections) |
-| Auth       | Firebase ID tokens + custom claims (practitioner/admin)                       |
-| Tooling    | pnpm, Turborepo, Husky, GitHub Actions CI, cspell                             |
+| Layer      | Description                                                                                         |
+| ---------- | --------------------------------------------------------------------------------------------------- |
+| Frontend   | React + Vite SPAs (patient & practitioner)                                                          |
+| Backend    | Cloud Run Express API (server.js) – hardened (validation, granular rate limits, structured logging) |
+| Serverless | Firebase Functions for specialized endpoints                                                        |
+| Data       | Firestore collections (patients, questionnaires, consultation subcollections)                       |
+| Auth       | Firebase ID tokens + custom claims (practitioner/admin)                                             |
+| Tooling    | pnpm, Turborepo, Husky, GitHub Actions CI, cspell                                                   |
 
 ### Common Tasks & Guidelines
 
-| Task                 | Guidance                                                                                       |
-| -------------------- | ---------------------------------------------------------------------------------------------- |
-| Add endpoint         | Place logic in API route; add `authenticateToken` and role-based guard. Return sanitized JSON. |
-| Modify questionnaire | Update shared questionnaire package; ensure serialization helper handles new fields.           |
-| Frontend feature     | Wrap risky code paths with ErrorBoundary; leverage requestCache when polling or frequent GETs. |
-| Refactor             | Split large modules; preserve public interfaces; add unit tests (Vitest / Jest).               |
-| Doc update           | Enhance Markdown with context; avoid exposing private IDs or tokens.                           |
+| Task                 | Guidance                                                                                                                                                  |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Add endpoint         | Place logic in API route; add `authenticateToken` and role-based guard. Return sanitized JSON. Support `Idempotency-Key` for write actions when relevant. |
+| Modify questionnaire | Update shared questionnaire package; ensure serialization helper handles new fields.                                                                      |
+| Frontend feature     | Wrap risky code paths with ErrorBoundary; leverage requestCache when polling or frequent GETs.                                                            |
+| Refactor             | Split large modules; preserve public interfaces; add unit tests (Vitest / Jest).                                                                          |
+| Doc update           | Enhance Markdown with context; avoid exposing private IDs or tokens.                                                                                      |
 
-### Authorization Matrix (Simplified)
+### Authorization Matrix (Simplified – includes DNSM score access)
 
-| Actor        | Patient Data      | Questionnaire Submit | Questionnaire Complete | Practitioner Data |
-| ------------ | ----------------- | -------------------- | ---------------------- | ----------------- |
-| Patient      | Own only          | Yes (own)            | No                     | Limited (self)    |
-| Practitioner | Assigned patients | No                   | Yes (assigned)         | Own only          |
-| Admin        | All               | Yes                  | Yes                    | All               |
+| Actor        | Patient Data      | Questionnaire Submit | Questionnaire Complete | DNSM Scores       | Practitioner Data |
+| ------------ | ----------------- | -------------------- | ---------------------- | ----------------- | ----------------- |
+| Patient      | Own only          | Yes (own)            | No                     | Own / Assigned    | Limited (self)    |
+| Practitioner | Assigned patients | No                   | Yes (assigned)         | Assigned patients | Own only          |
+| Admin        | All               | Yes                  | Yes                    | All               | All               |
 
 ### Error Handling Rules
 
@@ -57,9 +57,10 @@ Support development of the NeuroNutrition monorepo by providing accurate, secure
 
 ### Performance Tips
 
-1. Derive progress on the fly—avoid storing redundant counters.
+1. Derive progress on the fly—use `serializeQuestionnaireDoc` helper (no stored counters).
 2. Prefer field merges (`set(..., { merge: true })`) over full document overwrites.
-3. Increase polling delays for low-volatility data; trigger manual refresh on focus events.
+3. Use cursor-based pagination (`nextCursor`) for large practitioner listings; avoid in-memory offsets.
+4. Increase polling delays for low-volatility data; trigger manual refresh on focus events.
 
 ### Style & Patterns
 
@@ -108,7 +109,7 @@ Provide:
 
 ### Future Enhancements Candidates
 
-- Add structured logging (pino) + correlation IDs.
+- Structured logging (pino) + correlation IDs active; use `withRequest(req)` child logger in new endpoints.
 - Implement background job for questionnaire analytics aggregation.
 - Introduce E2E tests for multi-step patient flows (Playwright). Already partial; extend coverage.
 - Migrate authentication to short-lived sessions with refresh rotation.
