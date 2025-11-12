@@ -1,14 +1,11 @@
 // Import local copy instead of workspace dependency
+import type { Questionnaire } from '@neuronutrition/shared-questionnaires';
+import { getAllQuestionnaires, getQuestionnaireById } from '@neuronutrition/shared-questionnaires';
 import express, { Request, Response } from 'express';
 import * as admin from 'firebase-admin';
 import * as logger from 'firebase-functions/logger';
 import fs from 'node:fs';
 import path from 'node:path';
-import type { Questionnaire } from '../../../lib/shared-questionnaires/index.js';
-import {
-  getAllQuestionnaires,
-  getQuestionnaireById,
-} from '../../../lib/shared-questionnaires/index.js';
 import { AuthenticatedRequest, requireOwnerOrPractitioner, verifyAuth } from '../middleware/auth';
 
 const router = express.Router();

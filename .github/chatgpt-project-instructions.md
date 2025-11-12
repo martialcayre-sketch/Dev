@@ -6,7 +6,7 @@
 **Project Type:** Healthcare Web Application (Practitioner-Patient Management System)  
 **Primary Goal:** Enable practitioners to manage patients and assign health questionnaires; allow patients to complete questionnaires and view their results.  
 **Tech Stack:** React + TypeScript + Vite + Firebase (Firestore, Auth, Functions, Hosting)  
-**Development Environment:** Windows, Node 20.18.0, pnpm 9.15.9  
+**Development Environment:** Alpine Linux, Node 22.16.0, pnpm 10.22.0  
 **Repository:** GitHub (martialcayre-sketch/Dev)
 
 ## 📂 Project Structure
@@ -39,21 +39,32 @@ C:/Dev/
 ### Understanding the Architecture
 
 1. **Frontend Apps:** Two separate React SPAs
+
    - **Patient App:** Runs on port 3020, deployed to `neuronutrition-app-patient.web.app`
    - **Practitioner App:** Runs on port 3010, deployed to `neuronutrition-app-practitioner.web.app`
 
 2. **Shared Packages:** Reusable code shared between apps
+
    - Use workspace protocol: `"@neuronutrition/shared-core": "workspace:*"`
    - Located in `packages/` directory
 
 3. **Backend:** Firebase Cloud Functions (serverless, Node 20)
+
    - `assignQuestionnaires`: Auto-assign default questionnaires to new patients
    - `activatePatient`: Initialize patient account on signup
    - `invitePatient`: Handle practitioner invitations
 
 4. **Database:** Firestore (NoSQL)
+
    - Collections: `patients`, `practitioners`, `users`, `invitationTokens`
    - Security enforced via `firestore.rules`
+
+5. **DevOps & Tooling:**
+   - **Package Manager:** pnpm 10.22.0 (hash-verified workspace protocol)
+   - **Build System:** Turbo 2.6.1 (parallel execution, smart caching)
+   - **Runtime:** Node.js 22.16.0 (Alpine Linux compatibility)
+   - **Firebase Admin:** 13.6.0 (latest stable)
+   - **Container:** Docker Alpine with optimized Windows WSL 2 support
 
 ### Common Development Tasks
 
@@ -73,11 +84,17 @@ pnpm dev:emu
 #### Building the Project
 
 ```bash
-# Build all packages (uses Turbo cache)
+# Build all packages (uses Turbo cache with parallel execution)
 pnpm build
 
 # Build only frontend apps
 pnpm build:web
+
+# TypeScript check across all packages
+pnpm typecheck
+
+# Lint all packages
+pnpm lint
 
 # Build specific package
 pnpm --filter @neuronutrition/patient-vite build
@@ -119,6 +136,7 @@ pnpm exec playwright test e2e/auth-debug.spec.ts
 The app manages several types of questionnaires:
 
 - **Life Journey (SIIN Method):** 35 questions across 7 life spheres
+
   - Spheres: Sleep, Biological Rhythm, Stress, Physical Activity, Toxic Exposure, Social Relations, Nutrition
   - Weighted scoring: 0-180 points total
   - Results displayed as radar chart
@@ -208,20 +226,24 @@ import type { Patient, Questionnaire } from '@/types';
 ### Configuration Files
 
 1. **firebase.json** - Multi-site hosting configuration
+
    - Defines patient, practitioner, and API hosting targets
    - Sets up rewrites for SPA routing
 
 2. **firestore.rules** - Database security rules
+
    - Patient data access rules
    - Practitioner permissions
    - Validation rules
 
 3. **vite.config.ts** (in each app)
+
    - Code splitting configuration
    - Bundle analyzer plugin
    - Path aliases
 
 4. **tsconfig.base.json** - TypeScript base configuration
+
    - Shared TypeScript settings for all packages
    - No `baseUrl` (deprecated)
    - Strict mode enabled
@@ -369,6 +391,9 @@ Monitor in Firebase Console:
 
 ## 📚 Additional Resources
 
+- **Build Instructions:** [BUILD.md](../BUILD.md) - Complete setup and build guide
+- **Firebase Status:** [FIREBASE_STATUS.md](../FIREBASE_STATUS.md) - Production status and deployment info
+- **Windows Setup:** [DEVCONTAINER_WINDOWS.md](../DEVCONTAINER_WINDOWS.md) - Windows-specific devcontainer setup
 - **Firebase Documentation:** https://firebase.google.com/docs
 - **React Documentation:** https://react.dev
 - **Vite Guide:** https://vitejs.dev/guide
@@ -405,7 +430,7 @@ export async function getPatientQuestionnaires(patientId: string): Promise<Quest
         ({
           id: doc.id,
           ...doc.data(),
-        }) as Questionnaire
+        } as Questionnaire)
     );
   } catch (error) {
     console.error('Failed to fetch questionnaires:', error);

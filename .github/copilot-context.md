@@ -1,7 +1,7 @@
 # GitHub Copilot & Codex - Project Context
 
 > **NeuroNutrition App** - Healthcare Web Application for Practitioner-Patient Management  
-> **Last Updated:** November 10, 2025
+> **Last Updated:** November 12, 2025
 
 ## 🎯 Project Overview
 
@@ -53,7 +53,7 @@ C:/Dev/ (pnpm monorepo, 13 packages)
 
 ### Backend
 
-- **Runtime:** Node.js 20.18.0
+- **Runtime:** Node.js 22.16.0 (Alpine Linux compatibility)
 - **Functions:** Firebase Cloud Functions v2 (2nd gen)
 - **Region:** europe-west1
 - **Database:** Firestore (NoSQL document store)
@@ -61,11 +61,11 @@ C:/Dev/ (pnpm monorepo, 13 packages)
 
 ### DevOps
 
-- **Package Manager:** pnpm 9.15.9 (workspaces)
-- **Build System:** Turbo 2.6.0 (monorepo builds)
+- **Package Manager:** pnpm 10.22.0 (workspaces, hash-verified)
+- **Build System:** Turbo 2.6.1 (monorepo builds with parallel execution)
 - **CI/CD:** GitHub Actions
 - **Testing:** Jest (unit), Playwright (E2E)
-- **Container:** Docker (Alpine Node 20.18.0)
+- **Container:** Docker (Alpine Node 22.16.0)
 
 ## 📝 Code Style & Patterns
 
@@ -252,9 +252,10 @@ pnpm exec playwright test e2e/auth-debug.spec.ts
 
 ```json
 {
-  "firebase-admin": "^12.7.0",
+  "firebase-admin": "^13.6.0",
   "firebase-functions": "^5.x",
-  "express": "^4.19.2"
+  "express": "^4.19.2",
+  "@neuronutrition/shared-questionnaires": "workspace:*"
 }
 ```
 
@@ -424,25 +425,32 @@ interface LifeJourneyResult {
 }
 ```
 
-## 🔄 Recent Optimizations (Nov 10, 2025)
+## 🔄 Recent Optimizations (Nov 12, 2025)
 
-1. ✅ Docker security: Alpine base (reduced vulnerabilities)
-2. ✅ TypeScript: Removed deprecated `baseUrl`
-3. ✅ ESLint: Added `projectService` + `tsconfigRootDir`
-4. ✅ Package exports: Moved `types` before `import`/`require`
-5. ✅ Code splitting: Lazy loading reduced bundles by 60%
-6. ✅ pnpm: Aligned to 9.15.9
-7. ✅ Firebase CLI: Updated to 14.24.2
-8. ✅ CI/CD: Modernized workflow (Node 20.18.0, corepack)
-9. ✅ Bundle tracking: Added rollup-plugin-visualizer
-10. ✅ Husky: Removed deprecated hooks
+1. ✅ **Package Upgrades:** pnpm 10.22.0, firebase-admin 13.6.0, Turbo 2.6.1
+2. ✅ **PackageManager:** Hash-verified package management with workspace protocol
+3. ✅ **Turbo Scripts:** Complete migration to Turbo with parallel execution
+4. ✅ **Functions Fix:** Workspace imports resolved in questionnaire routes
+5. ✅ **Docker security:** Alpine base (reduced vulnerabilities)
+6. ✅ **TypeScript:** Removed deprecated `baseUrl`
+7. ✅ **ESLint:** Added `projectService` + `tsconfigRootDir`
+8. ✅ **Package exports:** Moved `types` before `import`/`require`
+9. ✅ **Code splitting:** Lazy loading reduced bundles by 60%
+10. ✅ **Firebase CLI:** Updated to 14.24.2+
+11. ✅ **CI/CD:** Modernized workflow (Node 22.16.0, corepack)
+12. ✅ **Bundle tracking:** Added rollup-plugin-visualizer
+13. ✅ **Windows Support:** Optimized devcontainer for WSL 2
+14. ✅ **Documentation:** Added BUILD.md, FIREBASE_STATUS.md, DEVCONTAINER_WINDOWS.md
 
 ## 📚 Important Documentation
 
-- **Firebase Hosting:** [docs/PREVIEW_HOSTING.md](./docs/PREVIEW_HOSTING.md)
-- **Life Journey:** [LIFE_JOURNEY_INTEGRATION.md](./LIFE_JOURNEY_INTEGRATION.md)
-- **Migration Guide:** [MIGRATION_PATIENTS_LIFE_JOURNEY.md](./MIGRATION_PATIENTS_LIFE_JOURNEY.md)
-- **Practitioner Signin:** [PRACTITIONER_SIGNIN_IMPLEMENTED.md](./PRACTITIONER_SIGNIN_IMPLEMENTED.md)
+- **Build Instructions:** [BUILD.md](../BUILD.md)
+- **Firebase Status:** [FIREBASE_STATUS.md](../FIREBASE_STATUS.md)
+- **Windows Setup:** [DEVCONTAINER_WINDOWS.md](../DEVCONTAINER_WINDOWS.md)
+- **Firebase Hosting:** [docs/PREVIEW_HOSTING.md](../docs/PREVIEW_HOSTING.md)
+- **Life Journey:** [LIFE_JOURNEY_INTEGRATION.md](../LIFE_JOURNEY_INTEGRATION.md)
+- **Migration Guide:** [MIGRATION_PATIENTS_LIFE_JOURNEY.md](../MIGRATION_PATIENTS_LIFE_JOURNEY.md)
+- **Practitioner Signin:** [PRACTITIONER_SIGNIN_IMPLEMENTED.md](../PRACTITIONER_SIGNIN_IMPLEMENTED.md)
 
 ## 🎓 Learning Resources
 
@@ -468,4 +476,4 @@ interface LifeJourneyResult {
 9. Respect Firestore security rules
 10. Document complex logic with comments
 
-**Environment:** Windows, PowerShell, pnpm 9.15.9, Node 20.18.0
+**Environment:** Alpine Linux, bash, pnpm 10.22.0, Node 22.16.0
