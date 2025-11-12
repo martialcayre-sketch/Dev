@@ -211,15 +211,45 @@ Dev/
 └── e2e/                   # Tests Playwright
 ```
 
-## ✅ Statut de test (Nov 12, 2025)
+## ✅ Statut de test (Nov 12, 2025 - Mise à jour complète)
 
-- ✅ Installation dépendances : **Réussie** (pnpm install)
+- ✅ Installation dépendances : **Réussie** (pnpm 10.22.0 install)
 - ✅ Build packages partagés : **Réussi** (shared-questionnaires + shared-api)
-- ✅ Build apps web : **Réussi** (patient-vite + practitioner-vite)
+- ✅ Build Turbo complet : **Réussi** (13 packages, 1m19s)
+- ✅ Build apps web : **Réussi** (patient-vite + practitioner-vite via Turbo)
 - ✅ Dev servers : **Fonctionnels** (3020 + 3010)
 - ⚠️ Emulators Firebase : **Nécessitent Java** (non testé)
-- ⚠️ Tests : **Partiellement configurés** (Playwright ok, scripts root NOK)
+- ✅ Versions mises à jour : **firebase-admin 13.6.0**, **turbo 2.6.1**, **pnpm 10.22.0**
 
----
+### 🆕 Dernières améliorations (Nov 2025)
+
+- **firebase-admin** : 12.7.0 → **13.6.0** (dernière stable)
+- **pnpm** : 9.15.4 → **10.22.0** (dernière stable)
+- **turbo** : Nouveau ! **2.6.1** (gestion de monorepo)
+- **Scripts** : Migration vers `turbo run build/test/lint`
+- **CI/Linting** : Ajout de **@playwright/test 1.56.1**, **husky 9.1.7**, **cspell 8.19.4**
+- **Performance** : Cache Turbo activé, build parallélisé
+
+### 🚀 Commandes mises à jour (post-upgrade)
+
+#### Build moderne (avec Turbo)
+
+````bash
+# Build global avec cache et parallélisation
+pnpm run build
+
+# Build ciblé apps uniquement
+pnpm run build:web
+
+# Linting global
+pnpm run lint
+
+# Tests global
+pnpm run test
+
+# Type checking global
+pnpm run typecheck
+```---
 
 **Ce guide a été généré automatiquement et testé en live. Pour des questions spécifiques, consultez les fichiers `docs/DEV_LOCAL.md` et `README.md`.**
+````
