@@ -39,7 +39,8 @@ describe('HTTP API (Functions) basic integration', () => {
     const { expressApp } = require('../../http/app');
     const res = await request(expressApp).get('/catalog/questionnaires');
     expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty('questionnaires');
-    expect(Array.isArray(res.body.questionnaires)).toBe(true);
+    expect(res.body).toHaveProperty('success', true);
+    expect(res.body).toHaveProperty('data.questionnaires');
+    expect(Array.isArray(res.body.data.questionnaires)).toBe(true);
   });
 });

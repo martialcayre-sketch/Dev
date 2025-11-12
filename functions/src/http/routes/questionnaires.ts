@@ -2,6 +2,7 @@
 import type { Questionnaire } from '@neuronutrition/shared-questionnaires';
 import { getAllQuestionnaires, getQuestionnaireById } from '@neuronutrition/shared-questionnaires';
 import express, { Request, Response } from 'express';
+import { makeOk, makeError } from '../utils/response';
 import * as admin from 'firebase-admin';
 import * as logger from 'firebase-functions/logger';
 import fs from 'node:fs';
@@ -19,7 +20,7 @@ router.get(
   '/patients/:patientId/questionnaires',
   verifyAuth,
   requireOwnerOrPractitioner('patientId'),
-  async (req: AuthenticatedRequest, res: Response) => {
+  async (req: AuthenticatedRequest & { id?: string }, res: Response) => {
     try {
       const { patientId } = req.params;
 
@@ -47,10 +48,10 @@ router.get(
           return bTime - aTime;
         });
 
-      return res.json({ questionnaires });
+      return res.json(makeOk({ questionnaires }, (req as any).id));
     } catch (error: any) {
       logger.error('GET /patients/:patientId/questionnaires error:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json(makeError('internal', 'Internal server error', (req as any).id));
     }
   }
 );
@@ -71,16 +72,16 @@ router.get(
       const qDoc = await db.collection('questionnaires').doc(questionnaireId).get();
 
       if (!qDoc.exists) {
-        return res.status(404).json({ error: 'Questionnaire not found' });
+        return res.status(404).json(makeError('not_found', 'Questionnaire not found', (req as any).id));
       }
 
-      return res.json({
+      return res.json(makeOk({
         id: qDoc.id,
         ...qDoc.data(),
-      });
+      }, (req as any).id));
     } catch (error: any) {
       logger.error('GET /patients/:patientId/questionnaires/:id error:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json(makeError('internal', 'Internal server error', (req as any).id));
     }
   }
 );
@@ -109,14 +110,14 @@ router.patch(
 
       const qDoc = await qRefRoot.get();
       if (!qDoc.exists) {
-        return res.status(404).json({ error: 'Questionnaire not found' });
+        return res.status(404).json(makeError('not_found', 'Questionnaire not found', (req as any).id));
       }
 
       const currentStatus = qDoc.data()?.status;
       if (currentStatus === 'submitted' || currentStatus === 'completed') {
         return res
           .status(403)
-          .json({ error: 'Cannot modify submitted or completed questionnaire' });
+          .json(makeError('forbidden', 'Cannot modify submitted or completed questionnaire', (req as any).id));
       }
 
       // Merge manuel avec réponses existantes
@@ -132,13 +133,12 @@ router.patch(
       // Double write to both collections
       await Promise.all([qRefRoot.update(updateData), qRefSub.update(updateData)]);
 
-      return res.json({
-        ok: true,
+      return res.json(makeOk({
         savedAt: new Date().toISOString(),
-      });
+      }, (req as any).id));
     } catch (error: any) {
       logger.error('PATCH /responses error:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json(makeError('internal', 'Internal server error', (req as any).id));
     }
   }
 );
@@ -228,15 +228,15 @@ router.get('/practitioners/:practitionerId/questionnaires', async (req: Request,
           ).toString('base64')
         : null;
 
-    return res.json({
+    return res.json(makeOk({
       questionnaires: paginated,
       total: questionnaires.length,
       nextCursor,
       hasMore: !!nextCursor,
-    });
+    }, (req as any).id));
   } catch (error: any) {
     logger.error('GET /practitioners/:id/questionnaires error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json(makeError('internal', 'Internal server error', (req as any).id));
   }
 });
 
@@ -262,12 +262,12 @@ router.post(
 
       const qDoc = await qRefRoot.get();
       if (!qDoc.exists) {
-        return res.status(404).json({ error: 'Questionnaire not found' });
+        return res.status(404).json(makeError('not_found', 'Questionnaire not found', (req as any).id));
       }
 
       const currentStatus = qDoc.data()?.status;
       if (currentStatus === 'submitted' || currentStatus === 'completed') {
-        return res.status(400).json({ error: 'Questionnaire already submitted or completed' });
+        return res.status(400).json(makeError('already_submitted', 'Questionnaire already submitted or completed', (req as any).id));
       }
 
       // Idempotency via header Idempotency-Key
@@ -277,7 +277,7 @@ router.post(
         const idemRef = db.collection('idempotency').doc(`submit_${questionnaireId}_${idemKey}`);
         const idemSnap = await idemRef.get();
         if (idemSnap.exists) {
-          return res.json({ ok: true, idempotent: true, submittedAt: idemSnap.get('submittedAt') });
+          return res.json(makeOk({ idempotent: true, submittedAt: idemSnap.get('submittedAt') }, (req as any).id));
         }
         await idemRef.set({
           submittedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -296,14 +296,13 @@ router.post(
       // Double write to both collections
       await Promise.all([qRefRoot.update(updateData), qRefSub.update(updateData)]);
 
-      return res.json({
-        ok: true,
+      return res.json(makeOk({
         submittedAt: new Date().toISOString(),
         message: 'Questionnaire submitted successfully',
-      });
+      }, (req as any).id));
     } catch (error: any) {
       logger.error('POST /submit error:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json(makeError('internal', 'Internal server error', (req as any).id));
     }
   }
 );
@@ -329,7 +328,7 @@ router.post(
 
       const qDoc = await qRefRoot.get();
       if (!qDoc.exists) {
-        return res.status(404).json({ error: 'Questionnaire not found' });
+        return res.status(404).json(makeError('not_found', 'Questionnaire not found', (req as any).id));
       }
 
       // Idempotency via header Idempotency-Key
@@ -339,7 +338,7 @@ router.post(
         const idemRef = db.collection('idempotency').doc(`complete_${questionnaireId}_${idemKey}`);
         const idemSnap = await idemRef.get();
         if (idemSnap.exists) {
-          return res.json({ ok: true, idempotent: true, completedAt: idemSnap.get('completedAt') });
+          return res.json(makeOk({ idempotent: true, completedAt: idemSnap.get('completedAt') }, (req as any).id));
         }
         await idemRef.set({
           completedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -358,14 +357,13 @@ router.post(
       // Double write to both collections
       await Promise.all([qRefRoot.update(updateData), qRefSub.update(updateData)]);
 
-      return res.json({
-        ok: true,
+      return res.json(makeOk({
         completedAt: new Date().toISOString(),
         message: 'Questionnaire marked as completed',
-      });
+      }, (req as any).id));
     } catch (error: any) {
       logger.error('POST /complete error:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json(makeError('internal', 'Internal server error', (req as any).id));
     }
   }
 );
@@ -410,10 +408,10 @@ router.get('/catalog/questionnaires', (req: Request, res: Response) => {
       version: q.metadata.version ?? 1,
       questionsCount: Array.isArray(q.questions) ? q.questions.length : 0,
     }));
-    return res.json({ questionnaires: all });
+    return res.json(makeOk({ questionnaires: all }, (req as any).id));
   } catch (error: any) {
     logger.error('GET /catalog/questionnaires error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json(makeError('internal', 'Internal server error', (req as any).id));
   }
 });
 
@@ -421,11 +419,11 @@ router.get('/catalog/questionnaires/:id', (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const q = getQuestionnaireById(id);
-    if (!q) return res.status(404).json({ error: 'Questionnaire not found' });
-    return res.json(q);
+    if (!q) return res.status(404).json(makeError('not_found', 'Questionnaire not found', (req as any).id));
+    return res.json(makeOk(q as any, (req as any).id));
   } catch (error: any) {
     logger.error('GET /catalog/questionnaires/:id error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json(makeError('internal', 'Internal server error', (req as any).id));
   }
 });
 
@@ -435,7 +433,7 @@ const extractedRoot = path.resolve(process.cwd(), '..', 'data', 'questionnaires'
 router.get('/catalog/extracted', (req: Request, res: Response) => {
   try {
     if (!fs.existsSync(extractedRoot)) {
-      return res.json({ categories: [], note: 'extracted root not found on runtime' });
+      return res.json(makeOk({ categories: [], note: 'extracted root not found on runtime' }, (req as any).id));
     }
     const categories = fs
       .readdirSync(extractedRoot, { withFileTypes: true })
@@ -460,10 +458,10 @@ router.get('/catalog/extracted', (req: Request, res: Response) => {
       return { category, items: entries };
     });
 
-    return res.json({ categories: result });
+    return res.json(makeOk({ categories: result }, (req as any).id));
   } catch (error: any) {
     logger.error('GET /catalog/extracted error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json(makeError('internal', 'Internal server error', (req as any).id));
   }
 });
 
@@ -474,13 +472,13 @@ router.get('/catalog/extracted/:category/:slug', (req: Request, res: Response) =
     const metaPath = path.join(dir, `${slug}.meta.json`);
     const txtPath = path.join(dir, `${slug}.txt`);
     if (!fs.existsSync(metaPath)) {
-      return res.status(404).json({ error: 'Extracted file not found' });
+      return res.status(404).json(makeError('not_found', 'Extracted file not found', (req as any).id));
     }
     const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
     const text = fs.existsSync(txtPath) ? fs.readFileSync(txtPath, 'utf-8') : '';
-    return res.json({ category, slug, meta, text });
+    return res.json(makeOk({ category, slug, meta, text }, (req as any).id));
   } catch (error: any) {
     logger.error('GET /catalog/extracted/:category/:slug error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json(makeError('internal', 'Internal server error', (req as any).id));
   }
 });
