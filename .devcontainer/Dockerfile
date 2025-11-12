@@ -12,7 +12,7 @@ RUN apk add --no-cache \
     g++ \
     linux-headers \
     openjdk11-jre \
-    && npm install -g pnpm@9.15.4 firebase-tools@14.24.2 \
+    && npm install -g pnpm@10.22.0 firebase-tools@14.24.2 \
     && apk del make g++ linux-headers \
     && rm -rf /var/cache/apk/*
 

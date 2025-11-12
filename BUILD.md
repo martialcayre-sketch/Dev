@@ -6,9 +6,9 @@ Ce guide a été testé sur Alpine Linux avec Container dev. Adaptez les command
 
 ### 1️⃣ Prérequis
 
-- **Node.js** : Version 20.17.x recommandée (20.11.1 minimal, 22.16.0 testé ✅)
-- **pnpm** : Version 9.15.4 (spécifié dans `packageManager`)
-- **Java** : Requis pour Firebase emulators (optionnel pour développement sans emulators)
+- **Node.js** : Version 20.x (Alpine container) ou 22.16.0+ (testé ✅)
+- **pnpm** : Version **10.22.0** (dernière stable)
+- **Java** : Requis pour Firebase emulators (inclus dans devcontainer)
 
 #### Installation rapide des prérequis
 
@@ -16,8 +16,8 @@ Ce guide a été testé sur Alpine Linux avec Container dev. Adaptez les command
 # Node.js (exemple avec Alpine Linux)
 sudo apk add --no-cache nodejs npm
 
-# pnpm (global)
-sudo npm install -g pnpm@9.15.4
+# pnpm (global - version mise à jour)
+sudo npm install -g pnpm@10.22.0
 
 # Java (pour Firebase emulators)
 sudo apk add --no-cache openjdk11-jre

@@ -4,7 +4,7 @@
     "dockerfile": "Dockerfile",
     "context": "."
   },
-  "postCreateCommand": "pnpm install",
+  "postCreateCommand": "pnpm install && pnpm run build",
   "forwardPorts": [3010, 3020, 5001, 5173, 5174, 8080, 9099],
   "portsAttributes": {
     "3020": {
