@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:22-alpine
 
 # Use Alpine for smaller image size and better security
 # Install build dependencies for native packages and latest tools

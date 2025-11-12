@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default [
-  { ignores: ['dist/**', 'build/**', 'node_modules/**'] },
+  { ignores: ['dist/**', 'build/**', 'node_modules/**', '*.config.d.ts', 'eslint.config.js'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -18,7 +18,7 @@ export default [
     languageOptions: {
       globals: { ...globals.browser, ...globals.es2021 },
       parserOptions: {
-        projectService: true,
+        project: './tsconfig.app.json',
         tsconfigRootDir: __dirname,
       },
     },

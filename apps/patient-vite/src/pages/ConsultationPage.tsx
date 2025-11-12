@@ -24,7 +24,6 @@ export default function ConsultationPage() {
       setLoading(false);
     });
     return () => unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
   const checkConsultationData = async (uid: string) => {
@@ -170,7 +169,9 @@ export default function ConsultationPage() {
                 )}
               </div>
               <ChevronRight
-                className={`h-6 w-6 transition-transform group-hover:translate-x-1 ${profile.hasIdentification ? 'text-emerald-400' : 'text-amber-400'}`}
+                className={`h-6 w-6 transition-transform group-hover:translate-x-1 ${
+                  profile.hasIdentification ? 'text-emerald-400' : 'text-amber-400'
+                }`}
               />
             </div>
             <div className="space-y-1 text-sm text-white/60">
@@ -223,7 +224,9 @@ export default function ConsultationPage() {
                 )}
               </div>
               <ChevronRight
-                className={`h-6 w-6 transition-transform group-hover:translate-x-1 ${profile.hasAnamnese ? 'text-emerald-400' : 'text-amber-400'}`}
+                className={`h-6 w-6 transition-transform group-hover:translate-x-1 ${
+                  profile.hasAnamnese ? 'text-emerald-400' : 'text-amber-400'
+                }`}
               />
             </div>
             <div className="space-y-1 text-sm text-white/60">
