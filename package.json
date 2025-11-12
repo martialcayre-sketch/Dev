@@ -2,7 +2,7 @@
   "name": "neuronutrition-app",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@9.15.9+sha512.68046141893c66fad01c079231128e9afb89ef87e2691d69e4d40eee228988295fd4682181bae55b58418c3a253bde65a505ec7c5f9403ece5cc3cd37dcf2531",
+  "packageManager": "pnpm@10.22.0+sha512.a8024f681e65c5fc6f0078d54b4d84267e65c7c8e7cf6b85d5acaa3b9e43fcbb4e0c0e4bab3b6f7eedbe59d13c43b6b42b29b6e7a5",
   "workspaces": [
     "apps/*",
     "packages/*",
@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "prepare": "husky install",
-    "dev": "pnpm --filter web dev",
+    "dev": "turbo run dev",
     "dev:patient-spa": "pnpm -C apps/patient-vite dev",
     "dev:practitioner-spa": "pnpm -C apps/practitioner-vite dev",
     "dev:functions": "pnpm -C functions serve",
@@ -24,7 +24,7 @@
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "format": "pnpm --filter web format || true",
+    "format": "turbo run format",
     "spellcheck": "cspell --no-progress --show-context '**/*.{ts,tsx,js,jsx,md,mdx,html,css}'",
     "spellcheck:fix": "pnpm run spellcheck -- --unique --wordsOnly",
     "extract": "node scripts/extract_pdf_text.mjs",
@@ -42,16 +42,16 @@
     "@cspell/dict-fr-fr": "^2.2.0",
     "@playwright/test": "^1.56.1",
     "cspell": "^8.14.2",
-    "firebase-admin": "^12.7.0",
+    "firebase-admin": "^13.6.0",
     "firebase-tools": "^14.24.2",
     "husky": "^9.1.0",
     "pdf-parse": "^2.4.5",
     "pdfjs-dist": "^5.4.296",
     "rollup-plugin-visualizer": "^6.0.5",
-    "turbo": "^2.1.1"
+    "turbo": "^2.6.1"
   },
   "engines": {
-    "node": ">=20.17.0 <21"
+    "node": ">=20.17.0 <23"
   },
   "dependencies": {
     "firebase": "^12.5.0"

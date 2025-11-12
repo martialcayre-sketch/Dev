@@ -1,8 +1,8 @@
 import react from '@vitejs/plugin-react';
 import { dirname, resolve } from 'path';
+import { visualizer } from 'rollup-plugin-visualizer';
 import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
-import { visualizer } from 'rollup-plugin-visualizer';
 var __filename = fileURLToPath(import.meta.url);
 var __dirname = dirname(__filename);
 export default defineConfig({
@@ -41,9 +41,9 @@ export default defineConfig({
             output: {
                 manualChunks: {
                     'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-                    'firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
-                    'questionnaires': ['@neuronutrition/shared-questionnaires'],
-                    'charts': ['@neuronutrition/shared-charts', 'recharts'],
+                    firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
+                    questionnaires: ['@neuronutrition/shared-questionnaires'],
+                    charts: ['@neuronutrition/shared-charts', 'recharts'],
                 },
             },
         },
