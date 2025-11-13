@@ -43,7 +43,8 @@
     "dev:stack:win": "powershell -ExecutionPolicy Bypass -File scripts/dev-local.ps1",
     "dev:stack:mac": "bash scripts/dev-local.sh",
     "dev:stack:linux": "bash scripts/dev-local.sh",
-    "check:all": "node scripts/check-all.mjs"
+    "check:all": "node scripts/check-all.mjs",
+    "update:ai-docs": "node scripts/update-ai-docs.mjs"
   },
   "devDependencies": {
     "@cspell/dict-fr-fr": "^2.3.2",

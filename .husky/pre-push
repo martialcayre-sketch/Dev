@@ -1,0 +1,27 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Mise à jour automatique des docs IA avant push
+echo "🤖 Mise à jour des fichiers de contexte IA..."
+node scripts/update-ai-docs.mjs
+
+# Vérifier s'il y a des changements
+if git diff --quiet docs/ PROJECT_CONTEXT.md .cursorrules .github/copilot-context.md; then
+  echo "✅ Aucune mise à jour nécessaire"
+else
+  echo "📝 Fichiers de contexte IA mis à jour"
+  echo "💡 Ajout automatique des changements au commit..."
+  
+  # Ajouter les fichiers modifiés
+  git add docs/CHATGPT_INSTRUCTIONS.md \
+          docs/COPILOT_CONTEXT.md \
+          PROJECT_CONTEXT.md \
+          .cursorrules \
+          .github/copilot-context.md 2>/dev/null || true
+  
+  # Créer un commit de mise à jour si des fichiers ont été modifiés
+  if ! git diff --cached --quiet; then
+    git commit -m "docs(ai): auto-update AI context files [skip ci]" --no-verify
+    echo "✅ Commit de mise à jour créé automatiquement"
+  fi
+fi

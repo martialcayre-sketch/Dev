@@ -1,7 +1,7 @@
 # GitHub Copilot & Codex - Project Context
 
 > **NeuroNutrition App** - Healthcare Web Application for Practitioner-Patient Management  
-> **Last Updated:** November 13, 2025 - Migration root-only complétée
+> **Last Updated:** 13 novembre 2025 - Migration root-only complétée
 
 ## 🎯 Project Overview
 
@@ -53,7 +53,7 @@ C:/Dev/ (pnpm monorepo, 13 packages)
 
 ### Backend
 
-- **Runtime:** Node.js 22.16.0 (Alpine Linux compatibility)
+- **Runtime:** Node.js 24.11.1 (Alpine Linux compatibility)
 - **Functions:** Firebase Cloud Functions v2 (2nd gen)
 - **Region:** europe-west1
 - **Database:** Firestore (NoSQL document store)
@@ -61,11 +61,11 @@ C:/Dev/ (pnpm monorepo, 13 packages)
 
 ### DevOps
 
-- **Package Manager:** pnpm 10.22.0 (workspaces, hash-verified)
+- **Package Manager:** pnpm 10.22.0+sha512.a8024f681e65c5fc6f0078d54b4d84267e65c7c8e7cf6b85d5acaa3b9e43fcbb4e0c0e4bab3b6f7eedbe59d13c43b6b42b29b6e7a5 (workspaces, hash-verified)
 - **Build System:** Turbo 2.6.1 (monorepo builds with parallel execution)
 - **CI/CD:** GitHub Actions
 - **Testing:** Jest (unit), Playwright (E2E)
-- **Container:** Docker (Alpine Node 22.16.0)
+- **Container:** Docker (Alpine Node 24.11.1)
 
 ## 📝 Code Style & Patterns
 
@@ -468,7 +468,7 @@ interface LifeJourneyResult {
 3. ✅ **Maintenance scripts:** audit, backfill, purge disponibles
 4. ✅ **Secret Manager:** MANUAL_ASSIGN_SECRET et MIGRATION_SECRET configurés
 5. ✅ **Documentation complète:** Tous les docs mis à jour avec architecture actuelle
-6. ✅ **Package Upgrades:** pnpm 10.22.0, firebase-admin 13.6.0, Turbo 2.6.1
+6. ✅ **Package Upgrades:** pnpm 10.22.0+sha512.a8024f681e65c5fc6f0078d54b4d84267e65c7c8e7cf6b85d5acaa3b9e43fcbb4e0c0e4bab3b6f7eedbe59d13c43b6b42b29b6e7a5, firebase-admin 13.6.0, Turbo 2.6.1
 7. ✅ **Turbo Scripts:** Migration complète vers Turbo avec exécution parallèle
 8. ✅ **Code splitting:** Lazy loading réduit bundles de 60%
 9. ✅ **Docker security:** Alpine base (réduction des vulnérabilités)
@@ -512,4 +512,4 @@ interface LifeJourneyResult {
 11. **Use maintenance scripts in `scripts/` for data operations (not `_deprecated/`)**
 12. **Create idempotency documents for submit/complete operations**
 
-**Environment:** Alpine Linux, bash, pnpm 10.22.0, Node 22.16.0
+**Environment:** Alpine Linux, bash, pnpm 10.22.0+sha512.a8024f681e65c5fc6f0078d54b4d84267e65c7c8e7cf6b85d5acaa3b9e43fcbb4e0c0e4bab3b6f7eedbe59d13c43b6b42b29b6e7a5, Node 24.11.1

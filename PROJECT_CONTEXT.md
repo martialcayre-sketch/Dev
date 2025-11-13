@@ -479,6 +479,6 @@ PRACTITIONER_APP_URL=https://neuronutrition-app-practitioner.web.app
 
 ---
 
-**Last Updated:** November 13, 2025  
+**Last Updated:** 13 novembre 2025  
 **Version:** 3.0.0 (Root-Only Architecture + Legacy Purge Complete)  
 **Status:** Production Stable
