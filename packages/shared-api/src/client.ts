@@ -11,6 +11,7 @@ import type {
   ConsultationData,
   DashboardData,
   LifeJourneyData,
+  Questionnaire,
   PractitionerQuestionnairesResponse,
   QuestionnaireDetailResponse,
   QuestionnairesListResponse,
@@ -142,9 +143,13 @@ export class ApiClient {
     patientId: string,
     questionnaireId: string
   ): Promise<QuestionnaireDetailResponse> {
-    return this.fetchWithTimeout(`/patients/${patientId}/questionnaires/${questionnaireId}`, {
-      method: 'GET',
-    });
+    const data = await this.fetchWithTimeout<Questionnaire>(
+      `/patients/${patientId}/questionnaires/${questionnaireId}`,
+      {
+        method: 'GET',
+      }
+    );
+    return { questionnaire: data };
   }
 
   /**
