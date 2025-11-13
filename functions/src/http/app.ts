@@ -13,6 +13,25 @@ app.use(express.json());
 app.use(requestId);
 app.use(logRequests);
 
+// Basic CORS middleware for browser clients (patient/practitioner apps)
+app.use(
+  (
+    req: import('express').Request,
+    res: import('express').Response,
+    next: import('express').NextFunction
+  ) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    // Preflight
+    if (req.method === 'OPTIONS') {
+      res.status(204).end();
+      return;
+    }
+    next();
+  }
+);
+
 // Health check - root and /api/health
 app.get('/health', (req: any, res) => {
   try {
