@@ -9,6 +9,7 @@ Ce dossier contient les scripts pour maintenir la documentation des assistants I
 Script principal de mise à jour automatique des fichiers de contexte IA.
 
 **Utilisation manuelle :**
+
 ```bash
 # Via npm script
 pnpm update:ai-docs
@@ -21,6 +22,7 @@ node scripts/update-ai-docs.mjs
 Le script s'exécute automatiquement via le hook Git `pre-push` avant chaque push.
 
 **Fichiers mis à jour :**
+
 - `docs/CHATGPT_INSTRUCTIONS.md`
 - `docs/COPILOT_CONTEXT.md`
 - `PROJECT_CONTEXT.md`
@@ -28,6 +30,7 @@ Le script s'exécute automatiquement via le hook Git `pre-push` avant chaque pus
 - `.github/copilot-context.md`
 
 **Informations mises à jour :**
+
 - ✅ Date de dernière mise à jour
 - ✅ Versions des packages (Node, pnpm, firebase-admin, etc.)
 - ✅ Statistiques du projet
@@ -35,6 +38,7 @@ Le script s'exécute automatiquement via le hook Git `pre-push` avant chaque pus
 ### Documentation complète
 
 Voir [README_UPDATE_AI_DOCS.md](./README_UPDATE_AI_DOCS.md) pour :
+
 - Guide d'utilisation détaillé
 - Configuration et personnalisation
 - Dépannage
@@ -51,6 +55,7 @@ Le hook `pre-push` (`.husky/pre-push`) effectue automatiquement :
 5. ✅ Push des changements
 
 **Exemple de sortie :**
+
 ```
 🤖 Mise à jour des fichiers de contexte IA...
 
