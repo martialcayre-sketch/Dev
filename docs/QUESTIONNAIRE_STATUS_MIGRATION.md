@@ -1,5 +1,11 @@
 # Migration des Statuts de Questionnaires
 
+> **État actuel** (Novembre 2025) : L'architecture de stockage des questionnaires a été migrée vers la collection root `questionnaires/{templateId}_{patientUid}`. Les références aux sous-collections dans ce document sont obsolètes mais conservées pour référence historique.
+>
+> Voir [QUESTIONNAIRE_STORAGE_OPTIMIZATION.md](./QUESTIONNAIRE_STORAGE_OPTIMIZATION.md) pour l'architecture actuelle.
+
+---
+
 ## Système Implémenté
 
 ✅ **Cloud Functions déployées** :
@@ -55,15 +61,19 @@ Tous les questionnaires auront maintenant :
 
 ## Migration des Questionnaires Existants
 
-### Option 1 : Via Console Firebase (Manuel)
+### Option 1 : Via Console Firebase (Manuel) - RÉFÉRENCE HISTORIQUE
+
+> ⚠️ **Note** : Cette option fait référence à l'ancienne architecture avec sous-collections. Pour l'architecture actuelle, les questionnaires sont dans `questionnaires/{templateId}_{patientUid}`.
 
 1. Ouvrir [Console Firestore](https://console.firebase.google.com/project/neuronutrition-app/firestore/databases/-default-/data)
-2. Pour chaque patient → `questionnaires` → chaque questionnaire :
+2. Collection `questionnaires` → chaque questionnaire :
    - Ajouter champ `status` = `"pending"` (ou `"in_progress"` si responses non vides)
    - Ajouter champ `submittedAt` = `null`
    - Ajouter champ `completedAt` = `null` (si absent)
 
-### Option 2 : Via Cloud Function (Automatique)
+### Option 2 : Via Cloud Function (Automatique) - DÉPRÉCIÉ
+
+> ⚠️ **Note** : Exemple de fonction pour l'ancienne architecture à sous-collections. Ne plus utiliser.
 
 Créer une fonction callable temporaire :
 

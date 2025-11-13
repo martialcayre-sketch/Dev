@@ -2,14 +2,14 @@
 
 ## 📊 Architecture actuelle vs proposée
 
-### **Actuelle (sous-collections)**
+### **Ancienne (sous-collections)** ❌ DÉPRÉCIÉE
 
 ```
-patients/{patientId}/questionnaires/{questionnaireId}
+patients/{patientId}/questionnaires/{questionnaireId}  ← LEGACY, purgé
 questionnaireSubmissions/{submissionId}  ← duplication après soumission
 ```
 
-**Problèmes :**
+**Problèmes résolus :**
 
 - ❌ Duplication des données (2 copies du même questionnaire)
 - ❌ Impossible de requêter tous les questionnaires d'un praticien en 1 requête
@@ -18,7 +18,7 @@ questionnaireSubmissions/{submissionId}  ← duplication après soumission
 
 ---
 
-## ✅ **OPTION A : Collection racine normalisée** (Recommandée)
+## ✅ **OPTION A : Collection racine normalisée** (✅ DÉPLOYÉE EN PRODUCTION)
 
 ### **Nouvelle structure**
 
@@ -163,16 +163,16 @@ questionnaires-flat/{questionnaireId}  ← vue dénormalisée
 
 ---
 
-## 📋 **Plan de migration vers Option A**
+## 📋 **Plan de migration vers Option A** ✅ TERMINÉ
 
-### **Phase 1 : Préparation**
+### **Phase 1 : Préparation** ✅
 
 1. ✅ Créer la nouvelle collection `questionnaires` (racine)
 2. ✅ Ajouter les index Firestore
 3. ✅ Déployer les nouvelles règles de sécurité
 4. ✅ Créer fonction de migration de données
 
-### **Phase 2 : Migration des données**
+### **Phase 2 : Migration des données** ✅
 
 ```typescript
 // Script de migration
@@ -387,10 +387,37 @@ const { data, isLoading } = useFirestoreQuery(
 
 ---
 
-## 📞 **Prochaines étapes**
+## ✅ **État actuel (Novembre 2025)**
 
-1. **Valider** l'approche avec l'équipe
-2. **Tester** la migration sur environnement dev
-3. **Déployer** les index Firestore
-4. **Migrer** progressivement les données
-5. **Monitoring** post-migration
+### Migration terminée
+
+- ✅ Collection racine `questionnaires/{templateId}_{patientUid}` déployée
+- ✅ Toutes les fonctions Cloud Functions migrées (root-only)
+- ✅ Scripts de backfill et audit créés
+- ✅ Purge sécurisée des sous-collections legacy effectuée
+- ✅ Audit global: `rootCount=4, subCount=0` pour tous les patients
+
+### Scripts disponibles
+
+```bash
+# Audit global (compare root vs subcollections)
+node scripts/audit-questionnaires.mjs --all --limit 500 --csv audit.csv
+
+# Backfill depuis subcollections vers root
+node scripts/backfill-questionnaires.mjs --email patient@example.com
+
+# Purge sécurisée des subcollections legacy
+node scripts/purge-legacy-questionnaires.mjs --all --csv purge.csv --confirm delete
+```
+
+### Scripts legacy archivés
+
+Tous les anciens scripts de double-write sont dans `scripts/_deprecated/` avec un README explicatif.
+
+---
+
+## 📞 **Prochaines étapes recommandées**
+
+1. **Monitoring** continu via audit périodique
+2. **Créer** un job planifié (Cloud Scheduler) pour alertes automatiques
+3. **Supprimer** définitivement les sous-collections après période de grâce (optionnel)

@@ -2,6 +2,14 @@
 
 Documentation complète de l'API Cloud Functions pour la gestion des questionnaires.
 
+## ✅ État actuel (Novembre 2025)
+
+- **Architecture** : Root-only (`questionnaires/{templateId}_{patientUid}`)
+- **Migration** : Terminée - sous-collections legacy purgées
+- **Scripts** : `audit-questionnaires.mjs`, `backfill-questionnaires.mjs`, `purge-legacy-questionnaires.mjs`
+- **Trigger** : `onQuestionnaireCompleted` sur collection root
+- **Fonctions déployées** : europe-west1, Gen2, Node.js 20
+
 ---
 
 ## 📋 Table des matières
@@ -18,16 +26,20 @@ Documentation complète de l'API Cloud Functions pour la gestion des questionnai
 
 ## 🎯 Vue d'ensemble
 
-### **Architecture actuelle**
+### **Architecture actuelle** (✅ Root-only - Nov 2025)
 
 ```
 Cloud Functions (Callable)           Firestore
-┌─────────────────────────┐         ┌──────────────────────────────────┐
-│ assignQuestionnaires    │────────>│ patients/{uid}/questionnaires/   │
-│ submitQuestionnaire     │────────>│   - id, title, status, responses │
-│ setQuestionnaireStatus  │         │                                  │
-│ onQuestionnaireCompleted│<────────│ Trigger on status change         │
-└─────────────────────────┘         └──────────────────────────────────┘
+┌─────────────────────────┐         ┌──────────────────────────────────────────┐
+│ assignQuestionnaires    │────────>│ questionnaires/{templateId}_{uid}        │
+│ submitQuestionnaire     │────────>│   - patientUid, practitionerId           │
+│ setQuestionnaireStatus  │         │   - status, responses, timestamps        │
+│ onQuestionnaireCompleted│<────────│ Trigger on root document update          │
+└─────────────────────────┘         └──────────────────────────────────────────┘
+
+patients/{uid}
+  ├── pendingQuestionnairesCount: number
+  └── lastQuestionnaireCompletedAt: Timestamp
 ```
 
 ### **Région & Configuration**
@@ -82,7 +94,7 @@ Assigne automatiquement les 4 questionnaires prédéfinis à un patient lors de 
 
 #### **Effets secondaires**
 
-- ✅ Crée 4 documents dans `patients/{uid}/questionnaires/`
+- ✅ Crée 4 documents dans `questionnaires/{templateId}_{patientUid}` (root collection)
 - ✅ Met à jour `patients/{uid}` : `hasQuestionnairesAssigned: true`, `pendingQuestionnairesCount: 4`
 - ✅ Crée notification dans `patients/{uid}/notifications/`
 - ✅ Envoie email via collection `mail/`
@@ -543,25 +555,24 @@ interface QuestionnaireSubmission {
 
 ## 🔐 Sécurité et permissions
 
-### **Règles Firestore actuelles**
+### **Règles Firestore actuelles** (Root collection)
 
 ```javascript
-// patients/{patientId}/questionnaires/{questionnaireId}
+// questionnaires/{questionnaireId}  ← Collection racine
 match /questionnaires/{questionnaireId} {
   // Patient : lecture de ses questionnaires
-  allow read: if isSignedIn() && request.auth.uid == patientId;
+  allow read: if isSignedIn() && resource.data.patientUid == request.auth.uid;
 
   // Patient : création si c'est son document
-  allow create: if isSignedIn() && request.resource.data.patientId == request.auth.uid;
+  allow create: if isSignedIn() && request.resource.data.patientUid == request.auth.uid;
 
   // Patient : modification SEULEMENT si status != 'submitted' ou 'completed'
   allow update: if isSignedIn()
-                && resource.data.patientId == request.auth.uid
+                && resource.data.patientUid == request.auth.uid
                 && resource.data.status in ['pending', 'in_progress'];
 
   // Praticien : lecture des questionnaires de ses patients
-  allow read: if isSignedIn()
-              && get(/databases/$(database)/documents/patients/$(patientId)).data.practitionerId == request.auth.uid;
+  allow read: if isSignedIn() && resource.data.practitionerId == request.auth.uid;
 
   // Admin : accès total
   allow read, write: if isAdmin();
@@ -571,10 +582,12 @@ match /questionnaires/{questionnaireId} {
 ### **⚠️ Problèmes de sécurité identifiés**
 
 1. **Pas de validation côté serveur des réponses**
+
    - Patient peut envoyer n'importe quelle structure dans `responses`
    - Risque de pollution des données
 
 2. **Pas de rate limiting**
+
    - Patient pourrait appeler `submitQuestionnaire()` en boucle
    - Risque de spam dans l'inbox praticien
 

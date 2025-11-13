@@ -4,9 +4,13 @@ Application de neuronutrition avec espaces Patient et Praticien.
 
 ## 🏗️ Architecture
 
-- **Option A** (actuelle) : Hosting Firebase avec placeholders + API Functions
-- **Apps Next.js** : Développement local (Patient: 3020, Practitioner: 3010)
-- **API Functions** : Deployed on Firebase Functions (région: europe-west1)
+- **Frontend Production** : Apps Vite React (patient-vite, practitioner-vite)
+- **Backend** : Firebase Cloud Functions Gen2 (Node.js 20, région europe-west1)
+- **Base de données** : Firestore (collection root `questionnaires/{templateId}_{patientUid}`)
+- **Authentification** : Firebase Auth
+- **Hébergement** : Firebase Hosting
+- **Secrets** : Firebase Secret Manager (MANUAL_ASSIGN_SECRET, MIGRATION_SECRET)
+- **Monorepo** : pnpm workspaces + Turborepo
 
 ## 🚀 Démarrage rapide
 
@@ -50,6 +54,11 @@ Les Pull Requests déclenchent automatiquement des **previews temporaires** sur 
 ## 📚 Documentation
 
 - [Preview Hosting](docs/PREVIEW_HOSTING.md) - Configuration GitHub Actions preview
+- [API Backend Questionnaires](docs/API_BACKEND_QUESTIONNAIRES.md) - Cloud Functions et routes
+- [Scripts de gestion des questionnaires](docs/SCRIPTS_QUESTIONNAIRES.md) - Audit, backfill, purge
+- [Optimisation du stockage des questionnaires](docs/QUESTIONNAIRE_STORAGE_OPTIMIZATION.md) - Architecture root-only
+- [Architecture Backend](ARCHITECTURE_BACKEND_2025.md) - Vue d'ensemble du backend
+- [Setup Firebase Secret](docs/SETUP_FIREBASE_SECRET.md) - Configuration des secrets
 - [No Code](docs/NO_CODE.md) - Documentation du mode no-code
 - [Verify](docs/VERIFY.md) - Scripts de vérification
 - [E2E Testing](E2E_TESTING_SUMMARY.md) - Tests end-to-end
@@ -72,12 +81,18 @@ Les Pull Requests déclenchent automatiquement des **previews temporaires** sur 
 ```tree
 neuronutrition-app/
 ├── apps/
-│   ├── patient/          # App Next.js Patient
-│   ├── practitioner/     # App Next.js Practitioner
-│   ├── patient-spa/      # SPA Patient (legacy)
-│   └── practitioner-spa/ # SPA Practitioner (legacy)
-├── functions/            # Firebase Functions (API)
-├── packages/             # Packages partagés
-├── scripts/              # Scripts utilitaires
-└── docs/                 # Documentation
+│   ├── patient-vite/       # App Vite Patient (production)
+│   ├── practitioner-vite/  # App Vite Practitioner (production)
+│   ├── patient/            # App Next.js Patient (legacy)
+│   ├── practitioner/       # App Next.js Practitioner (legacy)
+│   ├── patient-spa/        # SPA Patient (legacy)
+│   └── practitioner-spa/   # SPA Practitioner (legacy)
+├── functions/              # Firebase Functions Gen2 (API, europe-west1)
+├── packages/               # Packages partagés (shared-ui, shared-core, etc.)
+├── scripts/                # Scripts utilitaires et migration
+│   ├── audit-questionnaires.mjs       # Audit root vs subcollections
+│   ├── backfill-questionnaires.mjs    # Migration vers root collection
+│   ├── purge-legacy-questionnaires.mjs # Suppression sécurisée legacy
+│   └── _deprecated/                   # Scripts archivés (double-write)
+└── docs/                   # Documentation
 ```
