@@ -70,7 +70,15 @@ router.get(
 
       logger.info(`[GET] Fetching questionnaire ${questionnaireId} for patient ${patientId}`);
 
-      const qDoc = await db.collection('questionnaires').doc(questionnaireId).get();
+      // Support both templateId (e.g. "dnsm") and full document ID (e.g. "dnsm_patientUid")
+      let docId = questionnaireId;
+      if (!questionnaireId.includes('_')) {
+        // This is a templateId, construct full document ID
+        docId = `${questionnaireId}_${patientId}`;
+        logger.info(`[GET] Constructed document ID from templateId: ${docId}`);
+      }
+
+      const qDoc = await db.collection('questionnaires').doc(docId).get();
 
       if (!qDoc.exists) {
         return res
@@ -116,6 +124,14 @@ router.patch(
 
       logger.info(`[PATCH] Saving responses for questionnaire ${questionnaireId}`);
 
+      // Support both templateId (e.g. "dnsm") and full document ID (e.g. "dnsm_patientUid")
+      let docId = questionnaireId;
+      if (!questionnaireId.includes('_')) {
+        // This is a templateId, construct full document ID
+        docId = `${questionnaireId}_${patientId}`;
+        logger.info(`[PATCH] Constructed document ID from templateId: ${docId}`);
+      }
+
       // Vérifier que l'utilisateur authentifié est bien le patient (pas le praticien)
       if (req.user?.uid !== patientId) {
         return res
@@ -123,7 +139,7 @@ router.patch(
           .json(makeError('forbidden', 'Only patient can update responses', (req as any).id));
       }
 
-      const qRefRoot = db.collection('questionnaires').doc(questionnaireId);
+      const qRefRoot = db.collection('questionnaires').doc(docId);
 
       const qDoc = await qRefRoot.get();
       if (!qDoc.exists) {
@@ -298,6 +314,14 @@ router.post(
 
       logger.info(`[POST] Submitting questionnaire ${questionnaireId} for patient ${patientId}`);
 
+      // Support both templateId (e.g. "dnsm") and full document ID (e.g. "dnsm_patientUid")
+      let docId = questionnaireId;
+      if (!questionnaireId.includes('_')) {
+        // This is a templateId, construct full document ID
+        docId = `${questionnaireId}_${patientId}`;
+        logger.info(`[POST submit] Constructed document ID from templateId: ${docId}`);
+      }
+
       // Vérifier que l'utilisateur authentifié est bien le patient
       if (req.user?.uid !== patientId) {
         return res
@@ -305,7 +329,7 @@ router.post(
           .json(makeError('forbidden', 'Only patient can submit questionnaire', (req as any).id));
       }
 
-      const qRefRoot = db.collection('questionnaires').doc(questionnaireId);
+      const qRefRoot = db.collection('questionnaires').doc(docId);
 
       const qDoc = await qRefRoot.get();
       if (!qDoc.exists) {
@@ -413,7 +437,15 @@ router.post(
 
       logger.info(`[POST] Completing questionnaire ${questionnaireId} for patient ${patientId}`);
 
-      const qRefRoot = db.collection('questionnaires').doc(questionnaireId);
+      // Support both templateId (e.g. "dnsm") and full document ID (e.g. "dnsm_patientUid")
+      let docId = questionnaireId;
+      if (!questionnaireId.includes('_')) {
+        // This is a templateId, construct full document ID
+        docId = `${questionnaireId}_${patientId}`;
+        logger.info(`[POST complete] Constructed document ID from templateId: ${docId}`);
+      }
+
+      const qRefRoot = db.collection('questionnaires').doc(docId);
 
       const qDoc = await qRefRoot.get();
       if (!qDoc.exists) {
