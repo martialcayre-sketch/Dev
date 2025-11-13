@@ -1,5 +1,4 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
 
 # Mise à jour automatique des docs IA avant push
 echo "🤖 Mise à jour des fichiers de contexte IA..."
