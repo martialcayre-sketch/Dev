@@ -86,12 +86,12 @@ export class ApiClient {
 
       // Parse JSON response
       const data = await response.json();
-      
+
       // Unwrap { success, data, requestId } envelope if present
       if (data && typeof data === 'object' && 'success' in data && 'data' in data) {
         return data.data as T;
       }
-      
+
       return data as T;
     } catch (error) {
       clearTimeout(timeoutId);

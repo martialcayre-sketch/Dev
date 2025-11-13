@@ -43,14 +43,8 @@ export function usePatientQuestionnaires() {
         console.log('[usePatientQuestionnaires] Fetching questionnaires for user:', user.uid);
         const response = await api.getPatientQuestionnaires(user.uid);
         console.log('[usePatientQuestionnaires] API Response:', response);
-        console.log('[usePatientQuestionnaires] Response.data:', response.data);
-        console.log(
-          '[usePatientQuestionnaires] Response.data.questionnaires:',
-          response.data?.questionnaires
-        );
         if (!isMounted) return;
-        // FIX: L'API retourne { success, data: { questionnaires }, requestId }
-        const questionnaires = response.data?.questionnaires || response.questionnaires || [];
+        const questionnaires = response.questionnaires || [];
         console.log('[usePatientQuestionnaires] Questionnaires count:', questionnaires.length);
         setItems(questionnaires as PatientQuestionnaire[]);
         setLoading(false);
