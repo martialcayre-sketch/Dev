@@ -40,15 +40,18 @@ export function usePatientQuestionnaires() {
 
       try {
         setError(null);
+        console.log('[usePatientQuestionnaires] Fetching questionnaires for user:', user.uid);
         const response = await api.getPatientQuestionnaires(user.uid);
+        console.log('[usePatientQuestionnaires] API Response:', response);
         if (!isMounted) return;
         const questionnaires = response.questionnaires || [];
+        console.log('[usePatientQuestionnaires] Questionnaires count:', questionnaires.length);
         setItems(questionnaires as PatientQuestionnaire[]);
         setLoading(false);
       } catch (e) {
         if (!isMounted) return;
         const errorMessage = e instanceof Error ? e.message : String(e);
-        console.error('[usePatientQuestionnaires] Error:', errorMessage);
+        console.error('[usePatientQuestionnaires] Error:', errorMessage, e);
         setError(errorMessage);
         setLoading(false);
       } finally {
