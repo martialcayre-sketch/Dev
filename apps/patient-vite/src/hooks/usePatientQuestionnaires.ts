@@ -44,7 +44,10 @@ export function usePatientQuestionnaires() {
         const response = await api.getPatientQuestionnaires(user.uid);
         console.log('[usePatientQuestionnaires] API Response:', response);
         console.log('[usePatientQuestionnaires] Response.data:', response.data);
-        console.log('[usePatientQuestionnaires] Response.data.questionnaires:', response.data?.questionnaires);
+        console.log(
+          '[usePatientQuestionnaires] Response.data.questionnaires:',
+          response.data?.questionnaires
+        );
         if (!isMounted) return;
         // FIX: L'API retourne { success, data: { questionnaires }, requestId }
         const questionnaires = response.data?.questionnaires || response.questionnaires || [];
