@@ -4,42 +4,42 @@
 
 NeuroNutrition is a monorepo (pnpm workspaces) containing:
 
-- Frontend SPA apps (patient, practitioner) built with Vite + React + TypeScript.
-- Firebase Cloud Functions (Node 20) for secure serverless HTTP endpoints.
-- A Cloud Run API (Express) providing backend-first questionnaire, consultation, analytics routes.
+- Frontend SPA apps (patient-vite, practitioner-vite) built with Vite + React + TypeScript.
+- Firebase Cloud Functions Gen2 (Node.js 20, europe-west1) for secure serverless HTTP endpoints and callables.
 - Shared packages: questionnaires, UI components, charts, core utilities, data-questionnaires.
 - Tooling: Turborepo task orchestration (`turbo.json`), Husky pre-commit checks, GitHub Actions CI.
+- Scripts: Maintenance tools for questionnaire audit, backfill, and legacy purge.
 
 ### Primary Domains
 
-1. Questionnaires life cycle (assign, answer, submit, complete).
-2. Patient Consultation (identification + anamnèse forms).
+1. Questionnaires life cycle (assign to root collection, answer, submit, complete).
+2. Patient registration and activation flow.
 3. Practitioner dashboard (metrics, analytics, patient management).
 4. Authentication / Authorization (Firebase ID tokens, role & ownership checks).
+5. Data integrity (audit, backfill, legacy purge scripts).
 
 ### Tech Stack Summary
 
-| Layer       | Tech                                                                                  |
-| ----------- | ------------------------------------------------------------------------------------- |
-| Frontend    | React 18, Vite, TypeScript, TailwindCSS                                               |
-| Serverless  | Firebase Functions v2 (Express middleware pattern)                                    |
-| Backend API | Express on Cloud Run (hardened: validation, granular rate limits, structured logging) |
-| Data        | Firestore (patients, questionnaires, consultation subcollections)                     |
-| Auth        | Firebase Auth + custom claims (practitioner/admin)                                    |
-| Tooling     | pnpm, Turborepo, Jest (functions), Vitest (front), Husky, cspell                      |
+| Layer    | Tech                                                                                |
+| -------- | ----------------------------------------------------------------------------------- |
+| Frontend | React 18, Vite, TypeScript, TailwindCSS                                             |
+| Backend  | Firebase Cloud Functions Gen2 (Node.js 20, europe-west1) - Express HTTP + callables |
+| Data     | Firestore: `questionnaires/{templateId}_{patientUid}`, patients, practitioners      |
+| Auth     | Firebase Auth + custom claims (practitioner/admin)                                  |
+| Secrets  | Firebase Secret Manager (MANUAL_ASSIGN_SECRET, MIGRATION_SECRET)                    |
+| Tooling  | pnpm, Turborepo, Jest (functions), Vitest (apps), Husky, cspell                     |
 
 ### Key Conventions
 
-1. Firestore documents store timestamps; central serializer (`api/src/lib/serialization.js`) normalizes them to ISO strings & computes progress.
-2. Double-write pattern for questionnaires: root collection + patient subcollection for backward compatibility.
+1. Firestore timestamps are serialized to ISO strings in client responses.
+2. **Root-only storage**: Questionnaires are stored exclusively in `questionnaires/{templateId}_{patientUid}`. Legacy subcollections have been purged.
 3. Authorization rules:
    - Patient endpoints require same UID or practitioner/admin role.
-   - Practitioner endpoints must validate practitioner role (custom claims).
-4. Caching on client: `requestCache` (in-memory TTL) reduces redundant fetches.
+   - Practitioner endpoints validate practitioner custom claims.
+4. Idempotency: `submit`/`complete` operations create idempotency documents to prevent duplicate processing.
 5. Error resilience: Global React `ErrorBoundary` wraps app roots.
-6. Code style enforced via ESLint; structured logging via pino (`api/src/lib/logger.js`) replaces `console.log` (correlation id middleware `request-id`).
-7. Idempotency keys: Endpoints `submit`/`complete` accept header `Idempotency-Key` to ensure safe retries.
-8. Pagination par curseur: Listing praticien retourne `nextCursor` (base64 `assignedAt|docId`) pour requêtes suivantes.
+6. Code style enforced via ESLint; structured logging where needed.
+7. Secrets managed via Firebase Secret Manager and mirrored in `/.secrets/functions.env` for local development.
 
 ### Security Guidelines
 
@@ -64,22 +64,34 @@ NeuroNutrition is a monorepo (pnpm workspaces) containing:
 | SPA cache behavior        | Vitest               | TTL expiration + invalidation  |
 | Questionnaire endpoints   | Integration (Future) | Emulators recommended          |
 
+### Maintenance Scripts
+
+| Script                            | Purpose                                                             | Key Options                                              |
+| --------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------- |
+| `audit-questionnaires.mjs`        | Audit root vs subcollections consistency                            | `--all`, `--email`, `--patientUid`, `--csv`, `--verbose` |
+| `backfill-questionnaires.mjs`     | Copy subcollection docs to root with ID normalization               | `--all`, `--email`, `--force`, `--dry-run`               |
+| `purge-legacy-questionnaires.mjs` | Secure purge of legacy subcollections (requires `--confirm delete`) | `--all`, `--csv`, `--verbose`                            |
+
+**Deprecated scripts** in `scripts/_deprecated/`: All legacy double-write and migration scripts have been archived.
+
 ### Common Edge Cases
 
-1. Missing questionnaire document → fallback to subcollection.
+1. Missing questionnaire document → return 404 (no fallback to subcollection).
 2. Expired Firebase ID token → respond 401 (ensure refresh logic client-side).
-3. Race conditions in questionnaire status updates (in_progress vs submitted) → guard checks before state transitions.
-4. Partial response merges (responses object may be sparse) → always merge; never overwrite absent answers with null.
-5. Timestamp serialization from Firestore (handling `_seconds` vs `toDate()`).
+3. Race conditions in questionnaire status updates → use idempotency documents.
+4. Partial response merges (responses object may be sparse) → always merge; never overwrite absent answers.
+5. ID format validation: Always use `{templateId}_{patientUid}` for root collection documents.
 
 ### Folder Cheatsheet
 
 ```
-apps/patient-vite/src        Patient SPA
-apps/practitioner-vite/src    Practitioner SPA
-functions/src/http            Cloud Functions Express handlers
-api/src                       Cloud Run Express server & routes
+apps/patient-vite/src        Patient SPA (production)
+apps/practitioner-vite/src    Practitioner SPA (production)
+functions/src/http            Cloud Functions Express HTTP routes
+functions/src/                Cloud Functions callables and triggers
 packages/shared-questionnaires Questionnaire definitions & shared logic
+scripts/                      Maintenance scripts (audit, backfill, purge)
+scripts/_deprecated/          Archived legacy scripts
 docs/                         Project documentation
 ```
 
@@ -103,34 +115,47 @@ docs/                         Project documentation
 
 When adding a new questionnaire type:
 
-1. Define schema & metadata in shared questionnaire package.
-2. Ensure Firestore storage structure (root + optional patient subcollection).
-3. Update serialization helpers if new fields require transformation.
-4. Provide UI component(s) and integrate into practitioner tools library.
+1. Define schema & metadata in `packages/shared-questionnaires`.
+2. Update assignment logic in `functions/src/assignQuestionnaires.ts` to include new template.
+3. Store in root collection `questionnaires/{templateId}_{patientUid}` only.
+4. Provide UI component(s) and integrate into patient/practitioner apps.
+5. Test with audit script to ensure proper ID format and storage location.
 
 ### Glossary
 
-| Term         | Meaning                                                 |
-| ------------ | ------------------------------------------------------- |
-| In-progress  | Questionnaire partially answered                        |
-| Submitted    | Patient finished answering, pending practitioner review |
-| Completed    | Practitioner marked as finalized                        |
-| Double-write | Persist to both root and patient subcollection          |
+| Term                 | Meaning                                                             |
+| -------------------- | ------------------------------------------------------------------- |
+| In-progress          | Questionnaire partially answered                                    |
+| Submitted            | Patient finished answering, pending practitioner review             |
+| Completed            | Practitioner marked as finalized                                    |
+| Root-only            | Single storage location: `questionnaires/{templateId}_{patientUid}` |
+| Legacy subcollection | Deprecated storage at `patients/{uid}/questionnaires/{id}`          |
+| Idempotency doc      | Firestore document preventing duplicate submit/complete operations  |
 
 ### DO / DO NOT (AI Guidance)
 
 DO: Suggest performance optimizations with Firestore query reduction.
 DO: Provide strongly typed interfaces when adding new modules.
+DO: Use root collection `questionnaires/{templateId}_{patientUid}` for all questionnaire operations.
+DO: Reference maintenance scripts in `scripts/` for data operations.
 DO NOT: Expose private tokens or internal error stack traces.
 DO NOT: Remove auth middleware without replacement.
+DO NOT: Use legacy subcollection paths `patients/{uid}/questionnaires/{id}`.
+DO NOT: Use deprecated scripts in `scripts/_deprecated/`.
+
+### Completed Improvements (November 2025)
+
+- ✅ Migrated to root-only questionnaire storage with secure purge of legacy subcollections.
+- ✅ Implemented comprehensive audit, backfill, and purge scripts.
+- ✅ Firebase Secret Manager integration for sensitive credentials.
+- ✅ Archived all legacy double-write scripts in `scripts/_deprecated/`.
 
 ### Future Improvements (Backlog)
 
-- Replace double-write with single canonical storage + Cloud Function backfill.
 - Add integration test suite using Firestore emulator.
-- Structured logging (pino) + correlation IDs implemented.
 - Add OpenTelemetry lightweight tracing.
-- Expand lightweight validation to schema-based (zod) if complexity increases.
+- Implement Cloud Scheduler for periodic questionnaire integrity audits.
+- Expand E2E test coverage with Playwright.
 
 ---
 

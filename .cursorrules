@@ -4,9 +4,10 @@
 
 - **Name:** NeuroNutrition App
 - **Type:** Healthcare Web Application (Practitioner-Patient Management)
-- **Architecture:** pnpm Monorepo (13 packages)
-- **Primary Languages:** TypeScript, React, Firebase
-- **Environment:** Windows, Node 20.18.0, pnpm 9.15.9
+- **Architecture:** pnpm Monorepo (packages partagés)
+- **Primary Languages:** TypeScript, React, Firebase Cloud Functions Gen2
+- **Environment:** Linux (Alpine), Node 22.16.0, pnpm 10.22.0
+- **Storage:** Root-only Firestore `questionnaires/{templateId}_{patientUid}`
 
 ## Code Style
 
@@ -59,10 +60,14 @@
 
 ### Firebase
 
+- Use root collection `questionnaires/{templateId}_{patientUid}` for all questionnaire operations
+- No subcollections: legacy `patients/{uid}/questionnaires/{id}` has been purged
+- Use idempotency documents for submit/complete operations
 - Batch Firestore writes when possible
 - Use Firestore transactions for critical updates
 - Cache frequently accessed data in React state
 - Limit query results with `.limit()`
+- Secrets managed via Firebase Secret Manager (MANUAL_ASSIGN_SECRET, MIGRATION_SECRET)
 
 ## Architecture Patterns
 
@@ -227,25 +232,44 @@ setState([...state.items, newItem]);
 
 ### Cloud Functions
 
-- Use 2nd gen functions (Node 20)
+- Use 2nd gen functions (Node.js 20, region: europe-west1)
 - Set region: `europe-west1`
-- Use environment variables for config
+- Use Firebase Secret Manager for secrets (no environment variables)
 - Handle errors with try-catch
 - Return proper HTTP status codes
+- Use idempotency documents for mutations
 
 ### Firestore
 
-- Use subcollections for nested data
+- **Root-only storage**: `questionnaires/{templateId}_{patientUid}`
 - Create composite indexes for complex queries
 - Batch writes when creating multiple documents
 - Use transactions for critical updates
-- Set TTL on temporary data
+- Set TTL on temporary data (idempotency docs)
+- No subcollections for questionnaires (legacy pattern deprecated)
 
 ### Hosting
 
 - Patient: `neuronutrition-app-patient.web.app`
 - Practitioner: `neuronutrition-app-practitioner.web.app`
 - Multi-site config in `firebase.json`
+
+## Maintenance Scripts
+
+### Questionnaire Data Operations
+
+```bash
+# Audit root vs subcollections consistency
+node scripts/audit-questionnaires.mjs --all --csv audit.csv
+
+# Backfill subcollections to root (if needed)
+node scripts/backfill-questionnaires.mjs --all --limit 500
+
+# Secure purge of legacy subcollections
+node scripts/purge-legacy-questionnaires.mjs --all --csv purge.csv --confirm delete
+```
+
+**Note:** Legacy scripts in `scripts/_deprecated/` should NOT be used.
 
 ## Package Management
 

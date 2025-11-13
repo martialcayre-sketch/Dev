@@ -1,7 +1,7 @@
 # GitHub Copilot & Codex - Project Context
 
 > **NeuroNutrition App** - Healthcare Web Application for Practitioner-Patient Management  
-> **Last Updated:** November 12, 2025
+> **Last Updated:** November 13, 2025 - Migration root-only complétée
 
 ## 🎯 Project Overview
 
@@ -382,6 +382,25 @@ import { debounce } from 'lodash-es';
 
 ## 📊 Data Models (Firestore)
 
+### Questionnaire Document (ROOT COLLECTION)
+
+```typescript
+// Collection: questionnaires/{templateId}_{patientUid}
+interface Questionnaire {
+  id: string; // Format: {templateId}_{patientUid}
+  templateId: string; // e.g., "dnsm", "life-journey"
+  patientUid: string;
+  title: string;
+  status: 'pending' | 'in_progress' | 'submitted' | 'completed';
+  responses: Record<string, any>;
+  assignedAt: Timestamp;
+  submittedAt?: Timestamp;
+  completedAt?: Timestamp;
+}
+```
+
+**Note:** Legacy subcollection `patients/{uid}/questionnaires/{id}` has been purged (Nov 13, 2025).
+
 ### Patient Document
 
 ```typescript
@@ -396,17 +415,34 @@ interface Patient {
 }
 ```
 
-### Questionnaire Document
+### Questionnaire Document (ROOT COLLECTION)
 
 ```typescript
+// Collection: questionnaires/{templateId}_{patientUid}
 interface Questionnaire {
-  id: string;
+  id: string; // Format: {templateId}_{patientUid}
+  templateId: string; // e.g., "dnsm", "life-journey"
+  patientUid: string;
   title: string;
-  status: 'pending' | 'in_progress' | 'completed';
+  status: 'pending' | 'in_progress' | 'submitted' | 'completed';
   responses: Record<string, any>;
   assignedAt: Timestamp;
+  submittedAt?: Timestamp;
   completedAt?: Timestamp;
-  submittedToPractitioner?: boolean;
+}
+```
+
+**Note:** Legacy subcollection `patients/{uid}/questionnaires/{id}` has been purged (Nov 13, 2025).
+
+### Idempotency Document
+
+```typescript
+// Collection: idempotency/{submit|complete}_{questionnaireId}
+interface IdempotencyDoc {
+  operationType: 'submit' | 'complete';
+  questionnaireId: string;
+  createdAt: Timestamp;
+  ttl: Timestamp; // Auto-delete after 7 days
 }
 ```
 
@@ -425,32 +461,30 @@ interface LifeJourneyResult {
 }
 ```
 
-## 🔄 Recent Optimizations (Nov 12, 2025)
+## 🔄 Recent Optimizations (Nov 13, 2025)
 
-1. ✅ **Package Upgrades:** pnpm 10.22.0, firebase-admin 13.6.0, Turbo 2.6.1
-2. ✅ **PackageManager:** Hash-verified package management with workspace protocol
-3. ✅ **Turbo Scripts:** Complete migration to Turbo with parallel execution
-4. ✅ **Functions Fix:** Workspace imports resolved in questionnaire routes
-5. ✅ **Docker security:** Alpine base (reduced vulnerabilities)
-6. ✅ **TypeScript:** Removed deprecated `baseUrl`
-7. ✅ **ESLint:** Added `projectService` + `tsconfigRootDir`
-8. ✅ **Package exports:** Moved `types` before `import`/`require`
-9. ✅ **Code splitting:** Lazy loading reduced bundles by 60%
-10. ✅ **Firebase CLI:** Updated to 14.24.2+
-11. ✅ **CI/CD:** Modernized workflow (Node 22.16.0, corepack)
-12. ✅ **Bundle tracking:** Added rollup-plugin-visualizer
-13. ✅ **Windows Support:** Optimized devcontainer for WSL 2
-14. ✅ **Documentation:** Added BUILD.md, FIREBASE_STATUS.md, DEVCONTAINER_WINDOWS.md
+1. ✅ **Root-only architecture:** Single source of truth `questionnaires/{templateId}_{patientUid}`
+2. ✅ **Legacy purge:** 8/8 subcollections supprimées de manière sécurisée
+3. ✅ **Maintenance scripts:** audit, backfill, purge disponibles
+4. ✅ **Secret Manager:** MANUAL_ASSIGN_SECRET et MIGRATION_SECRET configurés
+5. ✅ **Documentation complète:** Tous les docs mis à jour avec architecture actuelle
+6. ✅ **Package Upgrades:** pnpm 10.22.0, firebase-admin 13.6.0, Turbo 2.6.1
+7. ✅ **Turbo Scripts:** Migration complète vers Turbo avec exécution parallèle
+8. ✅ **Code splitting:** Lazy loading réduit bundles de 60%
+9. ✅ **Docker security:** Alpine base (réduction des vulnérabilités)
+10. ✅ **TypeScript:** Suppression du `baseUrl` déprécié
+11. ✅ **ESLint:** Ajout de `projectService` + `tsconfigRootDir`
+12. ✅ **Bundle tracking:** Ajout de rollup-plugin-visualizer
 
 ## 📚 Important Documentation
 
+- **Scripts Guide:** [SCRIPTS_QUESTIONNAIRES.md](../docs/SCRIPTS_QUESTIONNAIRES.md)
+- **Root-Only Architecture:** [QUESTIONNAIRE_STORAGE_OPTIMIZATION.md](../docs/QUESTIONNAIRE_STORAGE_OPTIMIZATION.md)
+- **API Backend:** [API_BACKEND_QUESTIONNAIRES.md](../docs/API_BACKEND_QUESTIONNAIRES.md)
 - **Build Instructions:** [BUILD.md](../BUILD.md)
 - **Firebase Status:** [FIREBASE_STATUS.md](../FIREBASE_STATUS.md)
 - **Windows Setup:** [DEVCONTAINER_WINDOWS.md](../DEVCONTAINER_WINDOWS.md)
 - **Firebase Hosting:** [docs/PREVIEW_HOSTING.md](../docs/PREVIEW_HOSTING.md)
-- **Life Journey:** [LIFE_JOURNEY_INTEGRATION.md](../LIFE_JOURNEY_INTEGRATION.md)
-- **Migration Guide:** [MIGRATION_PATIENTS_LIFE_JOURNEY.md](../MIGRATION_PATIENTS_LIFE_JOURNEY.md)
-- **Practitioner Signin:** [PRACTITIONER_SIGNIN_IMPLEMENTED.md](../PRACTITIONER_SIGNIN_IMPLEMENTED.md)
 
 ## 🎓 Learning Resources
 
@@ -474,6 +508,8 @@ interface LifeJourneyResult {
 7. Keep bundles under 500KB per chunk
 8. Use workspace packages for shared code
 9. Respect Firestore security rules
-10. Document complex logic with comments
+10. **Use root collection `questionnaires/{templateId}_{patientUid}` for all questionnaire operations**
+11. **Use maintenance scripts in `scripts/` for data operations (not `_deprecated/`)**
+12. **Create idempotency documents for submit/complete operations**
 
 **Environment:** Alpine Linux, bash, pnpm 10.22.0, Node 22.16.0

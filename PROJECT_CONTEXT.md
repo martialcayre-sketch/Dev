@@ -1,6 +1,6 @@
 # NeuroNutrition App - Context & Structure
 
-> **Dernière mise à jour:** 6 novembre 2025 - Intégration Life Journey + Scripts de migration
+> **Dernière mise à jour:** 13 novembre 2025 - Migration root-only terminée + Purge legacy complétée
 
 ## 📋 Project Overview
 
@@ -9,33 +9,41 @@
 **Stack:** React 18 + TypeScript + Vite + Firebase  
 **Workspace:** pnpm Monorepo  
 **Hosting:** Firebase Hosting (Multi-site)  
-**Database:** Firestore  
+**Database:** Firestore (root-only questionnaire storage)  
 **Authentication:** Firebase Auth (Email, Google, Facebook, LinkedIn)  
-**Functions:** Node.js 20 (2nd Gen Cloud Functions)
+**Functions:** Node.js 20 (Cloud Functions Gen2, europe-west1)
 
-## 🔄 Recent Changes (Nov 6, 2025)
+## 🔄 Recent Changes (Nov 13, 2025)
 
-### Life Journey Questionnaire Integration
+### Migration Root-Only Complétée
 
-- ✅ **Nouveau questionnaire** : Life Journey (6 sphères) remplace mode-de-vie
-- ✅ **Assignation automatique** : Inclus dans les 4 questionnaires par défaut
-- ✅ **Type system étendu** : Support des questions `slider` (0-100)
-- ✅ **Déploiement complet** : Cloud Functions + apps patient/praticien
-- ⚠️ **Migration requise** : Les patients existants nécessitent une mise à jour
+- ✅ **Architecture root-only** : Collection unique `questionnaires/{templateId}_{patientUid}`
+- ✅ **Purge legacy** : 8/8 sous-collections supprimées de manière sécurisée
+- ✅ **Scripts de maintenance** : audit, backfill, purge disponibles
+- ✅ **Déploiement production** : Apps Vite + Cloud Functions Gen2 actives
+- ✅ **Documentation complète** : Tous les docs mis à jour avec architecture actuelle
+- ✅ **Secrets Manager** : MANUAL_ASSIGN_SECRET et MIGRATION_SECRET configurés
 
-### Scripts de Migration Disponibles
+### Scripts de Maintenance Disponibles
 
-Pour mettre à jour les patients existants avec le nouveau questionnaire :
+Pour auditer, migrer ou purger les données de questionnaires :
 
-```powershell
-cd C:\Dev
-.\scripts\migrate-mode-de-vie-to-life-journey.ps1
+```bash
+# Audit de l'état actuel
+node scripts/audit-questionnaires.mjs --all --csv audit.csv
+
+# Backfill (si nécessaire)
+node scripts/backfill-questionnaires.mjs --all --limit 500
+
+# Purge sécurisée des legacy (déjà exécutée)
+node scripts/purge-legacy-questionnaires.mjs --all --csv purge.csv --confirm delete
 ```
 
 📚 **Documentation détaillée** :
 
-- [LIFE_JOURNEY_INTEGRATION.md](./LIFE_JOURNEY_INTEGRATION.md) - Vue d'ensemble technique
-- [MIGRATION_PATIENTS_LIFE_JOURNEY.md](./MIGRATION_PATIENTS_LIFE_JOURNEY.md) - Guide de migration complet
+- [SCRIPTS_QUESTIONNAIRES.md](./docs/SCRIPTS_QUESTIONNAIRES.md) - Guide complet des scripts
+- [QUESTIONNAIRE_STORAGE_OPTIMIZATION.md](./docs/QUESTIONNAIRE_STORAGE_OPTIMIZATION.md) - Architecture root-only
+- [API_BACKEND_QUESTIONNAIRES.md](./docs/API_BACKEND_QUESTIONNAIRES.md) - API Cloud Functions
 
 ## 🏗️ Architecture
 
@@ -51,16 +59,15 @@ neuronutrition-app (Project ID)
 ### Monorepo Structure
 
 ```
-C:/Dev/
+/workspaces/Dev/
 ├── apps/
-│   ├── patient-vite/          # Patient React App (Vite + TypeScript)
-│   ├── practitioner-vite/     # Practitioner React App (Vite + TypeScript)
-│   ├── shared-api/            # NEW: Shared Backend API (Express + TypeScript)
-│   ├── patient/               # Legacy Next.js (not used in production)
-│   ├── practitioner/          # Legacy Next.js (not used in production)
-│   └── web/                   # Legacy Next.js (not used in production)
+│   ├── patient-vite/          # Patient React App (Vite + TypeScript) - PRODUCTION
+│   ├── practitioner-vite/     # Practitioner React App (Vite + TypeScript) - PRODUCTION
+│   ├── patient/               # Legacy Next.js (deprecated)
+│   ├── practitioner/          # Legacy Next.js (deprecated)
+│   └── shared/                # Shared configuration
 ├── packages/
-│   ├── shared-charts/         # NEW: Shared Chart Components (Recharts)
+│   ├── shared-charts/         # Shared Chart Components (Recharts)
 │   ├── shared-core/           # Shared business logic
 │   ├── shared-ui/             # Shared UI components
 │   ├── shared-questionnaires/ # Questionnaire data & definitions
@@ -69,10 +76,25 @@ C:/Dev/
 ├── functions/
 │   ├── src/
 │   │   ├── index.ts                    # Cloud Functions entry point
-│   │   ├── assignQuestionnaires.ts     # Auto-assign questionnaires to patients
-│   │   ├── activatePatient.ts          # Patient account activation
-│   │   └── invitePatient.ts            # Patient invitation system
+│   │   ├── http/                       # HTTP routes (Express)
+│   │   │   └── routes/
+│   │   │       └── questionnaires.ts       # Questionnaire endpoints
+│   │   ├── assignQuestionnaires.ts     # Auto-assign to root collection
+│   │   ├── activatePatient.ts          # Patient activation (assigns questionnaires)
+│   │   ├── manualAssignQuestionnaires.ts # Manual assignment callable
+│   │   └── onQuestionnaireCompleted.ts # Trigger on root collection
 │   └── package.json
+├── scripts/
+│   ├── audit-questionnaires.mjs       # Audit root vs subcollections
+│   ├── backfill-questionnaires.mjs    # Migration vers root collection
+│   ├── purge-legacy-questionnaires.mjs # Suppression sécurisée legacy
+│   └── _deprecated/                   # Scripts archivés (double-write legacy)
+├── docs/
+│   ├── SCRIPTS_QUESTIONNAIRES.md      # Guide des scripts de maintenance
+│   ├── QUESTIONNAIRE_STORAGE_OPTIMIZATION.md # Architecture root-only
+│   ├── API_BACKEND_QUESTIONNAIRES.md  # API Cloud Functions
+│   ├── CHATGPT_INSTRUCTIONS.md        # Instructions pour ChatGPT
+│   └── COPILOT_CONTEXT.md             # Context pour Copilot
 ├── firebase.json              # Firebase configuration (hosting, functions, firestore)
 ├── firestore.rules            # Firestore security rules
 ├── firestore.indexes.json     # Firestore composite indexes
@@ -118,39 +140,50 @@ C:/Dev/
 
 ```
 firestore/
+├── questionnaires/{templateId}_{patientUid}  # ROOT COLLECTION (single source of truth)
+│   ├── id: string                          # Format: {templateId}_{patientUid}
+│   ├── templateId: string                  # e.g., "dnsm", "life-journey"
+│   ├── patientUid: string
+│   ├── title: string
+│   ├── status: 'pending' | 'in_progress' | 'submitted' | 'completed'
+│   ├── responses: object
+│   ├── assignedAt: Timestamp
+│   ├── submittedAt: Timestamp | null
+│   └── completedAt: Timestamp | null
 ├── patients/{uid}
-│   ├── questionnaires/{id}          # Assigned questionnaires
-│   │   ├── id: string
-│   │   ├── title: string
-│   │   ├── status: 'pending' | 'in_progress' | 'completed'
-│   │   ├── responses: object
-│   │   ├── assignedAt: Timestamp
-│   │   └── completedAt: Timestamp
-│   ├── lifejourney/{id}             # Life Journey results
-│   │   ├── answers: object
-│   │   ├── scores: object
-│   │   ├── globalScore: { score, max, percent }
-│   │   └── submittedAt: Timestamp
-│   └── notifications/{id}           # Patient notifications
-├── users/{uid}
-│   └── surveys/{id}                 # Survey submissions
-│       ├── type: 'lifejourney-v1'
-│       ├── answers: object
-│       ├── scores: object
-│       └── submittedAt: Timestamp
+│   ├── email: string
+│   ├── displayName: string
+│   ├── practitionerId: string
+│   ├── invitationTokenId: string
+│   ├── createdAt: Timestamp
+│   ├── hasQuestionnairesAssigned: boolean
+│   └── pendingQuestionnairesCount: number
 ├── practitioners/{uid}
-│   └── invitations/{id}             # Invitation tokens
-│       ├── email: string
-│       ├── used: boolean
-│       ├── expiresAt: Timestamp
-│       └── createdAt: Timestamp
-└── invitationTokens/{id}            # Global invitation tokens
+│   ├── email: string
+│   ├── displayName: string
+│   ├── role: 'practitioner'
+│   ├── createdAt: Timestamp
+│   └── patients: string[]                # Array of patient UIDs
+├── idempotency/{submit|complete}_{questionnaireId}  # Prevent duplicate operations
+│   ├── operationType: 'submit' | 'complete'
+│   ├── questionnaireId: string
+│   ├── createdAt: Timestamp
+│   └── ttl: Timestamp (auto-delete after 7 days)
+└── invitationTokens/{id}
     ├── email: string
     ├── practitionerId: string
     ├── used: boolean
     ├── expiresAt: Timestamp
     └── createdAt: Timestamp
 ```
+
+### ⚠️ Deprecated (Legacy)
+
+```
+patients/{uid}/questionnaires/{id}  # DEPRECATED - Purged Nov 13, 2025
+```
+
+Les sous-collections `patients/{uid}/questionnaires/{id}` ont été supprimées. Tous les questionnaires sont maintenant exclusivement dans la collection root.
 
 ## 🎯 Key Features
 
@@ -255,8 +288,9 @@ firestore/
 
 - ✅ **Patient App**: https://neuronutrition-app-patient.web.app (LIVE)
 - ✅ **Practitioner App**: https://neuronutrition-app-practitioner.web.app (LIVE)
-- ✅ **Cloud Functions**: assignQuestionnaires, activatePatient, invitePatient (LIVE)
-- ⏳ **Shared API**: https://neuronutrition-app.web.app (IN PROGRESS)
+- ✅ **Cloud Functions Gen2**: assignQuestionnaires, activatePatient, manualAssignQuestionnaires, HTTP API (LIVE)
+- ✅ **Questionnaire Storage**: Root-only `questionnaires/{templateId}_{patientUid}` (LIVE)
+- ✅ **Legacy Purge**: 8/8 subcollections deleted (COMPLETED)
 
 ### Build Commands
 
@@ -295,30 +329,22 @@ npx firebase deploy --only hosting,functions
 
 ## 🎯 Active Development Goals
 
-### Phase 1: Package Partagé (In Progress)
+### ✅ Phase 1: Migration Root-Only (Terminée - Nov 13, 2025)
 
-1. ✅ Create `packages/shared-charts`
-2. ✅ Move `LifeJourneyRadar.tsx` to shared package
-3. ✅ Move `usePatientLifeJourney.ts` to shared package
-4. ✅ Install recharts in shared-charts only
-5. ✅ Update patient-vite and practitioner-vite imports
-6. ✅ Build and deploy practitioner app
+1. ✅ Refactor de toutes les Cloud Functions pour root-only
+2. ✅ Scripts de maintenance (audit, backfill, purge)
+3. ✅ Configuration des secrets dans Secret Manager
+4. ✅ Déploiement production des apps et functions
+5. ✅ Purge sécurisée des sous-collections legacy
+6. ✅ Mise à jour complète de la documentation
 
-### Phase 2: Shared Backend API (Next)
+### Phase 2: Améliorations Futures
 
-1. ⏳ Create `apps/shared-api` (Express + TypeScript)
-2. ⏳ Implement `/api/patients/:id/lifejourney` endpoint
-3. ⏳ Implement `/api/patients/:id/radar` endpoint
-4. ⏳ Implement `/api/patients/:id/complaints` endpoint
-5. ⏳ Configure Firebase Hosting for `neuronutrition-app.web.app`
-6. ⏳ Deploy and test API endpoints
-
-### Phase 3: Cleanup (After Deployment)
-
-1. ⏳ Remove unused files and folders
-2. ⏳ Remove legacy Next.js apps (apps/patient, apps/practitioner, apps/web)
-3. ⏳ Clean up C:/Dev disk space
-4. ⏳ Optimize GitHub repository size
+1. ⏳ Tests d'intégration avec Firestore emulator
+2. ⏳ Cloud Scheduler pour audits périodiques automatiques
+3. ⏳ Extension de la couverture E2E (Playwright)
+4. ⏳ OpenTelemetry tracing pour Cloud Functions
+5. ⏳ Analytics et dashboards praticien avancés
 
 ## 📝 Important Notes
 
@@ -374,24 +400,30 @@ packages:
 ### Firestore Rules (firestore.rules)
 
 ```javascript
-// Patients can read/write their own data
-match /patients/{uid} {
-  allow read, write: if request.auth != null && request.auth.uid == uid;
+// Root questionnaires collection
+match /questionnaires/{questionnaireId} {
+  allow read: if request.auth != null &&
+    (resource.data.patientUid == request.auth.uid ||
+     request.auth.token.practitioner == true);
 
-  // Life Journey results: patient write, practitioner read
-  match /lifejourney/{id} {
-    allow write: if request.auth != null && request.auth.uid == uid;
-    allow read: if request.auth != null &&
-                   (request.auth.uid == uid ||
-                    exists(/databases/$(database)/documents/patients/$(uid)) &&
-                    get(/databases/$(database)/documents/patients/$(uid)).data.practitionerId == request.auth.uid);
-  }
+  allow write: if false; // Only Cloud Functions can write
+}
+
+// Patients can read their own data
+match /patients/{uid} {
+  allow read: if request.auth != null && request.auth.uid == uid;
+  allow write: if request.auth != null && request.auth.uid == uid;
 }
 
 // Practitioners can read their patients' data
 match /patients/{patientId} {
   allow read: if request.auth != null &&
                  get(/databases/$(database)/documents/patients/$(patientId)).data.practitionerId == request.auth.uid;
+}
+
+// Idempotency documents (Cloud Functions only)
+match /idempotency/{docId} {
+  allow read, write: if false; // Only Cloud Functions
 }
 ```
 
@@ -447,6 +479,6 @@ PRACTITIONER_APP_URL=https://neuronutrition-app-practitioner.web.app
 
 ---
 
-**Last Updated:** November 5, 2025  
-**Version:** 2.0.0 (Vite Migration Complete)  
-**Status:** In Active Development
+**Last Updated:** November 13, 2025  
+**Version:** 3.0.0 (Root-Only Architecture + Legacy Purge Complete)  
+**Status:** Production Stable

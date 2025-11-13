@@ -7,31 +7,31 @@ Support development of the NeuroNutrition monorepo by providing accurate, secure
 ### Core Principles
 
 1. Security First: All new endpoints must include appropriate auth middleware.
-2. Data Integrity: Preserve questionnaire double-write pattern until migration is complete.
+2. Data Integrity: Single-source root collection `questionnaires/{templateId}_{patientUid}` - no double-write.
 3. Performance Awareness: Avoid redundant Firestore queries; favor indexed filters and batched reads.
 4. Minimal Noise: Keep diffs surgical; avoid wholesale formatting unless explicitly asked.
 5. Traceability: Include brief rationale in commit messages (scope + intent).
 
 ### Architecture Quick Reference
 
-| Layer      | Description                                                                                         |
-| ---------- | --------------------------------------------------------------------------------------------------- |
-| Frontend   | React + Vite SPAs (patient & practitioner)                                                          |
-| Backend    | Cloud Run Express API (server.js) – hardened (validation, granular rate limits, structured logging) |
-| Serverless | Firebase Functions for specialized endpoints                                                        |
-| Data       | Firestore collections (patients, questionnaires, consultation subcollections)                       |
-| Auth       | Firebase ID tokens + custom claims (practitioner/admin)                                             |
-| Tooling    | pnpm, Turborepo, Husky, GitHub Actions CI, cspell                                                   |
+| Layer    | Description                                                                                    |
+| -------- | ---------------------------------------------------------------------------------------------- |
+| Frontend | React + Vite SPAs (patient-vite & practitioner-vite)                                           |
+| Backend  | Firebase Cloud Functions Gen2 (Node.js 20, europe-west1) - Express routes with auth middleware |
+| Data     | Firestore collections: `questionnaires/{templateId}_{patientUid}`, patients, practitioners     |
+| Auth     | Firebase ID tokens + custom claims (practitioner/admin)                                        |
+| Secrets  | Firebase Secret Manager (MANUAL_ASSIGN_SECRET, MIGRATION_SECRET)                               |
+| Tooling  | pnpm workspaces, Turborepo, Husky, GitHub Actions CI, cspell                                   |
 
 ### Common Tasks & Guidelines
 
-| Task                 | Guidance                                                                                                                                                  |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Add endpoint         | Place logic in API route; add `authenticateToken` and role-based guard. Return sanitized JSON. Support `Idempotency-Key` for write actions when relevant. |
-| Modify questionnaire | Update shared questionnaire package; ensure serialization helper handles new fields.                                                                      |
-| Frontend feature     | Wrap risky code paths with ErrorBoundary; leverage requestCache when polling or frequent GETs.                                                            |
-| Refactor             | Split large modules; preserve public interfaces; add unit tests (Vitest / Jest).                                                                          |
-| Doc update           | Enhance Markdown with context; avoid exposing private IDs or tokens.                                                                                      |
+| Task                 | Guidance                                                                                                                      |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Add endpoint         | Place logic in `functions/src/http/routes`; add auth middleware. Return normalized JSON. Use idempotency docs for mutations.  |
+| Modify questionnaire | Update `packages/shared-questionnaires`; ensure ID format `{templateId}_{patientUid}` in root collection.                     |
+| Frontend feature     | Wrap risky code paths with ErrorBoundary; leverage React Query or SWR for data fetching.                                      |
+| Migration script     | Use `scripts/audit-questionnaires.mjs`, `backfill-questionnaires.mjs`, `purge-legacy-questionnaires.mjs` for data operations. |
+| Doc update           | Keep docs synchronized with deployed architecture; mark legacy patterns as deprecated.                                        |
 
 ### Authorization Matrix (Simplified – includes DNSM score access)
 
@@ -68,6 +68,16 @@ Support development of the NeuroNutrition monorepo by providing accurate, secure
 2. Keep middleware pure (no side effects beyond logging and auth decisions).
 3. Keep shared types in dedicated `types` files; avoid scattering duplication.
 
+### Maintenance Scripts (Migration & Audit)
+
+| Script                            | Purpose                                               | Usage                                                                 |
+| --------------------------------- | ----------------------------------------------------- | --------------------------------------------------------------------- |
+| `audit-questionnaires.mjs`        | Audit root vs subcollections consistency              | `node scripts/audit-questionnaires.mjs --all --csv audit.csv`         |
+| `backfill-questionnaires.mjs`     | Copy subcollection docs to root with ID normalization | `node scripts/backfill-questionnaires.mjs --all --limit 500`          |
+| `purge-legacy-questionnaires.mjs` | Secure purge of legacy subcollections                 | `node scripts/purge-legacy-questionnaires.mjs --all --confirm delete` |
+
+**Note**: All legacy double-write scripts are in `scripts/_deprecated/` and should NOT be used.
+
 ### Forbidden / Caution
 
 | Item                        | Reason                              |
@@ -76,6 +86,7 @@ Support development of the NeuroNutrition monorepo by providing accurate, secure
 | Excessive console logs      | Noise; production rule rejects them |
 | Unindexed Firestore queries | Performance degradation             |
 | Swallowing errors silently  | Debugging difficulty                |
+| Legacy double-write code    | Deprecated; use root-only storage   |
 
 ### Recommended Commit Prefixes
 
@@ -107,12 +118,20 @@ Provide:
 4. `pnpm build` succeeds? (Production readiness)
 5. Spellcheck noise acceptable? (Low false positives)
 
+### Recent Enhancements (November 2025)
+
+- ✅ Root-only questionnaire storage (`questionnaires/{templateId}_{patientUid}`)
+- ✅ Secure migration scripts with audit, backfill, and purge capabilities
+- ✅ Firebase Secret Manager integration for sensitive credentials
+- ✅ Legacy subcollection purge completed (8/8 documents deleted)
+- ✅ Comprehensive documentation updates for root-only architecture
+
 ### Future Enhancements Candidates
 
-- Structured logging (pino) + correlation IDs active; use `withRequest(req)` child logger in new endpoints.
-- Implement background job for questionnaire analytics aggregation.
-- Introduce E2E tests for multi-step patient flows (Playwright). Already partial; extend coverage.
-- Migrate authentication to short-lived sessions with refresh rotation.
+- Implement background job for questionnaire analytics aggregation
+- Extend E2E test coverage for multi-step patient flows (Playwright)
+- Add Cloud Scheduler for automated questionnaire integrity monitoring
+- Implement OpenTelemetry lightweight tracing for Cloud Functions
 
 ---
 
