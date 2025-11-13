@@ -19,7 +19,7 @@ const db = admin.firestore();
  */
 export const onQuestionnaireCompleted = onDocumentUpdated(
   {
-    document: 'patients/{patientUid}/questionnaires/{questionnaireId}',
+    document: 'questionnaires/{rawId}',
     region: 'europe-west1',
   },
   async (event) => {
@@ -32,9 +32,13 @@ export const onQuestionnaireCompleted = onDocumentUpdated(
       return null;
     }
 
-    const patientUid = event.params.patientUid;
-    const questionnaireId = event.params.questionnaireId;
-    const questionnaireTitle = afterData.title || questionnaireId;
+    // rawId format: templateId_patientUid
+    const rawId = event.params.rawId as string;
+    const [templateId, patientUid] = rawId.includes('_')
+      ? rawId.split('_')
+      : [rawId, afterData.patientUid];
+    const questionnaireId = templateId;
+    const questionnaireTitle = afterData.title || templateId;
     const practitionerId = afterData.practitionerId;
 
     logger.info(`🔵 Questionnaire completed: ${questionnaireTitle} by patient ${patientUid}`);
@@ -58,11 +62,11 @@ export const onQuestionnaireCompleted = onDocumentUpdated(
       const patientEmail = patientData.email;
 
       // 2. Compter les questionnaires en attente (pending)
-      const questionnairesRef = db
-        .collection('patients')
-        .doc(patientUid)
-        .collection('questionnaires');
-      const pendingQuery = await questionnairesRef.where('status', '==', 'pending').get();
+      const pendingQuery = await db
+        .collection('questionnaires')
+        .where('patientUid', '==', patientUid)
+        .where('status', '==', 'pending')
+        .get();
       const pendingCount = pendingQuery.size;
 
       // 3. Mettre à jour le document patient avec le compteur
@@ -167,7 +171,9 @@ export const onQuestionnaireCompleted = onDocumentUpdated(
                       ${
                         pendingCount === 0
                           ? '✅ Tous les questionnaires ont été complétés !'
-                          : `⏳ ${pendingCount} questionnaire${pendingCount > 1 ? 's' : ''} en attente`
+                          : `⏳ ${pendingCount} questionnaire${
+                              pendingCount > 1 ? 's' : ''
+                            } en attente`
                       }
                     </p>
                   </div>

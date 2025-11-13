@@ -2,12 +2,12 @@
 import type { Questionnaire } from '@neuronutrition/shared-questionnaires';
 import { getAllQuestionnaires, getQuestionnaireById } from '@neuronutrition/shared-questionnaires';
 import express, { Request, Response } from 'express';
-import { makeOk, makeError } from '../utils/response';
 import * as admin from 'firebase-admin';
 import * as logger from 'firebase-functions/logger';
 import fs from 'node:fs';
 import path from 'node:path';
 import { AuthenticatedRequest, requireOwnerOrPractitioner, verifyAuth } from '../middleware/auth';
+import { makeError, makeOk } from '../utils/response';
 
 const router = express.Router();
 const db = admin.firestore();
@@ -62,23 +62,37 @@ router.get(
  */
 router.get(
   '/patients/:patientId/questionnaires/:questionnaireId',
-  async (req: Request, res: Response) => {
+  verifyAuth,
+  requireOwnerOrPractitioner('patientId'),
+  async (req: AuthenticatedRequest & { id?: string }, res: Response) => {
     try {
-      const { questionnaireId } = req.params;
+      const { patientId, questionnaireId } = req.params;
 
-      // TODO: Vérifier authentification
-      // TODO: Vérifier permissions
+      logger.info(`[GET] Fetching questionnaire ${questionnaireId} for patient ${patientId}`);
 
       const qDoc = await db.collection('questionnaires').doc(questionnaireId).get();
 
       if (!qDoc.exists) {
-        return res.status(404).json(makeError('not_found', 'Questionnaire not found', (req as any).id));
+        return res
+          .status(404)
+          .json(makeError('not_found', 'Questionnaire not found', (req as any).id));
       }
 
-      return res.json(makeOk({
-        id: qDoc.id,
-        ...qDoc.data(),
-      }, (req as any).id));
+      const data = qDoc.data();
+      // Vérifier que le questionnaire appartient bien au patient
+      if (data?.patientUid !== patientId) {
+        return res.status(403).json(makeError('forbidden', 'Access denied', (req as any).id));
+      }
+
+      return res.json(
+        makeOk(
+          {
+            id: qDoc.id,
+            ...data,
+          },
+          (req as any).id
+        )
+      );
     } catch (error: any) {
       logger.error('GET /patients/:patientId/questionnaires/:id error:', error);
       return res.status(500).json(makeError('internal', 'Internal server error', (req as any).id));
@@ -92,32 +106,43 @@ router.get(
  */
 router.patch(
   '/patients/:patientId/questionnaires/:questionnaireId/responses',
+  verifyAuth,
+  requireOwnerOrPractitioner('patientId'),
   express.json(),
-  async (req: Request, res: Response) => {
+  async (req: AuthenticatedRequest & { id?: string }, res: Response) => {
     try {
       const { patientId, questionnaireId } = req.params;
       const { responses } = req.body;
 
-      // TODO: Vérifier que l'utilisateur est bien le patient
-      // TODO: Vérifier que le questionnaire n'est pas submitted/completed
+      logger.info(`[PATCH] Saving responses for questionnaire ${questionnaireId}`);
+
+      // Vérifier que l'utilisateur authentifié est bien le patient (pas le praticien)
+      if (req.user?.uid !== patientId) {
+        return res
+          .status(403)
+          .json(makeError('forbidden', 'Only patient can update responses', (req as any).id));
+      }
 
       const qRefRoot = db.collection('questionnaires').doc(questionnaireId);
-      const qRefSub = db
-        .collection('patients')
-        .doc(patientId)
-        .collection('questionnaires')
-        .doc(questionnaireId);
 
       const qDoc = await qRefRoot.get();
       if (!qDoc.exists) {
-        return res.status(404).json(makeError('not_found', 'Questionnaire not found', (req as any).id));
+        return res
+          .status(404)
+          .json(makeError('not_found', 'Questionnaire not found', (req as any).id));
       }
 
       const currentStatus = qDoc.data()?.status;
       if (currentStatus === 'submitted' || currentStatus === 'completed') {
         return res
           .status(403)
-          .json(makeError('forbidden', 'Cannot modify submitted or completed questionnaire', (req as any).id));
+          .json(
+            makeError(
+              'forbidden',
+              'Cannot modify submitted or completed questionnaire',
+              (req as any).id
+            )
+          );
       }
 
       // Merge manuel avec réponses existantes
@@ -130,12 +155,17 @@ router.patch(
         status: currentStatus === 'pending' ? 'in_progress' : currentStatus,
       };
 
-      // Double write to both collections
-      await Promise.all([qRefRoot.update(updateData), qRefSub.update(updateData)]);
+      // Root write only (sub-collection deprecated)
+      await qRefRoot.update(updateData);
 
-      return res.json(makeOk({
-        savedAt: new Date().toISOString(),
-      }, (req as any).id));
+      return res.json(
+        makeOk(
+          {
+            savedAt: new Date().toISOString(),
+          },
+          (req as any).id
+        )
+      );
     } catch (error: any) {
       logger.error('PATCH /responses error:', error);
       return res.status(500).json(makeError('internal', 'Internal server error', (req as any).id));
@@ -147,98 +177,112 @@ router.patch(
  * GET /api/practitioners/:practitionerId/questionnaires
  * Liste tous les questionnaires de tous les patients d'un praticien (from root collection)
  */
-router.get('/practitioners/:practitionerId/questionnaires', async (req: Request, res: Response) => {
-  try {
-    const { practitionerId } = req.params;
-    const { status, limit = '50', cursor } = req.query as any;
+router.get(
+  '/practitioners/:practitionerId/questionnaires',
+  verifyAuth,
+  async (req: AuthenticatedRequest & { id?: string }, res: Response) => {
+    try {
+      const { practitionerId } = req.params;
+      const { status, limit = '50', cursor } = req.query as any;
 
-    // TODO: Vérifier que l'utilisateur est le praticien
+      logger.info(`[GET] Fetching questionnaires for practitioner ${practitionerId}`);
 
-    // Query root collection directly (much more efficient!)
-    let query = db
-      .collection('questionnaires')
-      .where('practitionerId', '==', practitionerId) as admin.firestore.Query;
+      // Vérifier que l'utilisateur authentifié est bien le praticien
+      if (req.user?.uid !== practitionerId) {
+        return res.status(403).json(makeError('forbidden', 'Access denied', (req as any).id));
+      }
 
-    if (status) {
-      query = query.where('status', '==', status);
-    }
+      // Query root collection directly (much more efficient!)
+      let query = db
+        .collection('questionnaires')
+        .where('practitionerId', '==', practitionerId) as admin.firestore.Query;
 
-    query = query.orderBy('assignedAt', 'desc').orderBy(admin.firestore.FieldPath.documentId());
+      if (status) {
+        query = query.where('status', '==', status);
+      }
 
-    const limitNum = parseInt(limit as string, 10);
-    if (limitNum > 0) {
-      query = query.limit(limitNum);
-    }
+      query = query.orderBy('assignedAt', 'desc').orderBy(admin.firestore.FieldPath.documentId());
 
-    // Cursor-based pagination: base64(assignedAtISO|docId)
-    if (cursor && typeof cursor === 'string') {
-      try {
-        const raw = Buffer.from(cursor, 'base64').toString('utf-8');
-        const [assignedAtIso, docId] = raw.split('|');
-        if (assignedAtIso && docId) {
-          const ts = admin.firestore.Timestamp.fromDate(new Date(assignedAtIso));
-          query = query.startAfter(ts, docId);
-        }
-      } catch {}
-    }
+      const limitNum = parseInt(limit as string, 10);
+      if (limitNum > 0) {
+        query = query.limit(limitNum);
+      }
 
-    const questionnairesSnap = await query.get();
-
-    // Fetch patient details for each questionnaire
-    const questionnaires = await Promise.all(
-      questionnairesSnap.docs.map(async (qDoc) => {
-        const data = qDoc.data();
-        const patientId = data.patientUid;
-
-        let patientName = 'Unknown';
-        let patientEmail = '';
-
-        if (patientId) {
-          try {
-            const patientSnap = await db.collection('patients').doc(patientId).get();
-            if (patientSnap.exists) {
-              const patientData = patientSnap.data()!;
-              patientName = patientData.displayName || patientData.email || patientId;
-              patientEmail = patientData.email || '';
-            }
-          } catch (err) {
-            logger.warn(`Failed to fetch patient ${patientId}:`, err);
+      // Cursor-based pagination: base64(assignedAtISO|docId)
+      if (cursor && typeof cursor === 'string') {
+        try {
+          const raw = Buffer.from(cursor, 'base64').toString('utf-8');
+          const [assignedAtIso, docId] = raw.split('|');
+          if (assignedAtIso && docId) {
+            const ts = admin.firestore.Timestamp.fromDate(new Date(assignedAtIso));
+            query = query.startAfter(ts, docId);
           }
-        }
+        } catch {}
+      }
 
-        return {
-          id: qDoc.id,
-          patientId,
-          patientName,
-          patientEmail,
-          ...data,
-        };
-      })
-    );
+      const questionnairesSnap = await query.get();
 
-    const paginated = questionnaires.slice(0, limitNum);
-    const last: any = paginated[paginated.length - 1];
-    const nextCursor =
-      last && last.assignedAt && last.id
-        ? Buffer.from(
-            `${last.assignedAt.toDate ? last.assignedAt.toDate().toISOString() : last.assignedAt}|${
-              last.id
-            }`,
-            'utf-8'
-          ).toString('base64')
-        : null;
+      // Fetch patient details for each questionnaire
+      const questionnaires = await Promise.all(
+        questionnairesSnap.docs.map(async (qDoc) => {
+          const data = qDoc.data();
+          const patientId = data.patientUid;
 
-    return res.json(makeOk({
-      questionnaires: paginated,
-      total: questionnaires.length,
-      nextCursor,
-      hasMore: !!nextCursor,
-    }, (req as any).id));
-  } catch (error: any) {
-    logger.error('GET /practitioners/:id/questionnaires error:', error);
-    return res.status(500).json(makeError('internal', 'Internal server error', (req as any).id));
+          let patientName = 'Unknown';
+          let patientEmail = '';
+
+          if (patientId) {
+            try {
+              const patientSnap = await db.collection('patients').doc(patientId).get();
+              if (patientSnap.exists) {
+                const patientData = patientSnap.data()!;
+                patientName = patientData.displayName || patientData.email || patientId;
+                patientEmail = patientData.email || '';
+              }
+            } catch (err) {
+              logger.warn(`Failed to fetch patient ${patientId}:`, err);
+            }
+          }
+
+          return {
+            id: qDoc.id,
+            patientId,
+            patientName,
+            patientEmail,
+            ...data,
+          };
+        })
+      );
+
+      const paginated = questionnaires.slice(0, limitNum);
+      const last: any = paginated[paginated.length - 1];
+      const nextCursor =
+        last && last.assignedAt && last.id
+          ? Buffer.from(
+              `${
+                last.assignedAt.toDate ? last.assignedAt.toDate().toISOString() : last.assignedAt
+              }|${last.id}`,
+              'utf-8'
+            ).toString('base64')
+          : null;
+
+      return res.json(
+        makeOk(
+          {
+            questionnaires: paginated,
+            total: questionnaires.length,
+            nextCursor,
+            hasMore: !!nextCursor,
+          },
+          (req as any).id
+        )
+      );
+    } catch (error: any) {
+      logger.error('GET /practitioners/:id/questionnaires error:', error);
+      return res.status(500).json(makeError('internal', 'Internal server error', (req as any).id));
+    }
   }
-});
+);
 
 /**
  * POST /api/patients/:patientId/questionnaires/:questionnaireId/submit
@@ -246,28 +290,70 @@ router.get('/practitioners/:practitionerId/questionnaires', async (req: Request,
  */
 router.post(
   '/patients/:patientId/questionnaires/:questionnaireId/submit',
-  async (req: Request, res: Response) => {
+  verifyAuth,
+  requireOwnerOrPractitioner('patientId'),
+  async (req: AuthenticatedRequest & { id?: string }, res: Response) => {
     try {
       const { patientId, questionnaireId } = req.params;
 
-      // TODO: Vérifier que l'utilisateur est bien le patient
-      // TODO: Vérifier que toutes les réponses obligatoires sont remplies
+      logger.info(`[POST] Submitting questionnaire ${questionnaireId} for patient ${patientId}`);
+
+      // Vérifier que l'utilisateur authentifié est bien le patient
+      if (req.user?.uid !== patientId) {
+        return res
+          .status(403)
+          .json(makeError('forbidden', 'Only patient can submit questionnaire', (req as any).id));
+      }
 
       const qRefRoot = db.collection('questionnaires').doc(questionnaireId);
-      const qRefSub = db
-        .collection('patients')
-        .doc(patientId)
-        .collection('questionnaires')
-        .doc(questionnaireId);
 
       const qDoc = await qRefRoot.get();
       if (!qDoc.exists) {
-        return res.status(404).json(makeError('not_found', 'Questionnaire not found', (req as any).id));
+        return res
+          .status(404)
+          .json(makeError('not_found', 'Questionnaire not found', (req as any).id));
       }
 
-      const currentStatus = qDoc.data()?.status;
+      const data = qDoc.data();
+      const currentStatus = data?.status;
+
+      // Vérifier ownership
+      if (data?.patientUid !== patientId) {
+        return res.status(403).json(makeError('forbidden', 'Access denied', (req as any).id));
+      }
+
       if (currentStatus === 'submitted' || currentStatus === 'completed') {
-        return res.status(400).json(makeError('already_submitted', 'Questionnaire already submitted or completed', (req as any).id));
+        return res
+          .status(400)
+          .json(
+            makeError(
+              'already_submitted',
+              'Questionnaire already submitted or completed',
+              (req as any).id
+            )
+          );
+      }
+
+      // Vérifier que toutes les réponses obligatoires sont remplies
+      const responses = data?.responses || {};
+      const questions = data?.questions || [];
+
+      const missingRequired = questions
+        .filter((q: any) => q.required)
+        .filter((q: any) => {
+          const answer = responses[q.id];
+          return answer === undefined || answer === null || answer === '';
+        });
+
+      if (missingRequired.length > 0) {
+        logger.warn(`[POST] Missing required responses for questionnaire ${questionnaireId}`, {
+          missing: missingRequired.map((q: any) => q.id),
+        });
+        return res.status(400).json(
+          makeError('validation_error', 'Missing required responses', (req as any).id, {
+            missingQuestions: missingRequired.map((q: any) => ({ id: q.id, text: q.text })),
+          })
+        );
       }
 
       // Idempotency via header Idempotency-Key
@@ -277,7 +363,9 @@ router.post(
         const idemRef = db.collection('idempotency').doc(`submit_${questionnaireId}_${idemKey}`);
         const idemSnap = await idemRef.get();
         if (idemSnap.exists) {
-          return res.json(makeOk({ idempotent: true, submittedAt: idemSnap.get('submittedAt') }, (req as any).id));
+          return res.json(
+            makeOk({ idempotent: true, submittedAt: idemSnap.get('submittedAt') }, (req as any).id)
+          );
         }
         await idemRef.set({
           submittedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -293,13 +381,18 @@ router.post(
         idempotencyKey: idemKey || null,
       };
 
-      // Double write to both collections
-      await Promise.all([qRefRoot.update(updateData), qRefSub.update(updateData)]);
+      // Root write only
+      await qRefRoot.update(updateData);
 
-      return res.json(makeOk({
-        submittedAt: new Date().toISOString(),
-        message: 'Questionnaire submitted successfully',
-      }, (req as any).id));
+      return res.json(
+        makeOk(
+          {
+            submittedAt: new Date().toISOString(),
+            message: 'Questionnaire submitted successfully',
+          },
+          (req as any).id
+        )
+      );
     } catch (error: any) {
       logger.error('POST /submit error:', error);
       return res.status(500).json(makeError('internal', 'Internal server error', (req as any).id));
@@ -313,22 +406,36 @@ router.post(
  */
 router.post(
   '/patients/:patientId/questionnaires/:questionnaireId/complete',
-  async (req: Request, res: Response) => {
+  verifyAuth,
+  async (req: AuthenticatedRequest & { id?: string }, res: Response) => {
     try {
       const { patientId, questionnaireId } = req.params;
 
-      // TODO: Vérifier que l'utilisateur est le praticien assigné
+      logger.info(`[POST] Completing questionnaire ${questionnaireId} for patient ${patientId}`);
 
       const qRefRoot = db.collection('questionnaires').doc(questionnaireId);
-      const qRefSub = db
-        .collection('patients')
-        .doc(patientId)
-        .collection('questionnaires')
-        .doc(questionnaireId);
 
       const qDoc = await qRefRoot.get();
       if (!qDoc.exists) {
-        return res.status(404).json(makeError('not_found', 'Questionnaire not found', (req as any).id));
+        return res
+          .status(404)
+          .json(makeError('not_found', 'Questionnaire not found', (req as any).id));
+      }
+
+      const data = qDoc.data();
+      const practitionerId = data?.practitionerId;
+
+      // Vérifier que l'utilisateur authentifié est le praticien assigné
+      if (!practitionerId || req.user?.uid !== practitionerId) {
+        return res
+          .status(403)
+          .json(
+            makeError(
+              'forbidden',
+              'Only assigned practitioner can complete questionnaire',
+              (req as any).id
+            )
+          );
       }
 
       // Idempotency via header Idempotency-Key
@@ -338,7 +445,9 @@ router.post(
         const idemRef = db.collection('idempotency').doc(`complete_${questionnaireId}_${idemKey}`);
         const idemSnap = await idemRef.get();
         if (idemSnap.exists) {
-          return res.json(makeOk({ idempotent: true, completedAt: idemSnap.get('completedAt') }, (req as any).id));
+          return res.json(
+            makeOk({ idempotent: true, completedAt: idemSnap.get('completedAt') }, (req as any).id)
+          );
         }
         await idemRef.set({
           completedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -354,13 +463,18 @@ router.post(
         idempotencyKey: idemKey || null,
       };
 
-      // Double write to both collections
-      await Promise.all([qRefRoot.update(updateData), qRefSub.update(updateData)]);
+      // Root write only
+      await qRefRoot.update(updateData);
 
-      return res.json(makeOk({
-        completedAt: new Date().toISOString(),
-        message: 'Questionnaire marked as completed',
-      }, (req as any).id));
+      return res.json(
+        makeOk(
+          {
+            completedAt: new Date().toISOString(),
+            message: 'Questionnaire marked as completed',
+          },
+          (req as any).id
+        )
+      );
     } catch (error: any) {
       logger.error('POST /complete error:', error);
       return res.status(500).json(makeError('internal', 'Internal server error', (req as any).id));
@@ -419,7 +533,10 @@ router.get('/catalog/questionnaires/:id', (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const q = getQuestionnaireById(id);
-    if (!q) return res.status(404).json(makeError('not_found', 'Questionnaire not found', (req as any).id));
+    if (!q)
+      return res
+        .status(404)
+        .json(makeError('not_found', 'Questionnaire not found', (req as any).id));
     return res.json(makeOk(q as any, (req as any).id));
   } catch (error: any) {
     logger.error('GET /catalog/questionnaires/:id error:', error);
@@ -433,7 +550,9 @@ const extractedRoot = path.resolve(process.cwd(), '..', 'data', 'questionnaires'
 router.get('/catalog/extracted', (req: Request, res: Response) => {
   try {
     if (!fs.existsSync(extractedRoot)) {
-      return res.json(makeOk({ categories: [], note: 'extracted root not found on runtime' }, (req as any).id));
+      return res.json(
+        makeOk({ categories: [], note: 'extracted root not found on runtime' }, (req as any).id)
+      );
     }
     const categories = fs
       .readdirSync(extractedRoot, { withFileTypes: true })
@@ -472,7 +591,9 @@ router.get('/catalog/extracted/:category/:slug', (req: Request, res: Response) =
     const metaPath = path.join(dir, `${slug}.meta.json`);
     const txtPath = path.join(dir, `${slug}.txt`);
     if (!fs.existsSync(metaPath)) {
-      return res.status(404).json(makeError('not_found', 'Extracted file not found', (req as any).id));
+      return res
+        .status(404)
+        .json(makeError('not_found', 'Extracted file not found', (req as any).id));
     }
     const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
     const text = fs.existsSync(txtPath) ? fs.readFileSync(txtPath, 'utf-8') : '';
@@ -482,3 +603,82 @@ router.get('/catalog/extracted/:category/:slug', (req: Request, res: Response) =
     return res.status(500).json(makeError('internal', 'Internal server error', (req as any).id));
   }
 });
+
+/**
+ * GET /diagnostics/patient-questionnaires?patientUid=...|email=...
+ * Compare questionnaires root vs sous-collection pour un patient.
+ * Auth requis: patient lui-même ou praticien (practitionerId sur questionnaires) ou rôle praticien si middleware évolue.
+ */
+router.get(
+  '/diagnostics/patient-questionnaires',
+  verifyAuth,
+  async (req: AuthenticatedRequest & { id?: string }, res: Response) => {
+    try {
+      const { patientUid, email } = req.query as { patientUid?: string; email?: string };
+      let targetUid = patientUid?.trim();
+      if (!targetUid) {
+        if (!email)
+          return res
+            .status(400)
+            .json(makeError('invalid_argument', 'Provide patientUid or email', (req as any).id));
+        const q = await db.collection('patients').where('email', '==', email).limit(1).get();
+        if (q.empty)
+          return res
+            .status(404)
+            .json(makeError('not_found', 'Patient email not found', (req as any).id));
+        targetUid = q.docs[0].id;
+      }
+
+      const authUid = req.user?.uid;
+      if (!authUid)
+        return res.status(401).json(makeError('unauthenticated', 'Auth required', (req as any).id));
+      let authorized = authUid === targetUid;
+      if (!authorized) {
+        const anySnap = await db
+          .collection('questionnaires')
+          .where('patientUid', '==', targetUid)
+          .where('practitionerId', '==', authUid)
+          .limit(1)
+          .get();
+        authorized = !anySnap.empty;
+      }
+      if (!authorized)
+        return res.status(403).json(makeError('forbidden', 'Access denied', (req as any).id));
+
+      const patientDoc = await db.collection('patients').doc(targetUid).get();
+      if (!patientDoc.exists)
+        return res
+          .status(404)
+          .json(makeError('not_found', 'Patient document missing', (req as any).id));
+      const pdata = patientDoc.data() as any;
+
+      const rootSnap = await db
+        .collection('questionnaires')
+        .where('patientUid', '==', targetUid)
+        .get();
+      const rootList = rootSnap.docs.map((d) => {
+        const dt = d.data() as any;
+        const rawId = d.id;
+        const templateId = rawId.includes('_') ? rawId.split('_')[0] : rawId;
+        return { rawId, templateId, status: dt.status || null, assignedAt: dt.assignedAt || null };
+      });
+
+      return res.json(
+        makeOk(
+          {
+            patientUid: targetUid,
+            email: pdata.email || null,
+            hasQuestionnairesAssigned: !!pdata.hasQuestionnairesAssigned,
+            pendingQuestionnairesCount: pdata.pendingQuestionnairesCount || 0,
+            rootCount: rootList.length,
+            rootList,
+          },
+          (req as any).id
+        )
+      );
+    } catch (error: any) {
+      logger.error('GET /diagnostics/patient-questionnaires error:', error);
+      return res.status(500).json(makeError('internal', 'Internal server error', (req as any).id));
+    }
+  }
+);

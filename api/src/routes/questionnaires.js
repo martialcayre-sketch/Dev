@@ -1,6 +1,5 @@
 /**
  * Questionnaires API Routes
-import { encodeCursor, decodeCursor, normalizeIdempotencyKey } from '@neuronutrition/shared-backend';
  * Handles CRUD operations for patient questionnaires
  */
 
@@ -19,6 +18,7 @@ import {
   validatePagination,
   enforceImmutableFields,
 } from '../middleware/validation.js';
+import { DNSMScoringService } from '../services/scoring.js';
 
 const router = express.Router();
 
@@ -28,27 +28,24 @@ const submitLimiter = rateLimit({ windowMs: 60 * 1000, max: 10 });
 const completeLimiter = rateLimit({ windowMs: 60 * 1000, max: 10 });
 
 /**
+ * Normaliser une clé d'idempotence
+ */
+function normalizeIdempotencyKey(key) {
+  if (!key || typeof key !== 'string') return null;
+  const trimmed = key.trim();
+  return trimmed.length >= 8 && trimmed.length <= 128 ? trimmed : null;
+}
+
+/**
  * GET /patients/:patientId/questionnaires
  * Liste tous les questionnaires d'un patient (from root collection)
  */
 router.get(
   '/patients/:patientId/questionnaires',
-      // Idempotency
-      const keyHeader = req.headers['idempotency-key'];
-      const idemKey = normalizeIdempotencyKey(Array.isArray(keyHeader) ? keyHeader[0] : keyHeader);
-      if (idemKey) {
-        const idemRef = db.collection('idempotency').doc(`submit_${questionnaireId}_${idemKey}`);
-        const idemSnap = await idemRef.get();
-        if (idemSnap.exists) {
-          return res.json({ ok: true, idempotent: true, submittedAt: idemSnap.get('submittedAt') });
-        }
-        await idemRef.set({ submittedAt: admin.firestore.FieldValue.serverTimestamp(), patientId, questionnaireId });
-      }
   authenticateToken,
   requirePatient,
   async (req, res) => {
     try {
-        idempotencyKey: idemKey || null,
       const { patientId } = req.params;
 
       console.log(`[API] GET /patients/${patientId}/questionnaires`);
@@ -96,21 +93,10 @@ router.get(
 /**
  * GET /patients/:patientId/questionnaires/:questionnaireId
  * Détails d'un questionnaire spécifique (from root collection)
-      const keyHeader = req.headers['idempotency-key'];
-      const idemKey = normalizeIdempotencyKey(Array.isArray(keyHeader) ? keyHeader[0] : keyHeader);
-      if (idemKey) {
-        const idemRef = db.collection('idempotency').doc(`complete_${questionnaireId}_${idemKey}`);
-        const idemSnap = await idemRef.get();
-        if (idemSnap.exists) {
-          return res.json({ ok: true, idempotent: true, completedAt: idemSnap.get('completedAt') });
-        }
-        await idemRef.set({ completedAt: admin.firestore.FieldValue.serverTimestamp(), patientId, questionnaireId });
-      }
  */
 router.get(
   '/patients/:patientId/questionnaires/:questionnaireId',
   authenticateToken,
-        idempotencyKey: idemKey || null,
   requirePatient,
   async (req, res) => {
     try {
@@ -229,7 +215,7 @@ router.patch(
 
 /**
  * POST /patients/:patientId/questionnaires/:questionnaireId/submit
- * Submit questionnaire for practitioner review
+ * Submit questionnaire for practitioner review with idempotency support
  */
 router.post(
   '/patients/:patientId/questionnaires/:questionnaireId/submit',
@@ -241,6 +227,23 @@ router.post(
       const { patientId, questionnaireId } = req.params;
 
       console.log(`[API] POST /patients/${patientId}/questionnaires/${questionnaireId}/submit`);
+
+      // Idempotency check
+      const keyHeader = req.headers['idempotency-key'];
+      const idemKey = normalizeIdempotencyKey(Array.isArray(keyHeader) ? keyHeader[0] : keyHeader);
+      
+      if (idemKey) {
+        const idemRef = db.collection('idempotency').doc(`submit_${questionnaireId}_${idemKey}`);
+        const idemSnap = await idemRef.get();
+        if (idemSnap.exists) {
+          console.log(`[API] Idempotency hit for submit ${questionnaireId}`);
+          return res.json({ 
+            ok: true, 
+            idempotent: true, 
+            submittedAt: idemSnap.get('submittedAt')?.toDate?.()?.toISOString() || null
+          });
+        }
+      }
 
       const qRefRoot = db.collection('questionnaires').doc(questionnaireId);
       const qRefSub = db
@@ -259,10 +262,30 @@ router.post(
         return res.status(400).json({ error: 'Questionnaire already submitted or completed' });
       }
 
+      // Validation: vérifier que toutes les questions obligatoires sont répondues
+      const questionnaireData = qDoc.data();
+      const responses = questionnaireData?.responses || {};
+      const questions = questionnaireData?.questions || [];
+      
+      const missingRequired = questions
+        .filter(q => q.required)
+        .filter(q => {
+          const answer = responses[q.id];
+          return answer === undefined || answer === null || answer === '';
+        });
+
+      if (missingRequired.length > 0) {
+        return res.status(400).json({ 
+          error: 'Missing required responses', 
+          missingQuestions: missingRequired.map(q => ({ id: q.id, text: q.text }))
+        });
+      }
+
       const updateData = {
         status: 'submitted',
         submittedAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        idempotencyKey: idemKey || null,
       };
 
       // Double write to both collections (use set with merge to create if missing)
@@ -270,6 +293,16 @@ router.post(
         qRefRoot.set(updateData, { merge: true }),
         qRefSub.set(updateData, { merge: true }),
       ]);
+
+      // Store idempotency record
+      if (idemKey) {
+        await db.collection('idempotency').doc(`submit_${questionnaireId}_${idemKey}`).set({
+          submittedAt: admin.firestore.FieldValue.serverTimestamp(),
+          patientId,
+          questionnaireId,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
 
       return res.json({
         ok: true,
@@ -285,7 +318,7 @@ router.post(
 
 /**
  * POST /patients/:patientId/questionnaires/:questionnaireId/complete
- * Mark questionnaire as completed (practitioner action)
+ * Mark questionnaire as completed (practitioner action) with idempotency support
  */
 router.post(
   '/patients/:patientId/questionnaires/:questionnaireId/complete',
@@ -297,6 +330,23 @@ router.post(
       const { patientId, questionnaireId } = req.params;
 
       console.log(`[API] POST /patients/${patientId}/questionnaires/${questionnaireId}/complete`);
+
+      // Idempotency check
+      const keyHeader = req.headers['idempotency-key'];
+      const idemKey = normalizeIdempotencyKey(Array.isArray(keyHeader) ? keyHeader[0] : keyHeader);
+      
+      if (idemKey) {
+        const idemRef = db.collection('idempotency').doc(`complete_${questionnaireId}_${idemKey}`);
+        const idemSnap = await idemRef.get();
+        if (idemSnap.exists) {
+          console.log(`[API] Idempotency hit for complete ${questionnaireId}`);
+          return res.json({ 
+            ok: true, 
+            idempotent: true, 
+            completedAt: idemSnap.get('completedAt')?.toDate?.()?.toISOString() || null
+          });
+        }
+      }
 
       const qRefRoot = db.collection('questionnaires').doc(questionnaireId);
       const qRefSub = db
@@ -314,6 +364,7 @@ router.post(
         status: 'completed',
         completedAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        idempotencyKey: idemKey || null,
       };
 
       // Double write to both collections (use set with merge to create if missing)
@@ -321,6 +372,16 @@ router.post(
         qRefRoot.set(updateData, { merge: true }),
         qRefSub.set(updateData, { merge: true }),
       ]);
+
+      // Store idempotency record
+      if (idemKey) {
+        await db.collection('idempotency').doc(`complete_${questionnaireId}_${idemKey}`).set({
+          completedAt: admin.firestore.FieldValue.serverTimestamp(),
+          patientId,
+          questionnaireId,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
 
       return res.json({
         ok: true,

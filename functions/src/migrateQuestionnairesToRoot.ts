@@ -4,20 +4,30 @@ import { onRequest } from 'firebase-functions/v2/https';
 
 /**
  * HTTPS Cloud Function to migrate all questionnaires from subcollections to root collection
- * Call this once: https://YOUR_REGION-YOUR_PROJECT.cloudfunctions.net/migrateQuestionnairesToRoot
+ * Call this once: https://YOUR_REGION-YOUR_PROJECT.cloudfunctions.net/migrateQuestionnairesToRoot?secret=YOUR_SECRET
  *
- * Security: Add authentication check in production!
+ * Security: Requires MIGRATION_SECRET environment variable
  */
 export const migrateQuestionnairesToRoot = onRequest(
-  { region: 'europe-west1', timeoutSeconds: 540, memory: '1GiB' },
+  { region: 'europe-west1', timeoutSeconds: 540, memory: '1GiB', secrets: ['MIGRATION_SECRET'] },
   async (req, res) => {
-    // TODO: Add authentication check!
-    // For now, you can add a simple secret token check:
-    const secret = req.query.secret;
-    if (secret !== process.env.MIGRATION_SECRET) {
+    // Authentication check: require secret token
+    const secret = req.query.secret as string;
+    const expectedSecret = process.env.MIGRATION_SECRET;
+
+    if (!expectedSecret) {
+      logger.error('❌ MIGRATION_SECRET environment variable not configured');
+      res.status(500).send('Server configuration error - MIGRATION_SECRET not set');
+      return;
+    }
+
+    if (!secret || secret !== expectedSecret) {
+      logger.warn('⚠️  Unauthorized migration attempt', { ip: req.ip });
       res.status(403).send('Unauthorized - missing or invalid secret');
       return;
     }
+
+    logger.info('🔐 Authentication successful, starting migration');
 
     logger.info('🚀 Starting questionnaire migration to root collection');
 
@@ -53,7 +63,9 @@ export const migrateQuestionnairesToRoot = onRequest(
           }
 
           logger.info(
-            `📋 Patient ${patientId} (${patientData.email || 'no email'}): ${questionnairesSnap.size} questionnaires`
+            `📋 Patient ${patientId} (${patientData.email || 'no email'}): ${
+              questionnairesSnap.size
+            } questionnaires`
           );
 
           // Copy each questionnaire to root collection

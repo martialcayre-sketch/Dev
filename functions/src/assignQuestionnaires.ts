@@ -26,14 +26,9 @@ export const assignQuestionnaires = onCall(async (request) => {
   try {
     logger.info(`Assigning questionnaires to patient ${patientUid}`);
 
-    // Vérifier si les questionnaires ont déjà été assignés (via un doc connu)
-    const firstQuestionnaireRef = db
-      .collection('patients')
-      .doc(patientUid)
-      .collection('questionnaires')
-      .doc(DEFAULT_QUESTIONNAIRES[0].id);
-    const firstQuestionnaireSnap = await firstQuestionnaireRef.get();
-
+    // Vérifier si déjà assignés en root (via le premier ID unique)
+    const uniqueFirstId = `${DEFAULT_QUESTIONNAIRES[0].id}_${patientUid}`;
+    const firstQuestionnaireSnap = await db.collection('questionnaires').doc(uniqueFirstId).get();
     if (firstQuestionnaireSnap.exists) {
       logger.info(`Questionnaires already assigned to patient ${patientUid}`);
       return {
@@ -43,7 +38,7 @@ export const assignQuestionnaires = onCall(async (request) => {
       };
     }
 
-    // Créer les questionnaires dans Firestore (DOUBLE WRITE: subcollection + root collection)
+    // Créer les questionnaires en root uniquement
     const batch = db.batch();
     const now = admin.firestore.FieldValue.serverTimestamp();
 
@@ -58,16 +53,8 @@ export const assignQuestionnaires = onCall(async (request) => {
         responses: {},
       };
 
-      // Write to subcollection (legacy path)
-      const subCollectionRef = db
-        .collection('patients')
-        .doc(patientUid)
-        .collection('questionnaires')
-        .doc(template.id);
-      batch.set(subCollectionRef, questionnaireData);
-
-      // Write to root collection (new path)
-      const rootRef = db.collection('questionnaires').doc(template.id);
+      // Write to root collection (ID unique template_patient)
+      const rootRef = db.collection('questionnaires').doc(`${template.id}_${patientUid}`);
       batch.set(rootRef, questionnaireData);
     });
 
@@ -117,13 +104,19 @@ export const assignQuestionnaires = onCall(async (request) => {
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h2 style="color: #4F46E5;">Nouveaux questionnaires disponibles</h2>
                 <p>Bonjour,</p>
-                <p>Votre praticien vous a assigné <strong>${DEFAULT_QUESTIONNAIRES.length} questionnaires</strong> à compléter :</p>
+                <p>Votre praticien vous a assigné <strong>${
+                  DEFAULT_QUESTIONNAIRES.length
+                } questionnaires</strong> à compléter :</p>
                 <ul>
-                  ${DEFAULT_QUESTIONNAIRES.map((q) => `<li><strong>${q.title}</strong> - ${q.description}</li>`).join('\n')}
+                  ${DEFAULT_QUESTIONNAIRES.map(
+                    (q) => `<li><strong>${q.title}</strong> - ${q.description}</li>`
+                  ).join('\n')}
                 </ul>
                 <p>Ces questionnaires nous aideront à mieux comprendre votre situation et à personnaliser votre suivi.</p>
                 <p style="margin: 30px 0;">
-                  <a href="${process.env.PATIENT_APP_URL || 'https://neuronutrition-app.web.app'}/dashboard/questionnaires" 
+                  <a href="${
+                    process.env.PATIENT_APP_URL || 'https://neuronutrition-app.web.app'
+                  }/dashboard/questionnaires" 
                      style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">
                     Remplir les questionnaires
                   </a>

@@ -1,0 +1,67 @@
+=======================================
+Date: 13 novembre 2025
+
+ TOUTES LES PRIORITÉS COMPLÉTÉES
+
+Priorité 1 - CRITIQUE (Corrigé) ✅
+-----------------------------------
+1. ✅ Fichier api/src/routes/questionnaires.js
+   - Code corrompu réparé (fragments mal placés supprimés)
+   - Import DNSMScoringService ajouté
+   - Fonction normalizeIdempotencyKey implémentée localement
+   - Syntaxe JavaScript validée
+
+2. ✅ TODOs d'authentification dans Functions corrigés
+   - verifyAuth + requireOwnerOrPractitioner sur tous les endpoints
+   - Vérification ownership patient/praticien implémentée
+   - Vérification practitionerId sur endpoint /complete
+   - migrateQuestionnairesToRoot: authentication par MIGRATION_SECRET
+
+Priorité 2 - IMPORTANT (Implémenté) ✅
+---------------------------------------
+3. ✅ Validation réponses obligatoires avant submit
+   - Vérification questions.required dans API et Functions
+   - Retour erreur 400 avec liste des questions manquantes
+   - Messages d'erreur explicites
+
+4. ✅ Idempotence sur submit/complete
+   - Collection idempotency utilisée pour déduplication
+   - Clé Idempotency-Key header supportée (8-128 chars)
+   - Réponses idempotentes retournent le timestamp original
+
+Priorité 3 - AMÉLIORATIONS (Complété) 
+-----------------------------------------
+5. ✅ Nettoyage fichiers backup
+   - scoring.js.bak, scoring.js.bak2, scoring_ascii.js
+   - Déplacés vers .archive/api-services-backup/
+   - Dossier services/ nettoyé
+
+VALIDATION
+----------
+ get_errors: Aucune erreur TypeScript/ESLint
+ api build: OK (JS, pas de build requis)
+ functions build: OK (TypeScript compilé)
+
+FICHIERS MODIFIÉS
+-----------------
+- api/src/routes/questionnaires.js (réécrit proprement)
+- functions/src/http/routes/questionnaires.ts (TODOs résolus)
+- functions/src/migrateQuestionnairesToRoot.ts (auth ajoutée)
+- Archivage: .archive/api-services-backup/
+
+AMÉLIORATION SÉCURITÉ
+---------------------
+ Tous les endpoints protégés par authentification
+ Vérification ownership patient/praticien sur toutes les routes
+ Validation des données obligatoires avant soumission
+ Protection contre double-soumission (idempotence)
+ Migration protégée par secret token
+
+PROCHAINES ÉTAPES RECOMMANDÉES
+-------------------------------
+[ ] Tests unitaires pour les nouveaux validateurs
+[ ] Tests E2E pour les flux submit/complete
+[ ] Documentation API mise à jour (OpenAPI/Swagger)
+[ ] Monitoring et alertes sur erreurs 403/validation
+
+Session terminée avec succès ! 🎉

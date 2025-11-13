@@ -1,0 +1,9 @@
+patientUid,email,subPath,templateId,status,assignedAt,rootExists,action
+5KUYcrPeeLaj28V5w05VqGuUn3B2,martialcayre@live.fr,patients/5KUYcrPeeLaj28V5w05VqGuUn3B2/questionnaires/dnsm,dnsm,pending,[object Object],true,delete
+5KUYcrPeeLaj28V5w05VqGuUn3B2,martialcayre@live.fr,patients/5KUYcrPeeLaj28V5w05VqGuUn3B2/questionnaires/life-journey,life-journey,pending,[object Object],true,delete
+5KUYcrPeeLaj28V5w05VqGuUn3B2,martialcayre@live.fr,patients/5KUYcrPeeLaj28V5w05VqGuUn3B2/questionnaires/nutri-assessment,nutri-assessment,pending,[object Object],true,delete
+5KUYcrPeeLaj28V5w05VqGuUn3B2,martialcayre@live.fr,patients/5KUYcrPeeLaj28V5w05VqGuUn3B2/questionnaires/plaintes-et-douleurs,plaintes-et-douleurs,pending,[object Object],true,delete
+kNfyLteJLwd21KComYaCx0telS43,annedogne1@gmail.com,patients/kNfyLteJLwd21KComYaCx0telS43/questionnaires/kNfyLteJLwd21KComYaCx0telS43_dnsm,dnsm,pending,[object Object],true,delete
+kNfyLteJLwd21KComYaCx0telS43,annedogne1@gmail.com,patients/kNfyLteJLwd21KComYaCx0telS43/questionnaires/kNfyLteJLwd21KComYaCx0telS43_mode-de-vie,mode-de-vie,pending,[object Object],true,delete
+kNfyLteJLwd21KComYaCx0telS43,annedogne1@gmail.com,patients/kNfyLteJLwd21KComYaCx0telS43/questionnaires/kNfyLteJLwd21KComYaCx0telS43_nutri-assessment,nutri-assessment,pending,[object Object],true,delete
+kNfyLteJLwd21KComYaCx0telS43,annedogne1@gmail.com,patients/kNfyLteJLwd21KComYaCx0telS43/questionnaires/kNfyLteJLwd21KComYaCx0telS43_plaintes-et-douleurs,plaintes-et-douleurs,pending,[object Object],true,delete
