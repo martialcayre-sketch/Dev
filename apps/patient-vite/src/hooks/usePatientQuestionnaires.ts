@@ -88,7 +88,7 @@ export function usePatientQuestionnaires() {
         document.removeEventListener('visibilitychange', onVisibility);
       };
     }
-  }, [user, userLoading]);
+  }, [user?.uid, userLoading]);
 
   const counts = useMemo(() => {
     const pending = items.filter(
