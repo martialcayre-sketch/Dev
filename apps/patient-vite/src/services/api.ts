@@ -28,7 +28,7 @@ async function getAuthToken(): Promise<string> {
  * Create API client instance with Firebase Auth
  */
 const api = new ApiClient({
-  baseUrl: '/api',
+  baseUrl: import.meta.env.VITE_API_BASE_URL || '/api',
   timeout: 30000,
   getAuthToken,
 });
