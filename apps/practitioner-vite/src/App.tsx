@@ -33,7 +33,12 @@ const ConsultationDetailPage = lazy(() => import('./pages/ConsultationDetailPage
 export default function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter>
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
         <Suspense
           fallback={
             <div className="flex items-center justify-center min-h-screen">Chargement...</div>

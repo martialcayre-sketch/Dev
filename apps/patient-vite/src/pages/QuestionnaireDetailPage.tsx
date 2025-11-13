@@ -93,15 +93,12 @@ export default function QuestionnaireDetailPage() {
 
         // Redirection pour le questionnaire Mode de vie vers la nouvelle page dédiée
         if (id === 'life-journey') {
-          console.log('[QuestionnaireDetail] Redirecting to /dashboard/life-journey');
           navigate('/dashboard/life-journey', { replace: true });
           return;
         }
 
         // Lire via API backend (source unifiée root collection)
         const { questionnaire: q } = await api.getQuestionnaireDetail(user.uid, id);
-        console.log('[QuestionnaireDetail] Loaded questionnaire (API):', q);
-        console.log('[QuestionnaireDetail] Responses from API:', q.responses);
         setQuestionnaire(q);
 
         // Initialiser les réponses avec valeurs par défaut pour plaintes-et-douleurs
@@ -109,13 +106,11 @@ export default function QuestionnaireDetailPage() {
           const defaultResponses: Record<string, number> = {};
           const questions = getQuestions(id);
           const qResponses = (q.responses || {}) as ResponseMap;
-          console.log('[QuestionnaireDetail] qResponses:', qResponses);
           questions.forEach((question) => {
             // Si la réponse existe, l'utiliser, sinon mettre 5 par défaut
             const existing = qResponses[question.id];
             defaultResponses[question.id] = typeof existing === 'number' ? existing : 5;
           });
-          console.log('[QuestionnaireDetail] Final responses set:', defaultResponses);
           setResponses(defaultResponses);
         } else {
           const qResponses = (q.responses || {}) as ResponseMap;

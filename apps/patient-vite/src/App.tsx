@@ -17,7 +17,12 @@ const IdentificationPage = lazy(() => import('./pages/IdentificationPage'));
 function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter>
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
         <Suspense
           fallback={
             <div className="flex items-center justify-center min-h-screen">Chargement...</div>

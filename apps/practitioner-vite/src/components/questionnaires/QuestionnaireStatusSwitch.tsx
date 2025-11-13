@@ -27,7 +27,7 @@ export function QuestionnaireStatusSwitch({
       setError(null);
       const fn = httpsCallable(getFunctions(), 'setQuestionnaireStatus');
       await fn({ patientId, questionnaireId, status: 'completed' });
-      console.log('[QuestionnaireStatusSwitch] Locked -> completed');
+      // Status change: locked -> completed
       onStatusChanged?.();
     } catch (err: any) {
       console.error('[QuestionnaireStatusSwitch] Error locking:', err);
@@ -43,7 +43,7 @@ export function QuestionnaireStatusSwitch({
       setError(null);
       const fn = httpsCallable(getFunctions(), 'setQuestionnaireStatus');
       await fn({ patientId, questionnaireId, status: 'reopened' });
-      console.log('[QuestionnaireStatusSwitch] Reopened');
+      // Status change: reopened
       onStatusChanged?.();
     } catch (err: any) {
       console.error('[QuestionnaireStatusSwitch] Error reopening:', err);
@@ -65,14 +65,14 @@ export function QuestionnaireStatusSwitch({
             {currentStatus === 'pending'
               ? 'En attente'
               : currentStatus === 'in_progress'
-                ? 'En cours'
-                : currentStatus === 'submitted'
-                  ? 'Soumis'
-                  : currentStatus === 'completed'
-                    ? 'Validé'
-                    : currentStatus === 'reopened'
-                      ? 'Rouvert'
-                      : currentStatus}
+              ? 'En cours'
+              : currentStatus === 'submitted'
+              ? 'Soumis'
+              : currentStatus === 'completed'
+              ? 'Validé'
+              : currentStatus === 'reopened'
+              ? 'Rouvert'
+              : currentStatus}
           </span>
         </span>
         {isCompleted ? (

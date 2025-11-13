@@ -160,7 +160,7 @@ export default function PatientDetailPage() {
 
     // Attendre que l'authentification soit chargée
     if (authLoading) {
-      console.log('[PatientDetailPage] Waiting for auth...');
+      // Waiting for authentication...
       return;
     }
 
@@ -172,7 +172,7 @@ export default function PatientDetailPage() {
       return;
     }
 
-    console.log('[PatientDetailPage] Practitioner logged in:', user.uid, user.email);
+    // Practitioner authenticated
 
     if (!id) {
       console.error('[PatientDetailPage] No patient ID provided');
@@ -181,31 +181,26 @@ export default function PatientDetailPage() {
       return;
     }
 
-    console.log('[PatientDetailPage] Loading patient:', id);
+    // Loading patient data
 
     // Load patient data
     const loadPatient = async () => {
       try {
-        console.log('[PatientDetailPage] Fetching patient document...');
+        // Fetching patient document
         const patientDoc = await getDoc(doc(firestore, 'patients', id));
 
-        console.log('[PatientDetailPage] Patient doc exists:', patientDoc.exists());
+        // Patient document fetched
 
         if (patientDoc.exists()) {
           const patientData = { uid: id, ...patientDoc.data() } as Patient;
-          console.log('[PatientDetailPage] Patient data loaded:', {
-            uid: patientData.uid,
-            email: patientData.email,
-            status: patientData.status,
-            practitionerId: patientDoc.data().practitionerId,
-          });
+          // Patient data loaded successfully
           setPatient(patientData);
 
           // Load questionnaires via API
           try {
             const { questionnaires: questionnairesList } = await api.getPatientQuestionnaires(id);
             setQuestionnaires(questionnairesList);
-            console.log('[PatientDetailPage] Questionnaires loaded:', questionnairesList.length);
+            // Questionnaires loaded
           } catch (qErr) {
             console.error('[PatientDetailPage] Error loading questionnaires:', qErr);
             // Non-blocking, continue with empty list
