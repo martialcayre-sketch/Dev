@@ -16,6 +16,8 @@ export { migrateQuestionnairesToRoot } from './migrateQuestionnairesToRoot';
 export { onQuestionnaireCompleted } from './onQuestionnaireCompleted';
 export { setQuestionnaireStatus } from './setQuestionnaireStatus';
 export { submitQuestionnaire } from './submitQuestionnaire';
+// 📚 Bibliothèque questionnaires pour praticiens
+export { assignSelectedQuestionnaires, getQuestionnaireLibrary } from './questionnaireLibrary';
 setGlobalOptions({
   region: 'europe-west1',
   maxInstances: 10,

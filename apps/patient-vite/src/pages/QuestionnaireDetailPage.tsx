@@ -101,21 +101,9 @@ export default function QuestionnaireDetailPage() {
         const { questionnaire: q } = await api.getQuestionnaireDetail(user.uid, id);
         setQuestionnaire(q);
 
-        // Initialiser les réponses avec valeurs par défaut pour plaintes-et-douleurs
-        if (id === 'plaintes-et-douleurs') {
-          const defaultResponses: Record<string, number> = {};
-          const questions = getQuestions(id);
-          const qResponses = (q.responses || {}) as ResponseMap;
-          questions.forEach((question) => {
-            // Si la réponse existe, l'utiliser, sinon mettre 5 par défaut
-            const existing = qResponses[question.id];
-            defaultResponses[question.id] = typeof existing === 'number' ? existing : 5;
-          });
-          setResponses(defaultResponses);
-        } else {
-          const qResponses = (q.responses || {}) as ResponseMap;
-          setResponses(qResponses);
-        }
+        // Charger les réponses existantes sans valeurs par défaut
+        const qResponses = (q.responses || {}) as ResponseMap;
+        setResponses(qResponses);
       } catch (e: unknown) {
         console.error('[QuestionnaireDetail] Error:', e);
         const message = e instanceof Error ? e.message : String(e);
@@ -211,7 +199,10 @@ export default function QuestionnaireDetailPage() {
   // Mode de vie redirige vers la page dédiée life-journey
 
   const handleSaveClick = () => handleSave();
-  const canEdit = questionnaire.status !== 'submitted' && questionnaire.status !== 'completed';
+  // Allow edit until practitioner confirms (completed status)
+  // submitted = sent to practitioner but can still be modified
+  // completed = practitioner has reviewed, no more edits
+  const canEdit = questionnaire.status !== 'completed';
 
   // DNSM specialized rendering
   if (isDNSM) {

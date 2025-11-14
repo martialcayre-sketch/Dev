@@ -10,6 +10,11 @@ export type QuestionType =
   | 'multiple-choice';
 
 /**
+ * Variantes d'âge pour adaptation questionnaires
+ */
+export type AgeVariant = 'adult' | 'teen' | 'kid';
+
+/**
  * Schéma de couleur pour les questions d'échelle
  */
 export type ColorScheme =
@@ -109,6 +114,9 @@ export interface QuestionnaireMetadata {
   version?: string;
   author?: string;
   tags?: string[];
+  // 🧠 Support variantes d'âge
+  ageVariant?: AgeVariant;
+  baseTemplateId?: string; // ID du template de base
 }
 
 /**
@@ -196,6 +204,10 @@ export interface QuestionnaireDoc {
   updatedAt?: Date;
   submittedAt?: Date | null;
   completedAt?: Date | null;
+  // 🧠 Informations patient pour adaptation
+  patientAge?: number;
+  ageVariant?: AgeVariant;
+  requiresParentAssistance?: boolean;
 }
 
 /**

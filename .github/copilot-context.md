@@ -415,23 +415,6 @@ interface Patient {
 }
 ```
 
-### Questionnaire Document (ROOT COLLECTION)
-
-```typescript
-// Collection: questionnaires/{templateId}_{patientUid}
-interface Questionnaire {
-  id: string; // Format: {templateId}_{patientUid}
-  templateId: string; // e.g., "dnsm", "life-journey"
-  patientUid: string;
-  title: string;
-  status: 'pending' | 'in_progress' | 'submitted' | 'completed';
-  responses: Record<string, any>;
-  assignedAt: Timestamp;
-  submittedAt?: Timestamp;
-  completedAt?: Timestamp;
-}
-```
-
 **Note:** Legacy subcollection `patients/{uid}/questionnaires/{id}` has been purged (Nov 13, 2025).
 
 ### Idempotency Document

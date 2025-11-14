@@ -1,3 +1,4 @@
+import { canAssignQuestionnaires, detectPatientAge } from '@neuronutrition/shared-core';
 import * as admin from 'firebase-admin';
 import * as logger from 'firebase-functions/logger';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
@@ -26,6 +27,32 @@ export const assignQuestionnaires = onCall(async (request) => {
   try {
     logger.info(`Assigning questionnaires to patient ${patientUid}`);
 
+    // 🧠 VALIDATION AGE ET IDENTIFICATION
+    const patientDoc = await db.collection('patients').doc(patientUid).get();
+    const patientData = patientDoc.data();
+
+    const ageValidation = canAssignQuestionnaires({
+      uid: patientUid,
+      birthDate: patientData?.identification?.birthDate,
+    });
+
+    if (!ageValidation.canAssign) {
+      logger.warn(`Cannot assign questionnaires to patient ${patientUid}: ${ageValidation.reason}`);
+      throw new HttpsError(
+        'failed-precondition',
+        ageValidation.reason || 'Identification patient requise'
+      );
+    }
+
+    const ageResult = detectPatientAge({
+      uid: patientUid,
+      birthDate: patientData?.identification?.birthDate,
+    });
+
+    logger.info(
+      `Patient ${patientUid} age detection: ${ageResult.ageInYears} years, variant: ${ageResult.variant}`
+    );
+
     // Vérifier si déjà assignés en root (via le premier ID unique)
     const uniqueFirstId = `${DEFAULT_QUESTIONNAIRES[0].id}_${patientUid}`;
     const firstQuestionnaireSnap = await db.collection('questionnaires').doc(uniqueFirstId).get();
@@ -51,6 +78,10 @@ export const assignQuestionnaires = onCall(async (request) => {
         assignedAt: now,
         completedAt: null,
         responses: {},
+        // 🧠 Informations d'âge pour adaptation interface
+        patientAge: ageResult.ageInYears,
+        ageVariant: ageResult.variant,
+        requiresParentAssistance: ageResult.variant === 'kid',
       };
 
       // Write to root collection (ID unique template_patient)

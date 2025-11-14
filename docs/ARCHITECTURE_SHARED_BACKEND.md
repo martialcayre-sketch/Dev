@@ -1,5 +1,7 @@
 # Architecture Backend Partagé - Recommandation
 
+<!-- markdownlint-disable MD024 -->
+
 ## 🎯 Problème Identifié
 
 ### Situation Actuelle

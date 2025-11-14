@@ -1,6 +1,8 @@
 // Auto-generated questionnaires index
 // Do not edit manually
 
+export * from './age-variants';
+export * from './questionnaire-library';
 export * from './types';
 
 // alimentaire
@@ -95,7 +97,6 @@ export { test_qct2_de_gilliard_questionnaire_de_comportement_tabagique_def_pro }
 export { catalogue_mictionnel } from './questionnaires/urologie/catalogue-mictionnel';
 export { ipss_international_prostate_score_symptom_pro } from './questionnaires/urologie/ipss-international-prostate-score-symptom-pro';
 
-import type { Questionnaire } from './types';
 import { evaluation_des_apports_caloriques_et_proteiques_alimentaires_selon_le_pr_l_monnier_def_patient } from './questionnaires/alimentaire/evaluation-des-apports-caloriques-et-proteiques-alimentaires-selon-le-pr-l-monnier-def-patient';
 import { monnier_def_pro } from './questionnaires/alimentaire/monnier-def-pro';
 import { questionnaire_alimentaire_de_diete_mediterraneenne_def } from './questionnaires/alimentaire/questionnaire-alimentaire-de-diete-mediterraneenne-def';
@@ -160,6 +161,7 @@ import { test_motivation_a_larret_du_tabac_lagrue_et_legeron_def_pro } from './q
 import { test_qct2_de_gilliard_questionnaire_de_comportement_tabagique_def_pro } from './questionnaires/tabacologie/test-qct2-de-gilliard-questionnaire-de-comportement-tabagique-def-pro';
 import { catalogue_mictionnel } from './questionnaires/urologie/catalogue-mictionnel';
 import { ipss_international_prostate_score_symptom_pro } from './questionnaires/urologie/ipss-international-prostate-score-symptom-pro';
+import type { Questionnaire } from './types';
 
 export function getAllQuestionnaires(): Questionnaire[] {
   return [
@@ -231,9 +233,9 @@ export function getAllQuestionnaires(): Questionnaire[] {
 }
 
 export function getQuestionnaireById(id: string): Questionnaire | undefined {
-  return getAllQuestionnaires().find(q => q.metadata.id === id);
+  return getAllQuestionnaires().find((q) => q.metadata.id === id);
 }
 
 export function getQuestionnairesByCategory(category: string): Questionnaire[] {
-  return getAllQuestionnaires().filter(q => q.metadata.category === category);
+  return getAllQuestionnaires().filter((q) => q.metadata.category === category);
 }

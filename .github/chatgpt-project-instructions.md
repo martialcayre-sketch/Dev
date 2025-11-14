@@ -102,6 +102,7 @@ pnpm --filter @neuronutrition/patient-vite build
 
 #### Deploying to Production
 
+````bash
 ```bash
 # Deploy patient app
 firebase deploy --only hosting:patient
@@ -114,7 +115,9 @@ firebase deploy --only functions
 
 # Deploy everything
 firebase deploy
-```
+````
+
+````
 
 #### Running Tests
 
@@ -127,7 +130,7 @@ pnpm exec playwright test
 
 # Specific E2E test
 pnpm exec playwright test e2e/auth-debug.spec.ts
-```
+````
 
 ## 🎓 Key Concepts
 

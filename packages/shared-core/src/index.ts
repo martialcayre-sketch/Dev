@@ -8,3 +8,5 @@ export function isDev(): boolean {
   return process.env.NODE_ENV !== 'production';
 }
 
+// 🧠 Age Detection System
+export * from './age-detection';

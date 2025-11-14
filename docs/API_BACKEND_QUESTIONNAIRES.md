@@ -1,5 +1,7 @@
 # 🔌 API Backend - Questionnaires
 
+<!-- markdownlint-disable MD024 -->
+
 Documentation complète de l'API Cloud Functions pour la gestion des questionnaires.
 
 ## ✅ État actuel (Novembre 2025)
@@ -14,13 +16,13 @@ Documentation complète de l'API Cloud Functions pour la gestion des questionnai
 
 ## 📋 Table des matières
 
-1. [Vue d'ensemble](#vue-densemble)
-2. [Cloud Functions disponibles](#cloud-functions-disponibles)
-3. [Endpoints HTTP](#endpoints-http-proposés)
-4. [Modèles de données](#modèles-de-données)
-5. [Flux de travail](#flux-de-travail)
-6. [Sécurité et permissions](#sécurité-et-permissions)
-7. [Optimisations proposées](#optimisations-proposées)
+1. [Vue d'ensemble](#-vue-densemble)
+2. [Cloud Functions disponibles](#-cloud-functions-disponibles)
+3. [Endpoints HTTP](#-endpoints-http-proposés)
+4. [Modèles de données](#-modèles-de-données)
+5. [Flux de travail](#-flux-de-travail)
+6. [Sécurité et permissions](#-sécurité-et-permissions)
+7. [Optimisations proposées](#-optimisations-proposées)
 
 ---
 

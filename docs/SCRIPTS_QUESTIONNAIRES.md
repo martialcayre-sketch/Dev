@@ -1,5 +1,7 @@
 # 🛠️ Scripts de gestion des questionnaires
 
+<!-- markdownlint-disable MD024 -->
+
 Documentation des scripts d'audit, backfill et purge pour la gestion des questionnaires.
 
 ## 📋 Vue d'ensemble
