@@ -62,6 +62,7 @@ Les Pull Requests déclenchent automatiquement des **previews temporaires** sur 
 - [No Code](docs/NO_CODE.md) - Documentation du mode no-code
 - [Verify](docs/VERIFY.md) - Scripts de vérification
 - [E2E Testing](E2E_TESTING_SUMMARY.md) - Tests end-to-end
+- [Branch Status](docs/BRANCH_STATUS.md) - Vérifier quelle branche est la plus récente
 
 ## 🌐 URLs
 

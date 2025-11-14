@@ -76,6 +76,41 @@ Lance 3 terminaux :
 - `start-practitioner-dev.ps1` : Lance uniquement l'app Practitioner
 - `setup-github-preview.ps1` : Configuration GitHub Actions preview
 - `test-preview-local.ps1` : Test local du workflow preview
+- `check-latest-branch.sh` / `check-latest-branch.ps1` : Vérifier quelle branche est la plus récente
+
+### `check-latest-branch.sh` / `check-latest-branch.ps1` - Analyse des branches
+
+Script pour identifier quelle branche est la plus récente et comparer avec la branche main.
+
+**Utilisation** :
+
+```bash
+# Linux/Mac
+bash scripts/check-latest-branch.sh
+
+# Windows PowerShell
+.\scripts\check-latest-branch.ps1
+```
+
+**Fonctionnalités** :
+
+- Affiche le top 10 des branches les plus récentes par date de commit
+- Compare la branche main avec les autres branches
+- Indique quelle branche a les commits les plus récents
+- Récupère automatiquement les dernières informations depuis le dépôt distant
+
+**Exemple de sortie** :
+
+```
+📊 Top 10 des branches les plus récentes:
+  2025-11-12 origin/copilot/check-latest-branch - Initial plan
+  2025-11-11 origin/main - feat: configure Copilot context files
+  ...
+
+🏆 Branche la plus récente:
+  Nom: origin/copilot/check-latest-branch
+  Date: 2025-11-12 12:06:42 +0000
+```
 
 ## 📋 URLs après démarrage
 
