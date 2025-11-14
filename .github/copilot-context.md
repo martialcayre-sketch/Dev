@@ -1,16 +1,24 @@
 # GitHub Copilot & Codex - Project Context
 
 > **NeuroNutrition App** - Healthcare Web Application for Practitioner-Patient Management  
-> **Last Updated:** 13 novembre 2025 - Migration root-only complétée
+> **Last Updated:** 15 novembre 2025 - Système d'âge Master Document V3 complété
 
 ## 🎯 Project Overview
 
 **Type:** Full-stack web application (Healthcare/Wellness)  
-**Architecture:** Monorepo with separate Patient and Practitioner SPAs  
-**Stack:** React 18 + TypeScript + Vite + Firebase  
+**Architecture:** Monorepo with separate Patient and Practitioner SPAs + Age-adaptive questionnaire system  
+**Stack:** React 18 + TypeScript + Vite + Firebase + Age detection system  
 **Deployment:** Firebase Hosting (multi-site) + Cloud Functions v2  
 **Database:** Firestore NoSQL  
-**Authentication:** Firebase Auth (Email, Google, Facebook, LinkedIn)
+**Authentication:** Firebase Auth (Email, Google, Facebook, LinkedIn)  
+
+### 🧠 NEW: Age-Adaptive System (Master Document V3)
+
+- **Age Detection:** Automatic calculation from birth date (adult 18+, teen 13-17, kid 0-12)
+- **Questionnaire Variants:** Auto-generated teen/kid versions with vocabulary simplification
+- **Parent/Child Mode:** Assistance interface for kids with parent help toggles
+- **Practitioner Library:** Secure API with manual questionnaire assignment
+- **UX Adaptation:** Age-specific interfaces, colors, language, and navigation
 
 ## 🏗️ Workspace Structure
 
@@ -21,15 +29,16 @@ C:/Dev/ (pnpm monorepo, 13 packages)
 │   ├── practitioner-vite/     # Practitioner SPA (React + Vite, port 3010)
 │   └── mobile/                # React Native (not in use)
 ├── packages/
-│   ├── shared-core/           # Business logic, types, utilities
+│   ├── shared-core/           # Business logic, types, utilities + AGE DETECTION SYSTEM
 │   ├── shared-ui/             # Reusable UI components
 │   ├── shared-charts/         # Chart components (Recharts)
-│   ├── shared-questionnaires/ # Questionnaire definitions
+│   ├── shared-questionnaires/ # Questionnaire definitions + AGE VARIANTS ENGINE
 │   ├── shared-api/            # API client utilities
 │   ├── data-questionnaires/   # Questionnaire JSON data
 │   └── corpus-ia/             # AI/ML utilities
 ├── functions/                 # Cloud Functions (Node 20, europe-west1)
-│   ├── assignQuestionnaires.ts
+│   ├── assignQuestionnaires.ts      # WITH AGE VALIDATION
+│   ├── questionnaireLibrary.ts      # NEW: Practitioner library API
 │   ├── activatePatient.ts
 │   └── invitePatient.ts
 ├── firebase.json              # Multi-site hosting config
@@ -396,6 +405,10 @@ interface Questionnaire {
   assignedAt: Timestamp;
   submittedAt?: Timestamp;
   completedAt?: Timestamp;
+  // 🧠 NEW: Age information for interface adaptation
+  patientAge?: number;
+  ageVariant?: 'adult' | 'teen' | 'kid';
+  requiresParentAssistance?: boolean;
 }
 ```
 
@@ -477,6 +490,35 @@ interface LifeJourneyResult {
 - **Tailwind CSS:** https://tailwindcss.com/docs
 - **TypeScript Handbook:** https://www.typescriptlang.org/docs
 - **Recharts API:** https://recharts.org/en-US/api
+
+---
+
+## 🧠 Age-Adaptive System Architecture (Master Document V3)
+
+### Core Components
+
+- **packages/shared-core/src/age-detection.ts:** Age calculation and variant detection
+- **packages/shared-questionnaires/src/age-variants.ts:** Automatic teen/kid questionnaire generation  
+- **functions/src/questionnaireLibrary.ts:** Practitioner library API with age-aware assignment
+- **apps/patient-vite/src/components/questionnaire/ParentChildQuestionnaire.tsx:** Kid-friendly interface
+- **apps/practitioner-vite/src/components/questionnaire/QuestionnaireLibrary.tsx:** Assignment interface
+
+### Age Detection Logic
+
+```typescript
+Age Classification:
+- 0-12 years: 'kid' (requires parent assistance)  
+- 13-17 years: 'teen' (informal language, encouragement)
+- 18+ years: 'adult' (standard interface)
+
+Validation: No questionnaire assignment without birth date in identification
+```
+
+### UX Adaptations by Age
+
+- **Kids:** Large buttons, emojis, parent help toggle, simplified vocabulary
+- **Teens:** Informal language (tutoiement), modern colors, motivational messages  
+- **Adults:** Standard professional interface
 
 ---
 
