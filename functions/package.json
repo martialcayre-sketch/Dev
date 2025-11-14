@@ -14,19 +14,19 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "express": "^4.19.2",
+    "express": "^5.1.0",
     "firebase-admin": "^13.6.0",
     "firebase-functions": "^7.0.0",
-    "zod": "^3.23.8",
+    "zod": "^4.1.12",
     "@neuronutrition/shared-questionnaires": "file:./vendor/@neuronutrition/shared-questionnaires",
     "@neuronutrition/shared-core": "file:./vendor/@neuronutrition/shared-core"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/jest": "^29.5.12",
+    "@types/express": "^5.0.5",
+    "@types/jest": "^30.0.0",
     "@types/node": "20",
     "firebase-functions-test": "^3.4.1",
-    "jest": "^29.7.0",
+    "jest": "^30.2.0",
     "supertest": "^7.0.0",
     "ts-jest": "^29.1.2",
     "typescript": "^5.7.0"
