@@ -27,7 +27,7 @@ NeuroNutrition is a monorepo (pnpm workspaces) containing:
 | Data     | Firestore: `questionnaires/{templateId}_{patientUid}`, patients, practitioners      |
 | Auth     | Firebase Auth + custom claims (practitioner/admin)                                  |
 | Secrets  | Firebase Secret Manager (MANUAL_ASSIGN_SECRET, MIGRATION_SECRET)                    |
-| Tooling  | pnpm 10.22.0, Turborepo, Jest (functions), Vitest (apps), Husky, cspell             |
+| Tooling  | pnpm 10.22.0+sha512.a8024f681e65c5fc6f0078d54b4d84267e65c7c8e7cf6b85d5acaa3b9e43fcbb4e0c0e4bab3b6f7eedbe59d13c43b6b42b29b6e7a5, Turborepo, Jest (functions), Vitest (apps), Husky, cspell             |
 
 ### TypeScript & Build Guidelines (v3 Compliance)
 

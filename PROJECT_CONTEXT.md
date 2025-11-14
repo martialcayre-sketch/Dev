@@ -1,6 +1,6 @@
 # NeuroNutrition App - Context & Structure
 
-> **Dernière mise à jour:** 13 novembre 2025 - Migration root-only terminée + Purge legacy complétée
+> **Dernière mise à jour:** 14 novembre 2025 - Migration root-only terminée + Purge legacy complétée
 
 ## 📋 Project Overview
 
