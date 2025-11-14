@@ -8,7 +8,6 @@ import * as logger from 'firebase-functions/logger';
 import { auth as authV1 } from 'firebase-functions/v1';
 import { setGlobalOptions } from 'firebase-functions/v2';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
-import { DEFAULT_QUESTIONNAIRES } from './constants/questionnaires';
 export { assignQuestionnaires } from './assignQuestionnaires';
 export { api } from './http/app';
 export { manualAssignQuestionnaires } from './manualAssignQuestionnaires';
@@ -18,6 +17,14 @@ export { setQuestionnaireStatus } from './setQuestionnaireStatus';
 export { submitQuestionnaire } from './submitQuestionnaire';
 // 📚 Bibliothèque questionnaires pour praticiens
 export { assignSelectedQuestionnaires, getQuestionnaireLibrary } from './questionnaireLibrary';
+// 🧠 APIs scoring et graphiques centralisés
+export {
+  calculateQuestionnaireScores,
+  generateQuestionnaireChart,
+  getPractitionerScoresDashboard,
+} from './scoringApis';
+// 🎯 Nouvelles fonctions pour détection d'âge et assignation intelligente
+export { assignAgeAppropriateQuestionnaires } from './utils/ageAwareAssignment';
 setGlobalOptions({
   region: 'europe-west1',
   maxInstances: 10,
@@ -290,86 +297,26 @@ export const activatePatient = onCall(async (request) => {
       }
     }
 
-    logger.info('🎉 SUCCESS: Base activation done, starting questionnaire assignment');
+    logger.info('🎉 SUCCESS: Base activation done');
 
-    let questionnairesAssigned = 0;
-    const assignmentErrors: { id: string; error: string }[] = [];
-    try {
-      const timestamp = FieldValue.serverTimestamp();
-      for (const template of DEFAULT_QUESTIONNAIRES) {
-        const uniqueId = `${template.id}_${patientUid}`;
-        const rootRef = db.collection('questionnaires').doc(uniqueId);
-        const base = {
-          ...template,
-          patientUid,
-          practitionerId: practitionerId || null,
-          status: 'pending',
-          assignedAt: timestamp,
-          completedAt: null,
-          responses: {},
-        };
-        try {
-          logger.info(`➡️ [Assign] ${template.id}`);
-          await rootRef.set(base, { merge: true });
-          questionnairesAssigned++;
-          logger.info(`✅ [Assign] ${template.id}`);
-        } catch (e: any) {
-          logger.error(`❌ [Assign] ${template.id}: ${e.message}`);
-          assignmentErrors.push({ id: template.id, error: e.message });
-        }
-      }
+    // ⚠️ IMPORTANT: Ne pas assigner les questionnaires immédiatement
+    // L'assignation se fera APRÈS la fiche d'identification (détection d'âge)
+    await patientRef.update({
+      hasQuestionnairesAssigned: false,
+      identificationRequired: true,
+      activationCompletedAt: FieldValue.serverTimestamp(),
+    });
 
-      if (questionnairesAssigned > 0) {
-        await patientRef.update({
-          hasQuestionnairesAssigned: true,
-          questionnairesAssignedAt: FieldValue.serverTimestamp(),
-          pendingQuestionnairesCount: questionnairesAssigned,
-        });
-      }
-
-      if (questionnairesAssigned === DEFAULT_QUESTIONNAIRES.length) {
-        await db
-          .collection('patients')
-          .doc(patientUid)
-          .collection('notifications')
-          .add({
-            type: 'questionnaires_assigned',
-            title: 'Questionnaires disponibles',
-            message: `${questionnairesAssigned} questionnaires assignés`,
-            read: false,
-            createdAt: FieldValue.serverTimestamp(),
-            link: '/dashboard/questionnaires',
-          });
-      }
-
-      if (patientEmail && questionnairesAssigned === DEFAULT_QUESTIONNAIRES.length) {
-        await db.collection('mail').add({
-          to: patientEmail,
-          message: {
-            subject: '📋 Questionnaires à compléter - NeuroNutrition',
-            html: `${questionnairesAssigned} questionnaires disponibles pour démarrer votre suivi.`,
-          },
-        });
-      }
-
-      if (assignmentErrors.length) {
-        logger.warn(
-          `⚠️ [Assign] Partial: ${questionnairesAssigned}/${DEFAULT_QUESTIONNAIRES.length}`
-        );
-      } else {
-        logger.info('🎉 [Assign] All questionnaires assigned');
-      }
-    } catch (fatal: any) {
-      logger.error('💥 [Assign] Fatal assignment error', fatal);
-      throw new HttpsError('internal', 'Failed to assign questionnaires');
-    }
+    logger.info(
+      '✅ Patient activation completed - identification required before questionnaire assignment'
+    );
 
     return {
       success: true,
       message: 'Compte activé avec succès',
       status: 'approved',
-      questionnairesAssigned,
-      assignmentErrors,
+      identificationRequired: true,
+      nextStep: 'complete_identification',
     };
   } catch (error: any) {
     logger.error('❌ ERROR: Failed to activate patient:', error);

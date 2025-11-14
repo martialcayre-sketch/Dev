@@ -167,6 +167,7 @@ if (!identificationDoc.exists()) {
    ```
 
 2. **Validation identification obligatoire**
+
    ```typescript
    // functions/src/assignQuestionnaires.ts
    // Ajouter check identification avant assignment
@@ -195,6 +196,7 @@ if (!identificationDoc.exists()) {
    ```
 
 3. **Option "parent répond"**
+
    ```typescript
    // Ajouter toggle UI + stockage metadata
    responses: {
@@ -217,6 +219,7 @@ if (!identificationDoc.exists()) {
    ```
 
 2. **Interface assignment**
+
    ```bash
    # Composant sélection questionnaire + auto-détection âge
    touch apps/practitioner-vite/src/components/QuestionnaireAssignmentModal.tsx
@@ -234,6 +237,7 @@ if (!identificationDoc.exists()) {
    ```
 
 2. **Composants visualisation par âge**
+
    ```bash
    # Radars adulte/teen, pictogrammes kids
    touch packages/shared-charts/src/components/AgeAdaptiveRadar.tsx

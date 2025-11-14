@@ -10,7 +10,7 @@
 **Stack:** React 18 + TypeScript + Vite + Firebase + Age detection system  
 **Deployment:** Firebase Hosting (multi-site) + Cloud Functions v2  
 **Database:** Firestore NoSQL  
-**Authentication:** Firebase Auth (Email, Google, Facebook, LinkedIn)  
+**Authentication:** Firebase Auth (Email, Google, Facebook, LinkedIn)
 
 ### 🧠 NEW: Age-Adaptive System (Master Document V3)
 
@@ -498,7 +498,7 @@ interface LifeJourneyResult {
 ### Core Components
 
 - **packages/shared-core/src/age-detection.ts:** Age calculation and variant detection
-- **packages/shared-questionnaires/src/age-variants.ts:** Automatic teen/kid questionnaire generation  
+- **packages/shared-questionnaires/src/age-variants.ts:** Automatic teen/kid questionnaire generation
 - **functions/src/questionnaireLibrary.ts:** Practitioner library API with age-aware assignment
 - **apps/patient-vite/src/components/questionnaire/ParentChildQuestionnaire.tsx:** Kid-friendly interface
 - **apps/practitioner-vite/src/components/questionnaire/QuestionnaireLibrary.tsx:** Assignment interface
@@ -507,7 +507,7 @@ interface LifeJourneyResult {
 
 ```typescript
 Age Classification:
-- 0-12 years: 'kid' (requires parent assistance)  
+- 0-12 years: 'kid' (requires parent assistance)
 - 13-17 years: 'teen' (informal language, encouragement)
 - 18+ years: 'adult' (standard interface)
 
@@ -517,7 +517,7 @@ Validation: No questionnaire assignment without birth date in identification
 ### UX Adaptations by Age
 
 - **Kids:** Large buttons, emojis, parent help toggle, simplified vocabulary
-- **Teens:** Informal language (tutoiement), modern colors, motivational messages  
+- **Teens:** Informal language (tutoiement), modern colors, motivational messages
 - **Adults:** Standard professional interface
 
 ---

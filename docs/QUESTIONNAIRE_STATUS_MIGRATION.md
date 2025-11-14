@@ -127,7 +127,7 @@ admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 // ... reste du code migration
 ```
 
-4. Exécuter : `cd functions && node ../scripts/migrate-questionnaire-status-admin.mjs`
+1. Exécuter : `cd functions && node ../scripts/migrate-questionnaire-status-admin.mjs`
 
 ---
 

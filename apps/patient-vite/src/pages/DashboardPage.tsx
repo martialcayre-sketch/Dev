@@ -65,11 +65,21 @@ interface Questionnaire {
   title: string;
   status: 'pending' | 'in_progress' | 'completed';
   assignedAt: Date;
+  ageGroup?: string;
+  estimatedMinutes?: number;
 }
 
 interface Consultation {
   id: string;
   scheduledAt: Date;
+}
+
+interface PatientProfile {
+  identificationRequired: boolean;
+  identificationCompleted: boolean;
+  ageGroup?: 'adult' | 'teen' | 'kid';
+  age?: number;
+  firstname?: string;
 }
 
 export default function DashboardPage() {
@@ -82,13 +92,38 @@ export default function DashboardPage() {
   const [hasIdentification, setHasIdentification] = useState(false);
   const [hasAnamnese, setHasAnamnese] = useState(false);
   const [actionsExpanded, setActionsExpanded] = useState(true);
+  const [patientProfile, setPatientProfile] = useState<PatientProfile | null>(null);
 
   useEffect(() => {
     if (!user || userLoading) return;
 
     const loadDashboardData = async () => {
       try {
-        // 1. Charger tous les questionnaires non complétés via API
+        // 1. Vérifier le statut d'identification V3.1
+        let identificationStatus = null;
+        try {
+          const response = await fetch('/api/patients/identification/status', {
+            headers: {
+              Authorization: `Bearer ${await user.getIdToken()}`,
+            },
+          });
+          if (response.ok) {
+            identificationStatus = await response.json();
+          }
+        } catch (error) {
+          console.warn('Could not load identification status:', error);
+        }
+
+        if (identificationStatus?.success) {
+          setPatientProfile({
+            identificationRequired: identificationStatus.identificationRequired || false,
+            identificationCompleted: identificationStatus.identificationCompleted || false,
+            ageGroup: identificationStatus.ageGroup,
+            age: identificationStatus.age,
+          });
+        }
+
+        // 2. Charger tous les questionnaires non complétés via API
         const result = await api.getPatientQuestionnaires(user.uid);
 
         if (result && result.questionnaires) {
@@ -100,19 +135,42 @@ export default function DashboardPage() {
               title: q.title || q.id,
               status: q.status as 'pending' | 'in_progress' | 'completed',
               assignedAt: q.assignedAt?.toDate ? q.assignedAt.toDate() : new Date(q.assignedAt),
+              ageGroup: identificationStatus?.ageGroup,
+              estimatedMinutes: q.estimatedMinutes,
             }));
 
           setPendingQuestionnaires(questionnaires);
-        } // 2. Vérifier si identification et anamnèse sont complétées
-        const consultationRef = collection(firestore, 'patients', user.uid, 'consultation');
+        }
+
+        // 3. Charger les consultations à venir
+        const consultationsRef = collection(firestore, 'consultations');
+        const upcomingConsultationsQuery = query(
+          consultationsRef,
+          where('patientId', '==', user.uid),
+          where('scheduledAt', '>', new Date()),
+          orderBy('scheduledAt', 'asc'),
+          limit(1)
+        );
+        const consultationsSnapshot = await getDocs(upcomingConsultationsQuery);
+        if (!consultationsSnapshot.empty) {
+          const consultationDoc = consultationsSnapshot.docs[0];
+          const consultationData = consultationDoc.data();
+          setNextConsultation({
+            id: consultationDoc.id,
+            scheduledAt: consultationData.scheduledAt.toDate(),
+          });
+        }
+
+        // 4. Vérifier l'état des fiches (legacy pour compatibilité)
+        const patientConsultationRef = collection(firestore, 'patients', user.uid, 'consultation');
 
         const identificationDoc = await getDocs(
-          query(consultationRef, where('__name__', '==', 'identification'))
+          query(patientConsultationRef, where('__name__', '==', 'identification'))
         );
         setHasIdentification(!identificationDoc.empty);
 
         const anamneseDoc = await getDocs(
-          query(consultationRef, where('__name__', '==', 'anamnese'))
+          query(patientConsultationRef, where('__name__', '==', 'anamnese'))
         );
         setHasAnamnese(!anamneseDoc.empty);
 
@@ -206,8 +264,8 @@ export default function DashboardPage() {
                 {loading
                   ? '...'
                   : nextConsultation
-                    ? formatConsultationDate(nextConsultation.scheduledAt)
-                    : 'Aucune'}
+                  ? formatConsultationDate(nextConsultation.scheduledAt)
+                  : 'Aucune'}
               </p>
             </div>
           </div>
@@ -236,10 +294,82 @@ export default function DashboardPage() {
         </div>
       </section>
 
+      {/* Section identification obligatoire V3.1 */}
+      {patientProfile?.identificationRequired && !patientProfile?.identificationCompleted && (
+        <section className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6 backdrop-blur-sm">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-amber-500/20">
+              <User className="h-6 w-6 text-amber-300" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-amber-100">🎯 Identification obligatoire</h3>
+              <p className="mt-2 text-amber-200/80">
+                Pour vous proposer des questionnaires adaptés à votre âge et vos besoins, nous avons
+                besoin que vous complétiez votre identification (âge, taille, poids...).
+              </p>
+              {patientProfile.ageGroup && (
+                <p className="mt-1 text-sm text-amber-300">
+                  🎂 Groupe d'âge détecté :{' '}
+                  {patientProfile.ageGroup === 'adult'
+                    ? 'Adulte'
+                    : patientProfile.ageGroup === 'teen'
+                    ? 'Adolescent'
+                    : 'Enfant'}{' '}
+                  ({patientProfile.age} ans)
+                </p>
+              )}
+              <button
+                onClick={() => navigate('/dashboard/identification')}
+                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700"
+              >
+                <User className="h-4 w-4" />
+                Compléter mon identification
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Message de félicitations post-identification */}
+      {patientProfile?.identificationCompleted && patientProfile?.ageGroup && (
+        <section className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-6 backdrop-blur-sm">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500/20">
+              {patientProfile.ageGroup === 'kid'
+                ? '🧒'
+                : patientProfile.ageGroup === 'teen'
+                ? '🧑‍🎓'
+                : '👤'}
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-emerald-100">✅ Profil complété !</h3>
+              <p className="mt-2 text-emerald-200/80">
+                Parfait ! Vos questionnaires ont été adaptés pour
+                {patientProfile.ageGroup === 'adult'
+                  ? ' les adultes'
+                  : patientProfile.ageGroup === 'teen'
+                  ? ' les adolescents'
+                  : ' les enfants'}{' '}
+                ({patientProfile.age} ans).
+              </p>
+              {patientProfile.ageGroup === 'kid' && (
+                <p className="mt-1 text-sm text-emerald-300">
+                  👨‍👩‍👧‍👦 Papa ou maman peuvent t'aider à répondre aux questionnaires !
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Vos prochaines actions</h3>
+            <h3 className="text-lg font-semibold">
+              {patientProfile?.ageGroup === 'kid'
+                ? 'Tes prochaines actions'
+                : 'Vos prochaines actions'}
+            </h3>
             <button
               onClick={() => setActionsExpanded(!actionsExpanded)}
               className="rounded-lg p-1 hover:bg-white/5"
@@ -259,6 +389,10 @@ export default function DashboardPage() {
               {/* Calculer le nombre total d'actions */}
               {(() => {
                 const totalActions =
+                  (patientProfile?.identificationRequired &&
+                  !patientProfile?.identificationCompleted
+                    ? 1
+                    : 0) +
                   (!hasIdentification ? 1 : 0) +
                   (!hasAnamnese ? 1 : 0) +
                   pendingQuestionnaires.length;
@@ -266,7 +400,9 @@ export default function DashboardPage() {
                 if (totalActions === 0) {
                   return (
                     <p className="text-sm text-white/60">
-                      Aucune action en attente. Vous êtes à jour ! 🎉
+                      {patientProfile?.ageGroup === 'kid'
+                        ? 'Aucune action en attente. Tu es à jour ! 🎉'
+                        : 'Aucune action en attente. Vous êtes à jour ! 🎉'}
                     </p>
                   );
                 }
@@ -276,7 +412,8 @@ export default function DashboardPage() {
                     <div className="mb-3 flex items-center gap-2 text-sm">
                       <span className="font-semibold text-nn-accent-400">{totalActions}</span>
                       <span className="text-white/60">
-                        action{totalActions > 1 ? 's' : ''} à compléter
+                        action{totalActions > 1 ? 's' : ''} à{' '}
+                        {patientProfile?.ageGroup === 'kid' ? 'faire' : 'compléter'}
                       </span>
                     </div>
 
@@ -337,16 +474,41 @@ export default function DashboardPage() {
                             </div>
                             <div className="flex-1">
                               <span className="block font-medium">{q.title}</span>
-                              <span className="text-xs text-white/60">
-                                {q.status === 'in_progress' ? 'En cours • ' : ''}
-                                Assigné {formatDistanceToNow(q.assignedAt)}
-                              </span>
+                              <div className="text-xs text-white/60">
+                                {q.status === 'in_progress'
+                                  ? patientProfile?.ageGroup === 'kid'
+                                    ? 'En cours • '
+                                    : 'En cours • '
+                                  : ''}
+                                {patientProfile?.ageGroup === 'kid' ? 'Donné' : 'Assigné'}{' '}
+                                {formatDistanceToNow(q.assignedAt)}
+                                {q.estimatedMinutes && (
+                                  <span className="ml-2 text-nn-accent-300">
+                                    • ~{q.estimatedMinutes}min
+                                  </span>
+                                )}
+                                {q.ageGroup && (
+                                  <span className="ml-2 rounded-full bg-nn-accent-500/20 px-2 py-0.5 text-[10px] text-nn-accent-300">
+                                    {q.ageGroup === 'adult'
+                                      ? 'Adulte'
+                                      : q.ageGroup === 'teen'
+                                      ? 'Ado'
+                                      : 'Enfant'}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                             <button
                               onClick={() => navigate(`/dashboard/questionnaires/${q.id}`)}
                               className="rounded-lg bg-nn-primary-600 px-3 py-2 text-xs font-semibold text-white hover:bg-nn-primary-700"
                             >
-                              {q.status === 'in_progress' ? 'Continuer' : 'Commencer'}
+                              {q.status === 'in_progress'
+                                ? patientProfile?.ageGroup === 'kid'
+                                  ? 'Continuer le jeu'
+                                  : 'Continuer'
+                                : patientProfile?.ageGroup === 'kid'
+                                ? 'Jouer'
+                                : 'Commencer'}
                             </button>
                           </li>
                         ))}

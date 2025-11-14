@@ -307,6 +307,68 @@ export function calculateLifeJourneyScore(answers: Record<string, number>): Life
 - Document public APIs
 - List dependencies and peer dependencies
 
+## AI Assistant Context & Guidelines
+
+### 🤖 **Automatic Context Loading**
+
+**IMPORTANT:** Ces 5 fichiers d'instructions IA sont systématiquement chargés dans chaque conversation Copilot :
+
+1. **`docs/AI_INDEX.md`** - Index récapitulatif et navigation des instructions IA
+2. **`docs/AI_INSTRUCTIONS_SUMMARY.md`** - Vue d'ensemble exécutive et checklist de validation
+3. **`docs/AI_TYPESCRIPT_GUIDELINES.md`** - Guide technique détaillé des patterns anti-erreurs
+4. **`docs/AI_PROMPTS_TEMPLATES.md`** - Templates de prompts optimisés pour collaboration IA
+5. **`docs/AI_CONFIGURATION_PATTERNS.md`** - Snippets de code et configurations TypeScript
+
+### ⚡ **Règles Critiques TypeScript & Node.js**
+
+**TOUJOURS respecter ces patterns pour éviter les erreurs:**
+
+#### **Import Patterns par Context:**
+
+```typescript
+// ✅ Cloud Functions (require bypass pour shared packages)
+const { validateUser } = require('@neuronutrition/shared-core');
+
+// ✅ Frontend Apps (hook Firebase existant)
+import { useFirebaseUser } from '@/hooks/useFirebaseUser';
+
+// ❌ JAMAIS utiliser ces patterns problématiques
+import { useAuth } from '@/contexts/AuthContext'; // Hook inexistant
+import { toast } from 'sonner'; // Package manquant
+```
+
+#### **Firebase Type Safety:**
+
+```typescript
+// ✅ Casting explicite pour éviter Query vs CollectionReference conflicts
+const query = firestore.collection('users') as CollectionReference;
+const filteredQuery = query.where('active', '==', true) as Query;
+```
+
+#### **UI Components Substitution:**
+
+```typescript
+// ✅ Créer substituts locaux quand @/components/ui/* manquent
+const Button = ({ children, onClick, variant = 'primary' }: ButtonProps) => (
+  <button className={`btn btn-${variant}`} onClick={onClick}>
+    {children}
+  </button>
+);
+```
+
+### 📊 **Métriques de Validation Obligatoires:**
+
+Avant tout commit, vérifier:
+
+- ✅ `pnpm typecheck` - 0 erreurs TypeScript
+- ✅ Build times < 15s par app
+- ✅ Bundle size < 400KB chunk principal
+- ✅ Cloud Functions compilation réussie
+
+### 🎯 **Templates de Fix Automatique:**
+
+Utiliser ces patterns pour résolution rapide d'erreurs courantes selon la documentation complète dans `docs/AI_*.md`.
+
 ## AI Assistant Preferences
 
 ### When Generating Code

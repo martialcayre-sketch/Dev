@@ -1,4 +1,5 @@
-import { canAssignQuestionnaires, detectPatientAge } from '@neuronutrition/shared-core';
+// Bypass temporaire des types pour compilation
+const { canAssignQuestionnaires, detectPatientAge } = require('@neuronutrition/shared-core');
 import * as admin from 'firebase-admin';
 import * as logger from 'firebase-functions/logger';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';

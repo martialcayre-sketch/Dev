@@ -1,6 +1,9 @@
 {
   "version": "0.2",
   "language": "en,fr",
+  "diagnosticLevel": "Information",
+  "showSuggestions": false,
+  "showStatus": false,
   "dictionaries": [
     "en",
     "fr-fr",

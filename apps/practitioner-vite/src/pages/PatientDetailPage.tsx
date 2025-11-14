@@ -33,6 +33,12 @@ type Patient = {
   createdAt?: any;
   pendingQuestionnairesCount?: number;
   lastQuestionnaireCompletedAt?: any;
+  // Nouveaux champs V3.1
+  age?: number;
+  ageGroup?: 'adult' | 'teen' | 'kid';
+  identificationCompleted?: boolean;
+  identificationRequired?: boolean;
+  dateNaissance?: string;
 };
 
 const COLOR_SCHEMES = {
@@ -311,6 +317,25 @@ export default function PatientDetailPage() {
             <div>
               <p className="text-xs uppercase tracking-[0.35em] text-white/60">Fiche patient</p>
               <h1 className="text-2xl font-semibold text-white">{patientName}</h1>
+              {patient.age && (
+                <p className="text-sm text-white/70">
+                  🎂 {patient.age} ans
+                  {patient.ageGroup && (
+                    <span className="ml-2 rounded-full bg-nn-accent-500/20 px-2 py-1 text-xs text-nn-accent-300">
+                      {patient.ageGroup === 'adult'
+                        ? 'Adulte'
+                        : patient.ageGroup === 'teen'
+                        ? 'Adolescent'
+                        : 'Enfant'}
+                    </span>
+                  )}
+                  {patient.identificationCompleted ? (
+                    <span className="ml-2 text-emerald-400">✅</span>
+                  ) : patient.identificationRequired ? (
+                    <span className="ml-2 text-amber-400">🆔 Identification requise</span>
+                  ) : null}
+                </p>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2">

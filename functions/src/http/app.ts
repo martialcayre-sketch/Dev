@@ -1,7 +1,9 @@
 import express from 'express';
 import { onRequest } from 'firebase-functions/v2/https';
+import { verifyAuth } from './middleware/auth';
 import { logRequests } from './middleware/log';
 import { requestId } from './middleware/requestId';
+import patientsRouter from './routes/patients';
 import questionnairesRouter from './routes/questionnaires';
 import { makeError, makeOk } from './utils/response';
 
@@ -51,6 +53,10 @@ app.get('/api/health', (req: any, res) => {
 // API routes - both at root and /api prefix
 app.use('/', questionnairesRouter);
 app.use('/api', questionnairesRouter);
+
+// Patient routes with authentication
+app.use('/api/patients', verifyAuth, patientsRouter);
+app.use('/patients', verifyAuth, patientsRouter);
 
 // 404 handler
 app.use((req: any, res) => {

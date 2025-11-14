@@ -18,7 +18,8 @@
     "firebase-admin": "^13.6.0",
     "firebase-functions": "^7.0.0",
     "zod": "^3.23.8",
-    "@neuronutrition/shared-questionnaires": "file:./vendor/@neuronutrition/shared-questionnaires"
+    "@neuronutrition/shared-questionnaires": "file:./vendor/@neuronutrition/shared-questionnaires",
+    "@neuronutrition/shared-core": "file:./vendor/@neuronutrition/shared-core"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",

@@ -1,4 +1,5 @@
 import { DashboardShell } from '@/components/layout/DashboardShell';
+import CentralizedDNSMRadar from '@/components/questionnaires/CentralizedDNSMRadar';
 import DNSMRadar from '@/components/questionnaires/DNSMRadar';
 import QuestionnaireStatusBanner from '@/components/questionnaires/QuestionnaireStatusBanner';
 import SubmitToPractitionerButton from '@/components/questionnaires/SubmitToPractitionerButton';
@@ -34,6 +35,9 @@ export default function QuestionnaireDetailPage() {
     interpretations: dnsmInterpretations,
     isComplete: dnsmComplete,
   } = useDNSMScore(responses as Record<string, number>);
+
+  // Hook centralisé pour les futurs calculs backend
+  // const { calculateScores, loading: scoringLoading } = useCentralizedScoring();
 
   // Fonction stable pour générer une permutation déterministe (doit être avant toute logique conditionnelle)
   const seededPermutation = useCallback((key: string) => {
@@ -254,7 +258,23 @@ export default function QuestionnaireDetailPage() {
           </div>
 
           {/* Radar DNSM - affiché une fois que quelques réponses existent */}
-          {Object.keys(responses).length > 10 && <DNSMRadar scores={dnsmScores} />}
+          {/* Radar DNSM - Version centralisée */}
+          {Object.keys(responses).length > 10 && (
+            <CentralizedDNSMRadar
+              questionnaireId={questionnaireId}
+              responses={responses as Record<string, number>}
+              fallbackScores={dnsmScores}
+              className="mb-6"
+            />
+          )}
+
+          {/* Radar DNSM - Version client-side (fallback) */}
+          {Object.keys(responses).length > 10 && process.env.NODE_ENV === 'development' && (
+            <div className="mb-6">
+              <h4 className="text-sm text-white/60 mb-2">Debug: Radar client-side</h4>
+              <DNSMRadar scores={dnsmScores} />
+            </div>
+          )}
 
           {/* Interprétations par axe */}
           {dnsmComplete && (

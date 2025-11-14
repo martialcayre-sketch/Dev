@@ -1,1 +1,277 @@
-/**\n * 🧒 NeuroNutrition - Hook d'adaptation UX selon l'âge patient\n * \n * Logique centralisée pour adapter l'interface selon l'âge détecté\n */\n\nimport { useState, useEffect } from 'react';\nimport type { AgeVariant } from '@neuronutrition/shared-questionnaires';\n\nexport interface PatientAgeData {\n  birthDate?: string | Date;\n  uid: string;\n  ageVariant?: AgeVariant;\n  patientAge?: number;\n}\n\nexport interface UXAdaptation {\n  variant: AgeVariant;\n  age: number | null;\n  needsParentHelp: boolean;\n  encouragementLevel: 'low' | 'medium' | 'high';\n  visualStyle: {\n    colors: string;\n    fontSize: string;\n    spacing: string;\n    animations: boolean;\n  };\n  language: {\n    formality: 'formal' | 'informal' | 'simple';\n    encouragement: string[];\n    helpTexts: string;\n  };\n}\n\nconst UX_ADAPTATIONS: Record<AgeVariant, Omit<UXAdaptation, 'age'>> = {\n  kid: {\n    variant: 'kid',\n    needsParentHelp: true,\n    encouragementLevel: 'high',\n    visualStyle: {\n      colors: 'from-yellow-400 to-orange-400',\n      fontSize: 'text-lg',\n      spacing: 'space-y-6',\n      animations: true\n    },\n    language: {\n      formality: 'simple',\n      encouragement: [\n        '🌟 Super ! Tu réponds très bien !',\n        '🎈 Bravo ! Continue comme ça !',\n        '🦋 Tu es formidable !',\n        '🌈 Excellent travail !',\n        '⭐ Tu y arrives très bien !'\n      ],\n      helpTexts: '🌟 Tu peux demander de l\\'aide à tes parents pour répondre !'\n    }\n  },\n  teen: {\n    variant: 'teen',\n    needsParentHelp: false,\n    encouragementLevel: 'medium',\n    visualStyle: {\n      colors: 'from-blue-400 to-purple-400',\n      fontSize: 'text-base',\n      spacing: 'space-y-4',\n      animations: true\n    },\n    language: {\n      formality: 'informal',\n      encouragement: [\n        '💪 Très bien ! Continue !',\n        '🌟 Tu gères parfaitement !',\n        '⚡ Super boulot !',\n        '🎯 Parfait ! Plus qu\\'un peu !'\n      ],\n      helpTexts: '💡 Réponds selon ce que tu ressens vraiment, il n\\'y a pas de bonne ou mauvaise réponse !'\n    }\n  },\n  adult: {\n    variant: 'adult',\n    needsParentHelp: false,\n    encouragementLevel: 'low',\n    visualStyle: {\n      colors: 'from-gray-400 to-gray-600',\n      fontSize: 'text-base',\n      spacing: 'space-y-4',\n      animations: false\n    },\n    language: {\n      formality: 'formal',\n      encouragement: ['Très bien, continuez !'],\n      helpTexts: 'Répondez selon votre situation actuelle.'\n    }\n  }\n};\n\n/**\n * 🎯 Hook principal pour l'adaptation UX selon l'âge\n */\nexport function usePatientUX(patientData?: PatientAgeData): UXAdaptation {\n  const [uxConfig, setUXConfig] = useState<UXAdaptation>({\n    ...UX_ADAPTATIONS.adult,\n    age: null\n  });\n\n  useEffect(() => {\n    if (!patientData) {\n      setUXConfig({ ...UX_ADAPTATIONS.adult, age: null });\n      return;\n    }\n\n    // Utilisation des données pré-calculées si disponibles\n    if (patientData.ageVariant && patientData.patientAge !== undefined) {\n      const adaptation = UX_ADAPTATIONS[patientData.ageVariant];\n      setUXConfig({\n        ...adaptation,\n        age: patientData.patientAge\n      });\n      return;\n    }\n\n    // Calcul à partir de la date de naissance si nécessaire\n    if (patientData.birthDate) {\n      const age = calculateAge(patientData.birthDate);\n      const variant = getAgeVariant(age);\n      const adaptation = UX_ADAPTATIONS[variant];\n      \n      setUXConfig({\n        ...adaptation,\n        age\n      });\n    }\n  }, [patientData]);\n\n  return uxConfig;\n}\n\n/**\n * 🧮 Calcul de l'âge à partir de la date de naissance\n */\nfunction calculateAge(birthDate: string | Date): number {\n  const birth = new Date(birthDate);\n  const today = new Date();\n  let age = today.getFullYear() - birth.getFullYear();\n  const monthDiff = today.getMonth() - birth.getMonth();\n  \n  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {\n    age--;\n  }\n  \n  return age;\n}\n\n/**\n * 🎯 Détermination de la variante d'âge\n */\nfunction getAgeVariant(age: number): AgeVariant {\n  if (age >= 18) return 'adult';\n  if (age >= 13) return 'teen';\n  return 'kid';\n}\n\n/**\n * 🎨 Hook pour les styles visuels adaptatifs\n */\nexport function useAdaptiveStyles(variant: AgeVariant) {\n  const config = UX_ADAPTATIONS[variant];\n  \n  return {\n    containerClass: `bg-gradient-to-r ${config.visualStyle.colors} text-white`,\n    textClass: config.visualStyle.fontSize,\n    spacingClass: config.visualStyle.spacing,\n    shouldAnimate: config.visualStyle.animations,\n    \n    // Classes Tailwind pré-construites\n    cardClass: variant === 'kid' \n      ? 'border-2 border-yellow-300 bg-gradient-to-br from-yellow-50 to-orange-50'\n      : variant === 'teen'\n      ? 'border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-purple-50'\n      : 'border-gray-200',\n      \n    buttonClass: variant === 'kid'\n      ? 'text-lg h-14 px-8'\n      : variant === 'teen'\n      ? 'text-base h-12 px-6'\n      : 'text-sm h-10 px-4'\n  };\n}\n\n/**\n * 💬 Hook pour les messages adaptatifs\n */\nexport function useAdaptiveLanguage(variant: AgeVariant) {\n  const config = UX_ADAPTATIONS[variant];\n  \n  const getRandomEncouragement = () => {\n    const messages = config.language.encouragement;\n    return messages[Math.floor(Math.random() * messages.length)];\n  };\n  \n  const getNavigationText = (isNext: boolean, isLast: boolean) => {\n    if (variant === 'kid') {\n      if (isNext) {\n        return isLast ? '🎉 Terminer !' : 'Question suivante →';\n      } else {\n        return '← Question d\\'avant';\n      }\n    } else if (variant === 'teen') {\n      if (isNext) {\n        return isLast ? '🎯 Terminer' : 'Suivant →';\n      } else {\n        return '← Précédent';\n      }\n    } else {\n      return isNext ? (isLast ? 'Terminer' : 'Suivant') : 'Précédent';\n    }\n  };\n  \n  const getProgressText = (current: number, total: number) => {\n    const progress = Math.round((current / total) * 100);\n    \n    switch (variant) {\n      case 'kid':\n        return `🎈 Tu as répondu à ${current} questions sur ${total} !`;\n      case 'teen':\n        return `${progress}% terminé - Plus que ${total - current} questions !`;\n      default:\n        return `${current} sur ${total} questions`;\n    }\n  };\n  \n  return {\n    formality: config.language.formality,\n    helpText: config.language.helpTexts,\n    getRandomEncouragement,\n    getNavigationText,\n    getProgressText\n  };\n}\n\n/**\n * 🔧 Hook pour la gestion du mode parent/enfant\n */\nexport function useParentAssistance(variant: AgeVariant) {\n  const [isParentHelping, setIsParentHelping] = useState(false);\n  const [childUnderstands, setChildUnderstands] = useState(true);\n  \n  const isAvailable = variant === 'kid';\n  \n  const toggleParentHelp = () => {\n    if (isAvailable) {\n      setIsParentHelping(prev => !prev);\n    }\n  };\n  \n  const getAssistanceText = () => {\n    if (!isAvailable) return null;\n    \n    return {\n      status: isParentHelping ? 'Papa ou maman m\\'aide à répondre' : 'Je réponds tout seul(e)',\n      buttonText: isParentHelping ? '✅ Avec aide' : '👋 Demander de l\\'aide',\n      instruction: '👨‍👩‍👧‍👦 Papa ou maman peuvent t\\'aider à répondre !'\n    };\n  };\n  \n  return {\n    isAvailable,\n    isParentHelping,\n    childUnderstands,\n    setChildUnderstands,\n    toggleParentHelp,\n    getAssistanceText\n  };\n}
+/**
+ * 🧒 NeuroNutrition - Hook d'adaptation UX selon l'âge patient
+ *
+ * Logique centralisée pour adapter l'interface selon l'âge détecté
+ */
+
+import type { AgeVariant } from '@neuronutrition/shared-questionnaires';
+import { useEffect, useState } from 'react';
+
+export interface PatientAgeData {
+  birthDate?: string | Date;
+  uid: string;
+  ageVariant?: AgeVariant;
+  patientAge?: number;
+}
+
+export interface UXAdaptation {
+  variant: AgeVariant;
+  age: number | null;
+  needsParentHelp: boolean;
+  encouragementLevel: 'low' | 'medium' | 'high';
+  visualStyle: {
+    colors: string;
+    fontSize: string;
+    spacing: string;
+    animations: boolean;
+  };
+  language: {
+    formality: 'formal' | 'informal' | 'simple';
+    encouragement: string[];
+    helpTexts: string;
+  };
+}
+
+const UX_ADAPTATIONS: Record<AgeVariant, Omit<UXAdaptation, 'age'>> = {
+  kid: {
+    variant: 'kid',
+    needsParentHelp: true,
+    encouragementLevel: 'high',
+    visualStyle: {
+      colors: 'from-yellow-400 to-orange-400',
+      fontSize: 'text-lg',
+      spacing: 'space-y-6',
+      animations: true,
+    },
+    language: {
+      formality: 'simple',
+      encouragement: [
+        '🌟 Super ! Tu réponds très bien !',
+        '🎈 Bravo ! Continue comme ça !',
+        '🦋 Tu es formidable !',
+        '🌈 Excellent travail !',
+        '⭐ Tu y arrives très bien !',
+      ],
+      helpTexts: "🌟 Tu peux demander de l'aide à tes parents pour répondre !",
+    },
+  },
+  teen: {
+    variant: 'teen',
+    needsParentHelp: false,
+    encouragementLevel: 'medium',
+    visualStyle: {
+      colors: 'from-blue-400 to-purple-400',
+      fontSize: 'text-base',
+      spacing: 'space-y-4',
+      animations: true,
+    },
+    language: {
+      formality: 'informal',
+      encouragement: [
+        '💪 Très bien ! Continue !',
+        '🌟 Tu gères parfaitement !',
+        '⚡ Super boulot !',
+        "🎯 Parfait ! Plus qu'un peu !",
+      ],
+      helpTexts:
+        "💡 Réponds selon ce que tu ressens vraiment, il n'y a pas de bonne ou mauvaise réponse !",
+    },
+  },
+  adult: {
+    variant: 'adult',
+    needsParentHelp: false,
+    encouragementLevel: 'low',
+    visualStyle: {
+      colors: 'from-gray-400 to-gray-600',
+      fontSize: 'text-base',
+      spacing: 'space-y-4',
+      animations: false,
+    },
+    language: {
+      formality: 'formal',
+      encouragement: ['Très bien, continuez !'],
+      helpTexts: 'Répondez selon votre situation actuelle.',
+    },
+  },
+};
+
+/**
+ * 🎯 Hook principal pour l'adaptation UX selon l'âge
+ */
+export function usePatientUX(patientData?: PatientAgeData): UXAdaptation {
+  const [uxConfig, setUXConfig] = useState<UXAdaptation>({
+    ...UX_ADAPTATIONS.adult,
+    age: null,
+  });
+
+  useEffect(() => {
+    if (!patientData) {
+      setUXConfig({ ...UX_ADAPTATIONS.adult, age: null });
+      return;
+    }
+
+    // Utilisation des données pré-calculées si disponibles
+    if (patientData.ageVariant && patientData.patientAge !== undefined) {
+      const adaptation = UX_ADAPTATIONS[patientData.ageVariant];
+      setUXConfig({
+        ...adaptation,
+        age: patientData.patientAge,
+      });
+      return;
+    }
+
+    // Calcul à partir de la date de naissance si nécessaire
+    if (patientData.birthDate) {
+      const age = calculateAge(patientData.birthDate);
+      const variant = getAgeVariant(age);
+      const adaptation = UX_ADAPTATIONS[variant];
+
+      setUXConfig({
+        ...adaptation,
+        age,
+      });
+    }
+  }, [patientData]);
+
+  return uxConfig;
+}
+
+/**
+ * 🧮 Calcul de l'âge à partir de la date de naissance
+ */
+function calculateAge(birthDate: string | Date): number {
+  const birth = new Date(birthDate);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+
+  return age;
+}
+
+/**
+ * 🎯 Détermination de la variante d'âge
+ */
+function getAgeVariant(age: number): AgeVariant {
+  if (age >= 18) return 'adult';
+  if (age >= 13) return 'teen';
+  return 'kid';
+}
+
+/**
+ * 🎨 Hook pour les styles visuels adaptatifs
+ */
+export function useAdaptiveStyles(variant: AgeVariant) {
+  const config = UX_ADAPTATIONS[variant];
+
+  return {
+    containerClass: `bg-gradient-to-r ${config.visualStyle.colors} text-white`,
+    textClass: config.visualStyle.fontSize,
+    spacingClass: config.visualStyle.spacing,
+    shouldAnimate: config.visualStyle.animations,
+
+    // Classes Tailwind pré-construites
+    cardClass:
+      variant === 'kid'
+        ? 'border-2 border-yellow-300 bg-gradient-to-br from-yellow-50 to-orange-50'
+        : variant === 'teen'
+        ? 'border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-purple-50'
+        : 'border-gray-200',
+
+    buttonClass:
+      variant === 'kid'
+        ? 'text-lg h-14 px-8'
+        : variant === 'teen'
+        ? 'text-base h-12 px-6'
+        : 'text-sm h-10 px-4',
+  };
+}
+
+/**
+ * 💬 Hook pour les messages adaptatifs
+ */
+export function useAdaptiveLanguage(variant: AgeVariant) {
+  const config = UX_ADAPTATIONS[variant];
+
+  const getRandomEncouragement = () => {
+    const messages = config.language.encouragement;
+    return messages[Math.floor(Math.random() * messages.length)];
+  };
+
+  const getNavigationText = (isNext: boolean, isLast: boolean) => {
+    if (variant === 'kid') {
+      if (isNext) {
+        return isLast ? '🎉 Terminer !' : 'Question suivante →';
+      } else {
+        return "← Question d'avant";
+      }
+    } else if (variant === 'teen') {
+      if (isNext) {
+        return isLast ? '🎯 Terminer' : 'Suivant →';
+      } else {
+        return '← Précédent';
+      }
+    } else {
+      return isNext ? (isLast ? 'Terminer' : 'Suivant') : 'Précédent';
+    }
+  };
+
+  const getProgressText = (current: number, total: number) => {
+    const progress = Math.round((current / total) * 100);
+
+    switch (variant) {
+      case 'kid':
+        return `🎈 Tu as répondu à ${current} questions sur ${total} !`;
+      case 'teen':
+        return `${progress}% terminé - Plus que ${total - current} questions !`;
+      default:
+        return `${current} sur ${total} questions`;
+    }
+  };
+
+  return {
+    formality: config.language.formality,
+    helpText: config.language.helpTexts,
+    getRandomEncouragement,
+    getNavigationText,
+    getProgressText,
+  };
+}
+
+/**
+ * 🔧 Hook pour la gestion du mode parent/enfant
+ */
+export function useParentAssistance(variant: AgeVariant) {
+  const [isParentHelping, setIsParentHelping] = useState(false);
+  const [childUnderstands, setChildUnderstands] = useState(true);
+
+  const isAvailable = variant === 'kid';
+
+  const toggleParentHelp = () => {
+    if (isAvailable) {
+      setIsParentHelping((prev) => !prev);
+    }
+  };
+
+  const getAssistanceText = () => {
+    if (!isAvailable) return null;
+
+    return {
+      status: isParentHelping ? "Papa ou maman m'aide à répondre" : 'Je réponds tout seul(e)',
+      buttonText: isParentHelping ? '✅ Avec aide' : "👋 Demander de l'aide",
+      instruction: "👨‍👩‍👧‍👦 Papa ou maman peuvent t'aider à répondre !",
+    };
+  };
+
+  return {
+    isAvailable,
+    isParentHelping,
+    childUnderstands,
+    setChildUnderstands,
+    toggleParentHelp,
+    getAssistanceText,
+  };
+}

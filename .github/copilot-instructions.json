@@ -1,0 +1,34 @@
+{
+  "instructions": [
+    "Référencer automatiquement les fichiers d'instructions IA du workspace NeuroNutrition",
+    "Toujours respecter les patterns TypeScript et Node.js documentés dans docs/AI_*.md",
+    "Utiliser les patterns d'imports validés selon le contexte (Cloud Functions vs Frontend)",
+    "Appliquer les fixes automatiques documentés pour éviter les erreurs récurrentes",
+    "Valider avec pnpm typecheck avant de proposer du code"
+  ],
+  "contextFiles": [
+    "docs/AI_INDEX.md",
+    "docs/AI_INSTRUCTIONS_SUMMARY.md",
+    "docs/AI_TYPESCRIPT_GUIDELINES.md",
+    "docs/AI_PROMPTS_TEMPLATES.md",
+    "docs/AI_CONFIGURATION_PATTERNS.md",
+    "docs/COPILOT_CONTEXT.md"
+  ],
+  "rules": {
+    "typescript": {
+      "strictMode": true,
+      "noAnyTypes": true,
+      "explicitTypes": true
+    },
+    "imports": {
+      "cloudFunctions": "require()",
+      "frontend": "useFirebaseUser",
+      "forbidden": ["useAuth", "sonner"]
+    },
+    "validation": {
+      "typecheck": "pnpm typecheck",
+      "buildTime": "< 15s",
+      "bundleSize": "< 400KB"
+    }
+  }
+}

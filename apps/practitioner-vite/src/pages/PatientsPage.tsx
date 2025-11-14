@@ -42,6 +42,12 @@ interface Patient {
   archived?: boolean;
   hasQuestionnairesAssigned?: boolean;
   pendingQuestionnairesCount?: number;
+  // Nouveaux champs V3.1
+  age?: number;
+  ageGroup?: 'adult' | 'teen' | 'kid';
+  identificationCompleted?: boolean;
+  identificationRequired?: boolean;
+  dateNaissance?: string;
 }
 
 export default function PatientsPage() {
@@ -360,6 +366,20 @@ export default function PatientsPage() {
                           <Phone className="h-4 w-4" /> {patient.phone}
                         </span>
                       ) : null}
+                      {patient.age && (
+                        <span className="inline-flex items-center gap-1">
+                          🎂 {patient.age} ans
+                          {patient.ageGroup && (
+                            <span className="ml-1 rounded-full bg-nn-accent-500/20 px-2 py-0.5 text-[10px] text-nn-accent-300">
+                              {patient.ageGroup === 'adult'
+                                ? 'Adulte'
+                                : patient.ageGroup === 'teen'
+                                ? 'Ado'
+                                : 'Enfant'}
+                            </span>
+                          )}
+                        </span>
+                      )}
                       {patient.createdAt ? (
                         <span className="inline-flex items-center gap-1">
                           <CalendarClock className="h-4 w-4" /> inscrit{' '}
@@ -398,6 +418,15 @@ export default function PatientsPage() {
                         Espace consultation ouvert
                       </span>
                     ) : null}
+                    {patient.identificationRequired && !patient.identificationCompleted ? (
+                      <span className="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-amber-200">
+                        🆔 Identification requise
+                      </span>
+                    ) : patient.identificationCompleted ? (
+                      <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-emerald-200">
+                        ✅ Identifié
+                      </span>
+                    ) : null}
                     {patient.hasQuestionnairesAssigned &&
                     patient.pendingQuestionnairesCount &&
                     patient.pendingQuestionnairesCount > 0 ? (
@@ -405,6 +434,17 @@ export default function PatientsPage() {
                         <Users2 className="hidden" />
                         {patient.pendingQuestionnairesCount} questionnaire
                         {patient.pendingQuestionnairesCount > 1 ? 's' : ''} en attente
+                        {patient.ageGroup && (
+                          <span className="ml-1 text-[10px]">
+                            (
+                            {patient.ageGroup === 'adult'
+                              ? 'adulte'
+                              : patient.ageGroup === 'teen'
+                              ? 'ado'
+                              : 'enfant'}
+                            )
+                          </span>
+                        )}
                       </span>
                     ) : null}
                   </div>

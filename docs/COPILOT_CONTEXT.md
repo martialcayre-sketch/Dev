@@ -22,12 +22,42 @@ NeuroNutrition is a monorepo (pnpm workspaces) containing:
 
 | Layer    | Tech                                                                                |
 | -------- | ----------------------------------------------------------------------------------- |
-| Frontend | React 18, Vite, TypeScript, TailwindCSS                                             |
+| Frontend | React 18, Vite 7.2.2, TypeScript 5.9.3 (strict), TailwindCSS                        |
 | Backend  | Firebase Cloud Functions Gen2 (Node.js 20, europe-west1) - Express HTTP + callables |
 | Data     | Firestore: `questionnaires/{templateId}_{patientUid}`, patients, practitioners      |
 | Auth     | Firebase Auth + custom claims (practitioner/admin)                                  |
 | Secrets  | Firebase Secret Manager (MANUAL_ASSIGN_SECRET, MIGRATION_SECRET)                    |
-| Tooling  | pnpm, Turborepo, Jest (functions), Vitest (apps), Husky, cspell                     |
+| Tooling  | pnpm 10.22.0, Turborepo, Jest (functions), Vitest (apps), Husky, cspell             |
+
+### TypeScript & Build Guidelines (v3 Compliance)
+
+**Critical Patterns for AI:**
+
+1. **Cloud Functions**: Use `require()` for shared packages due to ES6 import resolution issues
+2. **Frontend Apps**: Use `useFirebaseUser` hook instead of missing `useAuth` context
+3. **UI Components**: Create local substitutes when @/components/ui/\* are missing
+4. **Type Safety**: Explicit casting for Firebase Query vs CollectionReference conflicts
+5. **Build Validation**: Target < 15s build time, < 400KB main chunks
+
+**Import Patterns:**
+
+```typescript
+// ✅ Cloud Functions
+const { validateUser } = require('@neuronutrition/shared-core');
+
+// ✅ Frontend Apps
+import { useFirebaseUser } from '@/hooks/useFirebaseUser';
+
+// ❌ Avoid these patterns
+import { useAuth } from '@/contexts/AuthContext'; // Missing
+import { toast } from 'sonner'; // Missing package
+```
+
+**Validation Commands:**
+
+- `pnpm typecheck` - Workspace TypeScript validation
+- `npm run build` in functions/, apps/patient-vite/, apps/practitioner-vite/
+- Target: 0 TypeScript errors, stable builds
 
 ### Key Conventions
 

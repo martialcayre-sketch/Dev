@@ -13,6 +13,7 @@ const LifeJourneyPage = lazy(() => import('./pages/LifeJourneyPage'));
 const AnamnesePage = lazy(() => import('./pages/AnamnesePage'));
 const ConsultationPage = lazy(() => import('./pages/ConsultationPage'));
 const IdentificationPage = lazy(() => import('./pages/IdentificationPage'));
+const IdentificationSimplePage = lazy(() => import('./pages/IdentificationSimplePage'));
 
 function App() {
   return (
@@ -34,7 +35,8 @@ function App() {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/dashboard/consultation" element={<ConsultationPage />} />
-            <Route path="/dashboard/identification" element={<IdentificationPage />} />
+            <Route path="/dashboard/identification" element={<IdentificationSimplePage />} />
+            <Route path="/dashboard/identification/complete" element={<IdentificationPage />} />
             <Route path="/dashboard/anamnese" element={<AnamnesePage />} />
             <Route path="/dashboard/questionnaires" element={<QuestionnairesPage />} />
             <Route path="/dashboard/questionnaires/:id" element={<QuestionnaireDetailPage />} />

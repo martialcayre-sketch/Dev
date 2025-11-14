@@ -1,1 +1,251 @@
-/**\n * 🧠 NeuroNutrition - API Bibliothèque Questionnaires pour Praticiens\n * \n * Cloud Function pour accès sécurisé à la bibliothèque complète des questionnaires\n */\n\nimport * as admin from 'firebase-admin';\nimport * as logger from 'firebase-functions/logger';\nimport { HttpsError, onCall } from 'firebase-functions/v2/https';\nimport { getAvailableTemplates, getLibraryStats, getQuestionnairesByCategory } from '@neuronutrition/shared-questionnaires';\n\n// Ensure Admin SDK is initialized\nif (!admin.apps.length) {\n  admin.initializeApp();\n}\n\nconst db = admin.firestore();\n\n/**\n * 🔐 Validation: Vérifier que l'utilisateur est un praticien autorisé\n */\nasync function validatePractitioner(uid: string): Promise<boolean> {\n  try {\n    const userRecord = await admin.auth().getUser(uid);\n    const claims = userRecord.customClaims;\n    \n    return !!(claims && claims.practitioner);\n  } catch (error) {\n    logger.error('Error validating practitioner:', error);\n    return false;\n  }\n}\n\n/**\n * 📚 Cloud Function: Obtenir la liste de tous les templates disponibles\n * \n * ACCÈS: Praticiens uniquement\n */\nexport const getQuestionnaireLibrary = onCall(async (request) => {\n  const ctx = request.auth;\n  if (!ctx) {\n    throw new HttpsError('unauthenticated', 'Authentication required');\n  }\n\n  // 🔐 VALIDATION PRATICIEN OBLIGATOIRE\n  const isPractitioner = await validatePractitioner(ctx.uid);\n  if (!isPractitioner) {\n    logger.warn(`Unauthorized access attempt to questionnaire library by user ${ctx.uid}`);\n    throw new HttpsError('permission-denied', 'Accès réservé aux praticiens autorisés');\n  }\n\n  try {\n    logger.info(`Practitioner ${ctx.uid} accessing questionnaire library`);\n\n    // 📊 Récupération des templates et statistiques\n    const templates = getAvailableTemplates();\n    const stats = getLibraryStats();\n    \n    // 📋 Groupement par catégorie pour l'interface\n    const categories: Record<string, any[]> = {};\n    templates.forEach(template => {\n      if (!categories[template.category]) {\n        categories[template.category] = [];\n      }\n      categories[template.category].push(template);\n    });\n\n    return {\n      success: true,\n      data: {\n        templates,\n        categories,\n        stats,\n        practitionerId: ctx.uid,\n        accessTime: admin.firestore.FieldValue.serverTimestamp()\n      }\n    };\n\n  } catch (error: any) {\n    logger.error('Error retrieving questionnaire library:', error);\n    throw new HttpsError('internal', `Failed to retrieve library: ${error.message}`);\n  }\n});\n\n/**\n * 🎯 Cloud Function: Assigner des questionnaires spécifiques à un patient\n * \n * NOUVEAU: Avec sélection manuelle + détection d'âge automatique\n */\nexport const assignSelectedQuestionnaires = onCall(async (request) => {\n  const ctx = request.auth;\n  if (!ctx) {\n    throw new HttpsError('unauthenticated', 'Authentication required');\n  }\n\n  // 🔐 VALIDATION PRATICIEN\n  const isPractitioner = await validatePractitioner(ctx.uid);\n  if (!isPractitioner) {\n    throw new HttpsError('permission-denied', 'Accès réservé aux praticiens');\n  }\n\n  const { patientUid, questionnaireIds } = request.data as {\n    patientUid?: string;\n    questionnaireIds?: string[];\n  };\n\n  if (!patientUid || !questionnaireIds || !Array.isArray(questionnaireIds)) {\n    throw new HttpsError('invalid-argument', 'patientUid et questionnaireIds requis');\n  }\n\n  try {\n    logger.info(`Practitioner ${ctx.uid} assigning ${questionnaireIds.length} questionnaires to patient ${patientUid}`);\n\n    // 🧠 VALIDATION ÂGE ET IDENTIFICATION (comme dans assignQuestionnaires)\n    const patientDoc = await db.collection('patients').doc(patientUid).get();\n    const patientData = patientDoc.data();\n    \n    // Import dynamique pour éviter les dépendances circulaires\n    const { canAssignQuestionnaires, detectPatientAge } = await import('@neuronutrition/shared-core');\n    \n    const ageValidation = canAssignQuestionnaires({\n      uid: patientUid,\n      birthDate: patientData?.identification?.birthDate\n    });\n\n    if (!ageValidation.canAssign) {\n      throw new HttpsError('failed-precondition', ageValidation.reason || 'Identification patient requise');\n    }\n\n    const ageResult = detectPatientAge({\n      uid: patientUid,\n      birthDate: patientData?.identification?.birthDate\n    });\n\n    // 📝 CRÉATION DES QUESTIONNAIRES SÉLECTIONNÉS\n    const batch = db.batch();\n    const now = admin.firestore.FieldValue.serverTimestamp();\n    const assignedQuestionnaires = [];\n\n    for (const templateId of questionnaireIds) {\n      // Import dynamique des questionnaires\n      const { getQuestionnaireById } = await import('@neuronutrition/shared-questionnaires');\n      const questionnaireVariant = getQuestionnaireById(templateId, ageResult.variant);\n      \n      if (!questionnaireVariant) {\n        logger.warn(`Questionnaire template ${templateId} not found for variant ${ageResult.variant}`);\n        continue;\n      }\n\n      const questionnaireData = {\n        ...questionnaireVariant.metadata,\n        patientUid,\n        practitionerId: ctx.uid,\n        status: 'pending',\n        assignedAt: now,\n        completedAt: null,\n        responses: {},\n        // Informations d'âge\n        patientAge: ageResult.ageInYears,\n        ageVariant: ageResult.variant,\n        requiresParentAssistance: ageResult.variant === 'kid'\n      };\n\n      // Écriture root collection\n      const rootRef = db.collection('questionnaires').doc(`${templateId}_${patientUid}`);\n      batch.set(rootRef, questionnaireData);\n      \n      assignedQuestionnaires.push({\n        id: templateId,\n        title: questionnaireVariant.metadata.title,\n        variant: ageResult.variant\n      });\n    }\n\n    await batch.commit();\n\n    // 📊 MISE À JOUR PATIENT\n    await db.collection('patients').doc(patientUid).set({\n      hasQuestionnairesAssigned: true,\n      lastAssignmentBy: ctx.uid,\n      lastAssignmentAt: now,\n      pendingQuestionnairesCount: admin.firestore.FieldValue.increment(assignedQuestionnaires.length)\n    }, { merge: true });\n\n    // 🔔 NOTIFICATION PATIENT\n    await db\n      .collection('patients')\n      .doc(patientUid)\n      .collection('notifications')\n      .add({\n        type: 'questionnaires_assigned',\n        title: 'Nouveaux questionnaires assignés',\n        message: `${assignedQuestionnaires.length} questionnaires vous ont été assignés par votre praticien.`,\n        read: false,\n        createdAt: now,\n        link: '/dashboard/questionnaires',\n        assignedBy: ctx.uid\n      });\n\n    logger.info(`Successfully assigned ${assignedQuestionnaires.length} questionnaires to patient ${patientUid}`);\n\n    return {\n      success: true,\n      assigned: assignedQuestionnaires,\n      patientAge: ageResult.ageInYears,\n      ageVariant: ageResult.variant,\n      message: `${assignedQuestionnaires.length} questionnaires assignés avec succès`\n    };\n\n  } catch (error: any) {\n    logger.error('Error assigning selected questionnaires:', error);\n    throw new HttpsError('internal', `Failed to assign questionnaires: ${error.message}`);\n  }\n});
+/**
+ * 🧠 NeuroNutrition - API Bibliothèque Questionnaires pour Praticiens
+ *
+ * Cloud Function pour accès sécurisé à la bibliothèque complète des questionnaires
+ */
+
+import { getAllQuestionnaires } from '@neuronutrition/shared-questionnaires';
+import * as admin from 'firebase-admin';
+import * as logger from 'firebase-functions/logger';
+import { HttpsError, onCall } from 'firebase-functions/v2/https';
+
+// Ensure Admin SDK is initialized
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
+
+const db = admin.firestore();
+
+// Local implementation of library functions
+function getAvailableTemplates() {
+  const questionnaires = getAllQuestionnaires();
+  return questionnaires.map((q) => ({
+    id: q.metadata.id,
+    title: q.metadata.title,
+    category: q.metadata.category,
+    hasVariants: true,
+  }));
+}
+
+function getLibraryStats() {
+  const questionnaires = getAllQuestionnaires();
+  const categories = [...new Set(questionnaires.map((q) => q.metadata.category))];
+  return {
+    totalTemplates: questionnaires.length,
+    totalVariants: questionnaires.length,
+    categoriesCount: categories.length,
+    categories,
+  };
+}
+
+/**
+ * 🔐 Validation: Vérifier que l'utilisateur est un praticien autorisé
+ */
+async function validatePractitioner(uid: string): Promise<boolean> {
+  try {
+    const userRecord = await admin.auth().getUser(uid);
+    const claims = userRecord.customClaims;
+
+    return !!(claims && claims.practitioner);
+  } catch (error) {
+    logger.error('Error validating practitioner:', error);
+    return false;
+  }
+}
+
+/**
+ * 📚 Cloud Function: Obtenir la liste de tous les templates disponibles
+ *
+ * ACCÈS: Praticiens uniquement
+ */
+export const getQuestionnaireLibrary = onCall(async (request) => {
+  const ctx = request.auth;
+  if (!ctx) {
+    throw new HttpsError('unauthenticated', 'Authentication required');
+  }
+
+  // 🔐 VALIDATION PRATICIEN OBLIGATOIRE
+  const isPractitioner = await validatePractitioner(ctx.uid);
+  if (!isPractitioner) {
+    logger.warn(`Unauthorized access attempt to questionnaire library by user ${ctx.uid}`);
+    throw new HttpsError('permission-denied', 'Accès réservé aux praticiens autorisés');
+  }
+
+  try {
+    logger.info(`Practitioner ${ctx.uid} accessing questionnaire library`);
+
+    // 📊 Récupération des templates et statistiques
+    const templates = getAvailableTemplates();
+    const stats = getLibraryStats();
+
+    // 📋 Groupement par catégorie pour l'interface
+    const categories: Record<string, any[]> = {};
+    templates.forEach((template: any) => {
+      if (!categories[template.category]) {
+        categories[template.category] = [];
+      }
+      categories[template.category].push(template);
+    });
+
+    return {
+      success: true,
+      data: {
+        templates,
+        categories,
+        stats,
+        practitionerId: ctx.uid,
+        accessTime: admin.firestore.FieldValue.serverTimestamp(),
+      },
+    };
+  } catch (error: any) {
+    logger.error('Error retrieving questionnaire library:', error);
+    throw new HttpsError('internal', `Failed to retrieve library: ${error.message}`);
+  }
+});
+
+/**
+ * 🎯 Cloud Function: Assigner des questionnaires spécifiques à un patient
+ *
+ * NOUVEAU: Avec sélection manuelle + détection d'âge automatique
+ */
+export const assignSelectedQuestionnaires = onCall(async (request) => {
+  const ctx = request.auth;
+  if (!ctx) {
+    throw new HttpsError('unauthenticated', 'Authentication required');
+  }
+
+  // 🔐 VALIDATION PRATICIEN
+  const isPractitioner = await validatePractitioner(ctx.uid);
+  if (!isPractitioner) {
+    throw new HttpsError('permission-denied', 'Accès réservé aux praticiens');
+  }
+
+  const { patientUid, questionnaireIds } = request.data as {
+    patientUid?: string;
+    questionnaireIds?: string[];
+  };
+
+  if (!patientUid || !questionnaireIds || !Array.isArray(questionnaireIds)) {
+    throw new HttpsError('invalid-argument', 'patientUid et questionnaireIds requis');
+  }
+
+  try {
+    logger.info(
+      `Practitioner ${ctx.uid} assigning ${questionnaireIds.length} questionnaires to patient ${patientUid}`
+    );
+
+    // 🧠 VALIDATION ÂGE ET IDENTIFICATION (comme dans assignQuestionnaires)
+    const patientDoc = await db.collection('patients').doc(patientUid).get();
+    const patientData = patientDoc.data();
+
+    // Import dynamique pour éviter les dépendances circulaires
+    const { canAssignQuestionnaires, detectPatientAge } = require('@neuronutrition/shared-core');
+
+    const ageValidation = canAssignQuestionnaires({
+      uid: patientUid,
+      birthDate: patientData?.identification?.birthDate,
+    });
+
+    if (!ageValidation.canAssign) {
+      throw new HttpsError(
+        'failed-precondition',
+        ageValidation.reason || 'Identification patient requise'
+      );
+    }
+
+    const ageResult = detectPatientAge({
+      uid: patientUid,
+      birthDate: patientData?.identification?.birthDate,
+    });
+
+    // 📝 CRÉATION DES QUESTIONNAIRES SÉLECTIONNÉS
+    const batch = db.batch();
+    const now = admin.firestore.FieldValue.serverTimestamp();
+    const assignedQuestionnaires = [];
+
+    for (const templateId of questionnaireIds) {
+      // Import dynamique des questionnaires
+      const { getQuestionnaireById } = await import('@neuronutrition/shared-questionnaires');
+      const questionnaireVariant = getQuestionnaireById(templateId);
+
+      if (!questionnaireVariant) {
+        logger.warn(
+          `Questionnaire template ${templateId} not found for variant ${ageResult.variant}`
+        );
+        continue;
+      }
+
+      const questionnaireData = {
+        ...questionnaireVariant.metadata,
+        patientUid,
+        practitionerId: ctx.uid,
+        status: 'pending',
+        assignedAt: now,
+        completedAt: null,
+        responses: {},
+        // Informations d'âge
+        patientAge: ageResult.ageInYears,
+        ageVariant: ageResult.variant,
+        requiresParentAssistance: ageResult.variant === 'kid',
+      };
+
+      // Écriture root collection
+      const rootRef = db.collection('questionnaires').doc(`${templateId}_${patientUid}`);
+      batch.set(rootRef, questionnaireData);
+
+      assignedQuestionnaires.push({
+        id: templateId,
+        title: questionnaireVariant.metadata.title,
+        variant: ageResult.variant,
+      });
+    }
+
+    await batch.commit();
+
+    // 📊 MISE À JOUR PATIENT
+    await db
+      .collection('patients')
+      .doc(patientUid)
+      .set(
+        {
+          hasQuestionnairesAssigned: true,
+          lastAssignmentBy: ctx.uid,
+          lastAssignmentAt: now,
+          pendingQuestionnairesCount: admin.firestore.FieldValue.increment(
+            assignedQuestionnaires.length
+          ),
+        },
+        { merge: true }
+      );
+
+    // 🔔 NOTIFICATION PATIENT
+    await db
+      .collection('patients')
+      .doc(patientUid)
+      .collection('notifications')
+      .add({
+        type: 'questionnaires_assigned',
+        title: 'Nouveaux questionnaires assignés',
+        message: `${assignedQuestionnaires.length} questionnaires vous ont été assignés par votre praticien.`,
+        read: false,
+        createdAt: now,
+        link: '/dashboard/questionnaires',
+        assignedBy: ctx.uid,
+      });
+
+    logger.info(
+      `Successfully assigned ${assignedQuestionnaires.length} questionnaires to patient ${patientUid}`
+    );
+
+    return {
+      success: true,
+      assigned: assignedQuestionnaires,
+      patientAge: ageResult.ageInYears,
+      ageVariant: ageResult.variant,
+      message: `${assignedQuestionnaires.length} questionnaires assignés avec succès`,
+    };
+  } catch (error: any) {
+    logger.error('Error assigning selected questionnaires:', error);
+    throw new HttpsError('internal', `Failed to assign questionnaires: ${error.message}`);
+  }
+});

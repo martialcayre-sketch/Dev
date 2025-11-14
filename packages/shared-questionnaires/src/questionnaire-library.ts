@@ -1,1 +1,90 @@
-/**\n * 🧠 NeuroNutrition - Registre Global des Variantes Questionnaires\n * \n * Point d'entrée centralisé pour tous les questionnaires avec leurs variantes d'âge\n */\n\nimport type { Questionnaire, AgeVariant } from '../types';\nimport { generateAgeVariant } from '../age-variants';\n\n// Import des questionnaires de base\nimport { questionnaire_de_stress_siin_def_pro } from '../questionnaires/stress/questionnaire-de-stress-siin-def-pro';\nimport { STRESS_QUESTIONNAIRE_VARIANTS } from './stress-variants';\n\n/**\n * 📚 BIBLIOTHÈQUE COMPLÈTE DES QUESTIONNAIRES\n * \n * Structure: { [templateId]: { adult, teen, kid } }\n */\nexport const QUESTIONNAIRE_LIBRARY = {\n  'questionnaire-de-stress-siin-def-pro': STRESS_QUESTIONNAIRE_VARIANTS,\n  \n  // 🚀 TODO: Ajouter autres questionnaires\n  // 'questionnaire-mode-de-vie': MODE_DE_VIE_VARIANTS,\n  // 'questionnaire-sommeil': SOMMEIL_VARIANTS,\n  // 'questionnaire-alimentaire': ALIMENTAIRE_VARIANTS,\n} as const;\n\n/**\n * 🎯 FONCTION PRINCIPALE - Accès questionnaire par ID et âge\n */\nexport function getQuestionnaireById(\n  templateId: string, \n  ageVariant: AgeVariant\n): Questionnaire | null {\n  const variants = QUESTIONNAIRE_LIBRARY[templateId as keyof typeof QUESTIONNAIRE_LIBRARY];\n  \n  if (!variants) {\n    console.warn(`Questionnaire template '${templateId}' not found in library`);\n    return null;\n  }\n  \n  return variants[ageVariant];\n}\n\n/**\n * 📋 Liste de tous les templates disponibles\n */\nexport function getAvailableTemplates(): Array<{\n  id: string;\n  title: string;\n  category: string;\n  hasVariants: boolean;\n}> {\n  return Object.entries(QUESTIONNAIRE_LIBRARY).map(([id, variants]) => ({\n    id,\n    title: variants.adult.metadata.title,\n    category: variants.adult.metadata.category,\n    hasVariants: !!variants.teen && !!variants.kid\n  }));\n}\n\n/**\n * 🔍 Recherche questionnaires par catégorie\n */\nexport function getQuestionnairesByCategory(\n  category: string, \n  ageVariant: AgeVariant = 'adult'\n): Questionnaire[] {\n  return Object.values(QUESTIONNAIRE_LIBRARY)\n    .map(variants => variants[ageVariant])\n    .filter(questionnaire => questionnaire.metadata.category === category);\n}\n\n/**\n * 📊 Statistiques de la bibliothèque\n */\nexport function getLibraryStats(): {\n  totalTemplates: number;\n  totalVariants: number;\n  categoriesCount: number;\n  categories: string[];\n} {\n  const templates = Object.values(QUESTIONNAIRE_LIBRARY);\n  const categories = [...new Set(templates.map(v => v.adult.metadata.category))];\n  \n  return {\n    totalTemplates: templates.length,\n    totalVariants: templates.length * 3, // adult + teen + kid\n    categoriesCount: categories.length,\n    categories\n  };\n}
+/**
+ * 🧠 NeuroNutrition - Registre Global des Variantes Questionnaires
+ *
+ * Point d'entrée centralisé pour tous les questionnaires avec leurs variantes d'âge
+ */
+
+import type { AgeVariant, Questionnaire } from './types';
+
+// Import des questionnaires de base
+import { STRESS_QUESTIONNAIRE_VARIANTS } from './variants/stress-variants';
+
+/**
+ * 📚 BIBLIOTHÈQUE COMPLÈTE DES QUESTIONNAIRES
+ *
+ * Structure: { [templateId]: { adult, teen, kid } }
+ */
+export const QUESTIONNAIRE_LIBRARY = {
+  'questionnaire-de-stress-siin-def-pro': STRESS_QUESTIONNAIRE_VARIANTS,
+
+  // 🚀 TODO: Ajouter autres questionnaires
+  // 'questionnaire-mode-de-vie': MODE_DE_VIE_VARIANTS,
+  // 'questionnaire-sommeil': SOMMEIL_VARIANTS,
+  // 'questionnaire-alimentaire': ALIMENTAIRE_VARIANTS,
+} as const;
+
+/**
+ * 🎯 FONCTION PRINCIPALE - Accès questionnaire par ID et âge
+ */
+export function getQuestionnaireById(
+  templateId: string,
+  ageVariant: AgeVariant
+): Questionnaire | null {
+  const variants = QUESTIONNAIRE_LIBRARY[templateId as keyof typeof QUESTIONNAIRE_LIBRARY];
+
+  if (!variants) {
+    console.warn(`Questionnaire template '${templateId}' not found in library`);
+    return null;
+  }
+
+  return variants[ageVariant];
+}
+
+/**
+ * 📋 Liste de tous les templates disponibles
+ */
+export function getAvailableTemplates(): Array<{
+  id: string;
+  title: string;
+  category: string;
+  hasVariants: boolean;
+}> {
+  return Object.entries(QUESTIONNAIRE_LIBRARY).map(([id, variants]) => ({
+    id,
+    title: variants.adult.metadata.title,
+    category: variants.adult.metadata.category,
+    hasVariants: !!variants.teen && !!variants.kid,
+  }));
+}
+
+/**
+ * 🔍 Recherche questionnaires par catégorie
+ */
+export function getQuestionnairesByCategory(
+  category: string,
+  ageVariant: AgeVariant = 'adult'
+): Questionnaire[] {
+  return Object.values(QUESTIONNAIRE_LIBRARY)
+    .map((variants) => variants[ageVariant])
+    .filter((questionnaire) => questionnaire.metadata.category === category);
+}
+
+/**
+ * 📊 Statistiques de la bibliothèque
+ */
+export function getLibraryStats(): {
+  totalTemplates: number;
+  totalVariants: number;
+  categoriesCount: number;
+  categories: string[];
+} {
+  const templates = Object.values(QUESTIONNAIRE_LIBRARY);
+  const categories = [...new Set(templates.map((v) => v.adult.metadata.category))];
+
+  return {
+    totalTemplates: templates.length,
+    totalVariants: templates.length * 3, // adult + teen + kid
+    categoriesCount: categories.length,
+    categories,
+  };
+}

@@ -1,1 +1,458 @@
-/**\n * 🧠 NeuroNutrition - Interface Bibliothèque Questionnaires (Praticien)\n * \n * Interface React pour sélection et assignation de questionnaires\n */\n\nimport React, { useState, useEffect } from 'react';\nimport { getFunctions, httpsCallable } from 'firebase/functions';\nimport { useAuth } from '@/contexts/AuthContext';\nimport { Card, CardHeader, CardContent } from '@/components/ui/card';\nimport { Button } from '@/components/ui/button';\nimport { Checkbox } from '@/components/ui/checkbox';\nimport { Badge } from '@/components/ui/badge';\nimport { toast } from 'sonner';\nimport { Search, Filter, User, Clock, Tag, CheckCircle } from 'lucide-react';\nimport type { AgeVariant } from '@neuronutrition/shared-questionnaires';\n\ninterface QuestionnaireTemplate {\n  id: string;\n  title: string;\n  category: string;\n  hasVariants: boolean;\n}\n\ninterface LibraryData {\n  templates: QuestionnaireTemplate[];\n  categories: Record<string, QuestionnaireTemplate[]>;\n  stats: {\n    totalTemplates: number;\n    totalVariants: number;\n    categoriesCount: number;\n    categories: string[];\n  };\n}\n\ninterface QuestionnaireLibraryProps {\n  patientUid: string;\n  patientAge?: number;\n  ageVariant?: AgeVariant;\n  onAssignmentSuccess?: (assigned: any[]) => void;\n}\n\nexport function QuestionnaireLibrary({\n  patientUid,\n  patientAge,\n  ageVariant = 'adult',\n  onAssignmentSuccess\n}: QuestionnaireLibraryProps) {\n  const { user } = useAuth();\n  const functions = getFunctions();\n  \n  const [library, setLibrary] = useState<LibraryData | null>(null);\n  const [loading, setLoading] = useState(true);\n  const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);\n  const [assignmentLoading, setAssignmentLoading] = useState(false);\n  const [searchTerm, setSearchTerm] = useState('');\n  const [selectedCategory, setSelectedCategory] = useState<string>('all');\n\n  // 📚 Chargement de la bibliothèque\n  useEffect(() => {\n    loadLibrary();\n  }, []);\n\n  const loadLibrary = async () => {\n    if (!user) return;\n    \n    try {\n      setLoading(true);\n      const getLibrary = httpsCallable(functions, 'getQuestionnaireLibrary');\n      const result = await getLibrary({});\n      \n      const data = result.data as { success: boolean; data: LibraryData };\n      if (data.success) {\n        setLibrary(data.data);\n      } else {\n        throw new Error('Échec chargement bibliothèque');\n      }\n    } catch (error: any) {\n      console.error('Error loading library:', error);\n      toast.error(error.message || 'Erreur lors du chargement de la bibliothèque');\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  // 🎯 Assignation des questionnaires sélectionnés\n  const handleAssignment = async () => {\n    if (!selectedTemplates.length) {\n      toast.error('Veuillez sélectionner au moins un questionnaire');\n      return;\n    }\n\n    try {\n      setAssignmentLoading(true);\n      const assignSelected = httpsCallable(functions, 'assignSelectedQuestionnaires');\n      \n      const result = await assignSelected({\n        patientUid,\n        questionnaireIds: selectedTemplates\n      });\n      \n      const data = result.data as { \n        success: boolean; \n        assigned: any[];\n        patientAge: number;\n        ageVariant: AgeVariant;\n        message: string;\n      };\n      \n      if (data.success) {\n        toast.success(\n          `✅ ${data.assigned.length} questionnaires assignés (variante: ${data.ageVariant}, âge: ${data.patientAge} ans)`\n        );\n        setSelectedTemplates([]); // Reset sélection\n        onAssignmentSuccess?.(data.assigned);\n      } else {\n        throw new Error('Échec assignation');\n      }\n    } catch (error: any) {\n      console.error('Assignment error:', error);\n      toast.error(error.message || 'Erreur lors de l\\'assignation');\n    } finally {\n      setAssignmentLoading(false);\n    }\n  };\n\n  // 🔍 Filtrage des questionnaires\n  const filteredTemplates = library?.templates.filter(template => {\n    const matchesSearch = template.title.toLowerCase().includes(searchTerm.toLowerCase()) ||\n                         template.category.toLowerCase().includes(searchTerm.toLowerCase());\n    const matchesCategory = selectedCategory === 'all' || template.category === selectedCategory;\n    return matchesSearch && matchesCategory;\n  }) || [];\n\n  // 📊 Gestion sélection\n  const handleTemplateToggle = (templateId: string) => {\n    setSelectedTemplates(prev => \n      prev.includes(templateId)\n        ? prev.filter(id => id !== templateId)\n        : [...prev, templateId]\n    );\n  };\n\n  const handleSelectAll = () => {\n    if (selectedTemplates.length === filteredTemplates.length) {\n      setSelectedTemplates([]);\n    } else {\n      setSelectedTemplates(filteredTemplates.map(t => t.id));\n    }\n  };\n\n  if (loading) {\n    return (\n      <div className=\"flex justify-center items-center p-8\">\n        <div className=\"animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600\"></div>\n        <span className=\"ml-3 text-gray-600\">Chargement de la bibliothèque...</span>\n      </div>\n    );\n  }\n\n  if (!library) {\n    return (\n      <div className=\"text-center p-8\">\n        <p className=\"text-red-600\">❌ Impossible de charger la bibliothèque des questionnaires</p>\n        <Button onClick={loadLibrary} className=\"mt-4\">Réessayer</Button>\n      </div>\n    );\n  }\n\n  return (\n    <div className=\"space-y-6\">\n      {/* 📊 Statistiques et informations patient */}\n      <Card>\n        <CardHeader>\n          <div className=\"flex justify-between items-center\">\n            <h3 className=\"text-lg font-medium flex items-center\">\n              📚 Bibliothèque de Questionnaires\n            </h3>\n            <div className=\"flex items-center gap-4 text-sm text-gray-600\">\n              {patientAge && (\n                <Badge variant=\"outline\" className=\"flex items-center gap-1\">\n                  <User size={14} />\n                  {patientAge} ans ({ageVariant})\n                </Badge>\n              )}\n              <Badge variant=\"outline\">\n                {library.stats.totalTemplates} questionnaires\n              </Badge>\n            </div>\n          </div>\n        </CardHeader>\n        <CardContent>\n          {/* 🔍 Filtres et recherche */}\n          <div className=\"flex gap-4 mb-6\">\n            <div className=\"flex-1\">\n              <div className=\"relative\">\n                <Search className=\"absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400\" size={18} />\n                <input\n                  type=\"text\"\n                  placeholder=\"Rechercher un questionnaire...\"\n                  value={searchTerm}\n                  onChange={(e) => setSearchTerm(e.target.value)}\n                  className=\"w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent\"\n                />\n              </div>\n            </div>\n            <select\n              value={selectedCategory}\n              onChange={(e) => setSelectedCategory(e.target.value)}\n              className=\"px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500\"\n            >\n              <option value=\"all\">Toutes les catégories</option>\n              {library.stats.categories.map(category => (\n                <option key={category} value={category}>\n                  {category.charAt(0).toUpperCase() + category.slice(1)}\n                </option>\n              ))}\n            </select>\n          </div>\n\n          {/* ✅ Actions de sélection */}\n          <div className=\"flex justify-between items-center mb-4\">\n            <div className=\"flex items-center gap-4\">\n              <Button\n                variant=\"outline\"\n                size=\"sm\"\n                onClick={handleSelectAll}\n                className=\"flex items-center gap-2\"\n              >\n                <Checkbox \n                  checked={selectedTemplates.length === filteredTemplates.length && filteredTemplates.length > 0}\n                  readOnly\n                />\n                {selectedTemplates.length === filteredTemplates.length ? 'Tout désélectionner' : 'Tout sélectionner'}\n              </Button>\n              <span className=\"text-sm text-gray-600\">\n                {selectedTemplates.length} / {filteredTemplates.length} sélectionnés\n              </span>\n            </div>\n            <Button\n              onClick={handleAssignment}\n              disabled={!selectedTemplates.length || assignmentLoading}\n              className=\"flex items-center gap-2\"\n            >\n              {assignmentLoading ? (\n                <div className=\"animate-spin rounded-full h-4 w-4 border-b-2 border-white\"></div>\n              ) : (\n                <CheckCircle size={16} />\n              )}\n              Assigner {selectedTemplates.length || ''} questionnaire{selectedTemplates.length > 1 ? 's' : ''}\n            </Button>\n          </div>\n\n          {/* 📋 Liste des questionnaires */}\n          <div className=\"grid gap-3\">\n            {filteredTemplates.map(template => (\n              <Card\n                key={template.id}\n                className={`cursor-pointer border transition-all ${\n                  selectedTemplates.includes(template.id)\n                    ? 'border-blue-500 bg-blue-50'\n                    : 'border-gray-200 hover:border-gray-300'\n                }`}\n                onClick={() => handleTemplateToggle(template.id)}\n              >\n                <CardContent className=\"p-4\">\n                  <div className=\"flex items-center justify-between\">\n                    <div className=\"flex items-center gap-3\">\n                      <Checkbox \n                        checked={selectedTemplates.includes(template.id)}\n                        readOnly\n                      />\n                      <div>\n                        <h4 className=\"font-medium text-gray-900\">\n                          {template.title}\n                        </h4>\n                        <div className=\"flex items-center gap-2 mt-1\">\n                          <Badge variant=\"secondary\" className=\"text-xs\">\n                            <Tag size={12} className=\"mr-1\" />\n                            {template.category}\n                          </Badge>\n                          {template.hasVariants && (\n                            <Badge variant=\"outline\" className=\"text-xs text-blue-600\">\n                              🧒 Variantes âge disponibles\n                            </Badge>\n                          )}\n                        </div>\n                      </div>\n                    </div>\n                  </div>\n                </CardContent>\n              </Card>\n            ))}\n          </div>\n\n          {filteredTemplates.length === 0 && (\n            <div className=\"text-center py-8 text-gray-500\">\n              <Filter size={48} className=\"mx-auto mb-4 opacity-50\" />\n              <p>Aucun questionnaire trouvé pour ces critères</p>\n            </div>\n          )}\n        </CardContent>\n      </Card>\n    </div>\n  );\n}
+/**
+ * NeuroNutrition - Interface Bibliothèque Questionnaires (Praticien)
+ *
+ * Interface React pour sélection et assignation de questionnaires
+ */
+
+import { useFirebaseUser } from '@/hooks/useFirebaseUser';
+import type { AgeVariant } from '@neuronutrition/shared-questionnaires';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import { CheckCircle, Filter, Search, Tag, User } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+
+// Composants UI simples et fonctionnels
+const Badge = ({
+  children,
+  variant = 'default',
+  className = '',
+}: {
+  children: React.ReactNode;
+  variant?: 'default' | 'outline' | 'secondary';
+  className?: string;
+}) => (
+  <span
+    className={`px-2 py-1 text-xs rounded ${
+      variant === 'outline'
+        ? 'border border-gray-300 text-gray-700'
+        : variant === 'secondary'
+        ? 'bg-gray-200 text-gray-800'
+        : 'bg-blue-100 text-blue-800'
+    } ${className}`}
+  >
+    {children}
+  </span>
+);
+
+const Button = ({
+  children,
+  onClick,
+  disabled,
+  variant = 'primary',
+  size = 'md',
+  className = '',
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  variant?: 'primary' | 'secondary' | 'outline';
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
+}) => {
+  const baseClass = 'rounded transition-colors font-medium';
+  const sizeClass = {
+    sm: 'px-2 py-1 text-sm',
+    md: 'px-4 py-2',
+    lg: 'px-6 py-3 text-lg',
+  }[size];
+  const variantClass = {
+    primary: 'bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300',
+    secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300',
+    outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50',
+  }[variant];
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`${baseClass} ${sizeClass} ${variantClass} ${className}`}
+    >
+      {children}
+    </button>
+  );
+};
+
+const Card = ({
+  children,
+  className = '',
+  onClick,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
+}) => (
+  <div
+    className={`bg-white border border-gray-200 rounded-lg shadow ${
+      onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''
+    } ${className}`}
+    onClick={onClick}
+  >
+    {children}
+  </div>
+);
+
+const CardContent = ({
+  children,
+  className = '',
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => <div className={`p-6 ${className}`}>{children}</div>;
+
+const CardHeader = ({
+  children,
+  className = '',
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => <div className={`p-6 pb-0 ${className}`}>{children}</div>;
+
+const Checkbox = ({
+  checked,
+  onCheckedChange,
+  id,
+  readOnly = false,
+}: {
+  checked: boolean;
+  onCheckedChange?: (checked: boolean) => void;
+  id?: string;
+  readOnly?: boolean;
+}) => (
+  <input
+    type="checkbox"
+    id={id}
+    checked={checked}
+    onChange={(e) => !readOnly && onCheckedChange?.(e.target.checked)}
+    disabled={readOnly}
+    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+  />
+);
+
+// Toast notification simple
+const toast = {
+  success: (message: string) => console.log('✅', message),
+  error: (message: string) => console.error('❌', message),
+};
+
+interface QuestionnaireTemplate {
+  id: string;
+  title: string;
+  category: string;
+  estimatedTime: number;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  availableVariants: AgeVariant[];
+  description?: string;
+  tags?: string[];
+}
+
+interface LibraryData {
+  templates: QuestionnaireTemplate[];
+  categories: Record<string, QuestionnaireTemplate[]>;
+  stats: {
+    totalTemplates: number;
+    totalVariants: number;
+    categoriesCount: number;
+    categories: string[];
+  };
+}
+
+interface QuestionnaireLibraryProps {
+  patientUid: string;
+  patientAge?: number;
+  ageVariant?: AgeVariant;
+  onAssignmentSuccess?: (assigned: any[]) => void;
+}
+
+export function QuestionnaireLibrary({
+  patientUid,
+  patientAge,
+  ageVariant = 'adult',
+  onAssignmentSuccess,
+}: QuestionnaireLibraryProps) {
+  const { user } = useFirebaseUser();
+  const functions = getFunctions();
+
+  const [library, setLibrary] = useState<LibraryData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
+  const [assignmentLoading, setAssignmentLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+  // Chargement de la bibliothèque avec useCallback
+  const loadLibrary = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      const getLibrary = httpsCallable(functions, 'getQuestionnaireLibrary');
+      const result = await getLibrary({});
+
+      const data = result.data as { success: boolean; data: LibraryData };
+      if (data.success) {
+        setLibrary(data.data);
+      } else {
+        throw new Error('Échec chargement bibliothèque');
+      }
+    } catch (error) {
+      console.error('Erreur chargement bibliothèque:', error);
+      toast.error('Erreur lors du chargement de la bibliothèque');
+    } finally {
+      setLoading(false);
+    }
+  }, [user, functions]);
+
+  useEffect(() => {
+    loadLibrary();
+  }, [loadLibrary]);
+
+  // Gestion des sélections de questionnaires
+  const handleTemplateToggle = (templateId: string) => {
+    setSelectedTemplates((prev) =>
+      prev.includes(templateId) ? prev.filter((id) => id !== templateId) : [...prev, templateId]
+    );
+  };
+
+  // Assignation des questionnaires sélectionnés
+  const handleAssignSelected = async () => {
+    if (!user || selectedTemplates.length === 0) return;
+
+    try {
+      setAssignmentLoading(true);
+      const assignQuestionnaires = httpsCallable(functions, 'assignSelectedQuestionnaires');
+
+      const result = await assignQuestionnaires({
+        patientUid,
+        templateIds: selectedTemplates,
+        ageVariant,
+        practitionerUid: user.uid,
+      });
+
+      const data = result.data as { success: boolean; assigned: any[] };
+      if (data.success) {
+        toast.success(`${data.assigned.length} questionnaires assignés avec succès`);
+        setSelectedTemplates([]);
+        onAssignmentSuccess?.(data.assigned);
+      } else {
+        throw new Error('Échec assignation questionnaires');
+      }
+    } catch (error) {
+      console.error('Erreur assignation:', error);
+      toast.error("Erreur lors de l'assignation des questionnaires");
+    } finally {
+      setAssignmentLoading(false);
+    }
+  };
+
+  // Filtrage des questionnaires
+  const filteredTemplates =
+    library?.templates.filter((template) => {
+      const matchesSearch =
+        !searchTerm ||
+        template.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        template.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        template.tags?.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+
+      const matchesCategory = selectedCategory === 'all' || template.category === selectedCategory;
+      const matchesAgeVariant = template.availableVariants.includes(ageVariant);
+
+      return matchesSearch && matchesCategory && matchesAgeVariant;
+    }) || [];
+
+  if (loading) {
+    return (
+      <Card className="p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement de la bibliothèque...</p>
+        </div>
+      </Card>
+    );
+  }
+
+  if (!library) {
+    return (
+      <Card className="p-8">
+        <div className="text-center">
+          <p className="text-red-600">Erreur lors du chargement de la bibliothèque</p>
+          <Button onClick={loadLibrary} className="mt-4">
+            Réessayer
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* En-tête avec statistiques */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2 mb-4">
+            <Tag className="h-5 w-5 text-blue-600" />
+            <h2 className="text-lg font-semibold">Bibliothèque de Questionnaires</h2>
+          </div>
+
+          <div className="grid grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">{library.stats.totalTemplates}</div>
+              <div className="text-sm text-gray-600">Questionnaires</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{library.stats.totalVariants}</div>
+              <div className="text-sm text-gray-600">Variantes</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">
+                {library.stats.categoriesCount}
+              </div>
+              <div className="text-sm text-gray-600">Catégories</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-600">{filteredTemplates.length}</div>
+              <div className="text-sm text-gray-600">Compatibles</div>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
+      {/* Contrôles de recherche et filtre */}
+      <Card>
+        <CardContent>
+          <div className="flex items-center gap-4 mb-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Rechercher des questionnaires..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-gray-400" />
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="all">Toutes catégories</option>
+                {library.stats.categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category} ({library.categories[category]?.length || 0})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-gray-400" />
+              <Badge variant="outline" className="flex items-center gap-1">
+                Âge: {patientAge ? `${patientAge} ans` : 'Non spécifié'}
+                <span className="text-blue-600">({ageVariant})</span>
+              </Badge>
+            </div>
+
+            {selectedTemplates.length > 0 && (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-600">
+                  {selectedTemplates.length} sélectionnés
+                </span>
+                <Button onClick={handleAssignSelected} disabled={assignmentLoading} size="sm">
+                  {assignmentLoading ? 'Assignation...' : 'Assigner Sélectionnés'}
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Liste des questionnaires */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {filteredTemplates.map((template) => (
+          <Card
+            key={template.id}
+            className="relative"
+            onClick={() => handleTemplateToggle(template.id)}
+          >
+            <CardContent>
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1">
+                  <h3 className="font-medium text-gray-900 mb-1">{template.title}</h3>
+                  <p className="text-sm text-gray-600 mb-2">{template.description}</p>
+                </div>
+                <Checkbox checked={selectedTemplates.includes(template.id)} readOnly />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <Badge variant="secondary" className="text-xs">
+                    {template.category}
+                  </Badge>
+                  <span className="text-gray-500">{template.estimatedTime} min</span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Badge variant="outline" className="text-xs text-blue-600">
+                    {template.difficulty}
+                  </Badge>
+                  <div className="flex gap-1">
+                    {template.availableVariants.map((variant) => (
+                      <Badge
+                        key={variant}
+                        variant={variant === ageVariant ? 'default' : 'outline'}
+                        className="text-xs"
+                      >
+                        {variant}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {template.tags && template.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 pt-2">
+                    {template.tags.slice(0, 3).map((tag) => (
+                      <Badge key={tag} variant="outline" className="text-xs">
+                        #{tag}
+                      </Badge>
+                    ))}
+                    {template.tags.length > 3 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{template.tags.length - 3}
+                      </Badge>
+                    )}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+
+            {selectedTemplates.includes(template.id) && (
+              <div className="absolute top-2 right-2">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+              </div>
+            )}
+          </Card>
+        ))}
+      </div>
+
+      {filteredTemplates.length === 0 && (
+        <Card>
+          <CardContent className="text-center py-12">
+            <div className="text-gray-400 mb-4">
+              <Search className="h-12 w-12 mx-auto" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun questionnaire trouvé</h3>
+            <p className="text-gray-600">
+              Essayez d'ajuster vos critères de recherche ou de filtres.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+export default QuestionnaireLibrary;

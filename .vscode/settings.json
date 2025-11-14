@@ -43,10 +43,26 @@
   "typescript.updateImportsOnFileMove.enabled": "always",
   "cSpell.enabled": true,
   "cSpell.language": "en,fr",
+  "cSpell.diagnosticLevel": "Information",
+  "cSpell.showStatus": false,
+  "cSpell.showCommandsInEditorContextMenu": false,
+  "cSpell.showSuggestions": false,
+  "cSpell.showSuggestions": true,
+  "cSpell.suggestionMenuType": "quickFix",
+  "problems.decorations.enabled": true,
+  "problems.showCurrentInStatus": true,
   "chat.agent.enabled": true,
   "chat.tools.global.autoApprove": true,
+  "github.copilot.editor.enableAutoCompletions": true,
+  "github.copilot.conversationAdditionalContextFiles": [
+    "docs/AI_INDEX.md",
+    "docs/AI_INSTRUCTIONS_SUMMARY.md",
+    "docs/AI_TYPESCRIPT_GUIDELINES.md",
+    "docs/AI_PROMPTS_TEMPLATES.md",
+    "docs/AI_CONFIGURATION_PATTERNS.md",
+    "docs/COPILOT_CONTEXT.md"
+  ],
   "chat.tools.terminal.autoApprove": {
-    
     "cd": true,
     "echo": true,
     "ls": true,
